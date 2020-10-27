@@ -18,7 +18,6 @@ namespace AudioAnalysisTools.Events.Types
 
         public static List<EventCommon> PostProcessingOfSpectralEvents(
             List<EventCommon> newEvents,
-            double analysisThreshold,
             PostProcessingConfig postprocessingConfig,
             BaseSonogram spectrogram,
             TimeSpan segmentStartOffset)
@@ -92,11 +91,10 @@ namespace AudioAnalysisTools.Events.Types
                 var spectralEvents2 = newEvents.Cast<SpectralEvent>().ToList();
                 newEvents = EventFilters.FilterEventsOnSidebandActivity(
                     spectralEvents2,
-                    analysisThreshold,
                     spectrogram,
                     sidebandActivity.LowerHertzBuffer,
                     sidebandActivity.UpperHertzBuffer,
-                    sidebandActivity.DecibelBuffer,
+                    sidebandActivity.MaxAverageSidebandDecibels,
                     segmentStartOffset);
                 Log.Debug($"Event count after filtering on acoustic activity in sidebands = {newEvents.Count}");
             }
@@ -198,11 +196,11 @@ namespace AudioAnalysisTools.Events.Types
             public int LowerHertzBuffer { get; set; }
 
             /// <summary>
-            /// Gets or sets a value indicating the decibel gap/difference between acoustic activity in the event and in the upper and lower buffer zones.
-            /// BufferAcousticActivity must be LessThan (EventAcousticActivity - DecibelBuffer)
+            /// Gets or sets a value indicating the maximum value of the average decibels of acoustic activity
+            ///        in the upper and lower sidebands of an event. The average is over all spectrogram cells in each sideband.
             /// This value is used only if LowerHertzBuffer > 0 OR UpperHertzBuffer > 0.
             /// </summary>
-            public double DecibelBuffer { get; set; }
+            public double MaxAverageSidebandDecibels { get; set; }
         }
 
         /// <summary>

@@ -22,6 +22,7 @@ DecibelThresholds:
     - 18.0
     - 24.0
     - 30.0
+    - 36.0
 
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recogniser and must have the current name.
@@ -36,8 +37,8 @@ Profiles:
         # min and max of the freq band to search
         MinHertz: 300          
         MaxHertz: 600
-        MinDuration: 0.2
-        MaxDuration: 0.9
+        MinDuration: 0.3
+        MaxDuration: 0.6
          
 #################### POST-PROCESSING of EVENTS ###################
 
@@ -54,7 +55,7 @@ PostProcessing:
     # 2: Combine possible syllable sequences
     SyllableSequence:
         CombinePossibleSyllableSequence: true
-        SyllableStartDifference: 1.4
+        SyllableStartDifference: 0.7
         SyllableHertzGap: 100
         FilterSyllableSequence: false
         SyllableMaxCount: 6
@@ -74,7 +75,7 @@ PostProcessing:
     SidebandActivity:
         LowerHertzBuffer: 0
         UpperHertzBuffer: 0
-        DecibelBuffer: 3.0   # use this value when combining sequences
+        MaxAverageSidebandDecibels: 3.0
 
 # Various options to save results files
 # 1: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]

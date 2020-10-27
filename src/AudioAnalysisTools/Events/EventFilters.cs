@@ -295,21 +295,24 @@ namespace AudioAnalysisTools.Events
         /// <param name="spectrogram">A matrix of the spectrogram in which event occurs.</param>
         /// <param name="lowerHertzBuffer">The band width of the required lower buffer. 100-200Hz is often appropriate.</param>
         /// <param name="upperHertzBuffer">The band width of the required upper buffer. 300-500Hz is often appropriate.</param>
-        /// <param name="decibelThreshold">The decibel threshold for acoustic activity in a sideband.</param>
+        /// <param name="thresholdForAverageDecibelsInSidebands">The max allowed value for the average decibels value (over all spectrogram cells) in a sideband of an event.</param>
         /// <param name="segmentStartOffset">Start time of the current recording segment.</param>
         /// <returns>A list of filtered events.</returns>
         public static List<EventCommon> FilterEventsOnSidebandActivity(
             List<SpectralEvent> events,
-            double analysisThreshold,
             BaseSonogram spectrogram,
             int lowerHertzBuffer,
             int upperHertzBuffer,
-            double decibelThreshold,
+            double thresholdForAverageDecibelsInSidebands,
             TimeSpan segmentStartOffset)
         {
             // allow bin gaps below the event.
             int lowerBinGap = 2;
             int upperBinGap = 2;
+
+            //The decibel value of any other event in the sidebands of a focal event
+            // cannot come within 3 dB of the dB value of the focal event.
+            var decibelBuffer = 3.0;
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
@@ -323,6 +326,8 @@ namespace AudioAnalysisTools.Events
             foreach (var ev in events)
             {
                 var avEventDecibels = EventExtentions.GetAverageDecibelsInEvent(ev, spectrogramData, converter);
+                var maxSidebandEventDecibels = Math.Max(0.0, avEventDecibels - decibelBuffer);
+
                 var retainEvent1 = true;
                 var retainEvent2 = true;
 
@@ -330,20 +335,18 @@ namespace AudioAnalysisTools.Events
                 {
                     var lowerSidebandMatrix = GetLowerEventSideband(ev, spectrogramData, lowerHertzBuffer, lowerBinGap, converter);
                     retainEvent1 = IsSidebandActivityBelowThreshold(
-                        avEventDecibels,
-                        analysisThreshold,
                         lowerSidebandMatrix,
-                        decibelThreshold);
+                        maxSidebandEventDecibels,
+                        thresholdForAverageDecibelsInSidebands);
                 }
 
                 if (upperHertzBuffer > 0)
                 {
                     var upperSidebandMatrix = GetUpperEventSideband(ev, spectrogramData, upperHertzBuffer, upperBinGap, converter);
                     retainEvent2 = IsSidebandActivityBelowThreshold(
-                        avEventDecibels,
-                        analysisThreshold,
                         upperSidebandMatrix,
-                        decibelThreshold);
+                        maxSidebandEventDecibels,
+                        thresholdForAverageDecibelsInSidebands);
                 }
 
                 if (retainEvent1 && retainEvent2)
@@ -358,10 +361,9 @@ namespace AudioAnalysisTools.Events
         }
 
         public static bool IsSidebandActivityBelowThreshold(
-            double avEventDecibels,
-            double analysisThreshold,
             double[,] sidebandMatrix,
-            double sidebandThreshold)
+            double maxSidebandEventDecibels,
+            double thresholdForAverageDecibelsInSidebands)
         {
             var averageRowDecibels = MatrixTools.GetRowAverages(sidebandMatrix);
             var averageColDecibels = MatrixTools.GetColumnAverages(sidebandMatrix);
@@ -369,7 +371,7 @@ namespace AudioAnalysisTools.Events
 
             // Is the average acoustic activity in the sideband below the user set threshold?
             //bool avBgBelowThreshold = averageMatrixDecibels < analysisThreshold;
-            bool avBgBelowThreshold = averageMatrixDecibels < sidebandThreshold;
+            bool avBgBelowThreshold = averageMatrixDecibels < thresholdForAverageDecibelsInSidebands;
             if (!avBgBelowThreshold)
             {
                 return false;
@@ -378,8 +380,8 @@ namespace AudioAnalysisTools.Events
             // Also need to cover possibility that there is much acoustic activity concentrated in one freq bin or time frame.
             // Therefore, also require that there be at most one sideband bin and one sideband frame containing acoustic activity
             // that is greater than the average in the event.
-            int noisyRowCount = averageRowDecibels.Count(x => x > avEventDecibels);
-            int noisyColCount = averageColDecibels.Count(x => x > avEventDecibels);
+            int noisyRowCount = averageRowDecibels.Count(x => x > maxSidebandEventDecibels);
+            int noisyColCount = averageColDecibels.Count(x => x > maxSidebandEventDecibels);
             bool doRetain = noisyRowCount <= 1 && noisyColCount <= 1;
             return doRetain;
         }

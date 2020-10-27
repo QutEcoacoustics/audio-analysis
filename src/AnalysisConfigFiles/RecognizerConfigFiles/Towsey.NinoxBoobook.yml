@@ -65,7 +65,7 @@ PostProcessing:
     SidebandActivity:
         LowerHertzBuffer: 150
         UpperHertzBuffer: 400
-        DecibelBuffer: 0.0
+        MaxAverageSidebandDecibels: 3.0
 
 # Options to save results files
 # 1: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
