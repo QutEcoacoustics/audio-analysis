@@ -136,6 +136,8 @@ namespace AnalysisPrograms.Recognizers
             message = $"Number of decibel thresholds = {decibelThresholds.Length}: " + decibelThresholds.Join(", ");
             Log.Info(message);
 
+            var postprocessingConfig = configuration.PostProcessing;
+
             // init object to store the combined results from all decibel thresholds.
             var combinedResults = new RecognizerResults()
             {
@@ -151,21 +153,19 @@ namespace AnalysisPrograms.Recognizers
             {
                 // ############################### PROCESSING: DETECTION OF GENERIC EVENTS ###############################
                 var profileResults = RunProfiles(audioRecording, configuration, threshold, segmentStartOffset);
-
-                // ############################### POST-PROCESSING OF GENERIC EVENTS ###############################
-                var postprocessingConfig = configuration.PostProcessing;
-                profileResults.NewEvents = EventPostProcessing.PostProcessingOfSpectralEvents(profileResults.NewEvents, threshold.Value, postprocessingConfig, profileResults.Sonogram, segmentStartOffset);
                 Log.Debug($"Event count from all profiles at {threshold} dB threshold = {profileResults.NewEvents.Count}");
 
-                // combine the results i.e. add the events list of call events.
+                // add this profile results to combined results and remove enclosed events.
                 combinedResults.NewEvents.AddRange(profileResults.NewEvents);
-                combinedResults.Plots.AddRange(profileResults.Plots);
+                combinedResults.NewEvents = CompositeEvent.RemoveEnclosedEvents(combinedResults.NewEvents);
 
                 // effectively keeps only the *last* sonogram produced
                 combinedResults.Sonogram = profileResults.Sonogram;
+                combinedResults.Plots.AddRange(profileResults.Plots);
             }
 
-            combinedResults.NewEvents = CompositeEvent.RemoveEnclosedEvents(combinedResults.NewEvents);
+            // ############################### POST-PROCESSING OF GENERIC EVENTS ###############################
+            combinedResults.NewEvents = EventPostProcessing.PostProcessingOfSpectralEvents(combinedResults.NewEvents, postprocessingConfig, combinedResults.Sonogram, segmentStartOffset);
             return combinedResults;
         }
 
