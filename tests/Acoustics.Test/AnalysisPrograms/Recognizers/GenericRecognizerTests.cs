@@ -43,7 +43,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var config = new GenericRecognizer.GenericRecognizerConfig()
             {
                 // set up an array of decibel threhsolds.
-                DecibelThresholds = new double?[] { 3, 6, 9 },
+                //DecibelThresholds = new double?[] { 3, 6, 9 },
                 Profiles = new Dictionary<string, object>()
                 {
                     { "TestAed", new Aed.AedConfiguration() { BandpassMinimum = 12345 } },
@@ -91,8 +91,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         {
             var config = new GenericRecognizer.GenericRecognizerConfig()
             {
-                // set up an array of decibel threhsolds.
-                DecibelThresholds = new double?[] { 0.0 },
                 Profiles = new Dictionary<string, object>()
                 {
                     {
@@ -105,6 +103,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             MaxHertz = 7200,
                             BottomHertzBuffer = 1000,
                             TopHertzBuffer = 500,
+
+                            // set up an array of decibel threhsolds.
+                            DecibelThresholds = new double?[] { 0.0 },
                         }
                     },
                 },
@@ -148,8 +149,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         {
             var config = new GenericRecognizer.GenericRecognizerConfig()
             {
-                // set up an array of decibel threhsolds.
-                DecibelThresholds = new double?[] { 0.0 },
                 Profiles = new Dictionary<string, object>()
                 {
                     {
@@ -170,6 +169,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             MinDuration = 4,
                             MaxDuration = 8,
                             EventThreshold = 0.3,
+                            DecibelThresholds = new double?[] { 0.0 },
                         }
                     },
                 },
@@ -214,8 +214,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         {
             var config = new GenericRecognizer.GenericRecognizerConfig()
             {
-                // set up an array of decibel threhsolds.
-                DecibelThresholds = new double?[] { 1.0 },
                 Profiles = new Dictionary<string, object>()
                 {
                     {
@@ -233,6 +231,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             MinDuration = 4,
                             MaxDuration = 6,
                             SpeciesName = "NoName",
+                            DecibelThresholds = new double?[] { 1.0 },
                         }
                     },
                 },
@@ -968,14 +967,13 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 });
             var config = new GenericRecognizer.GenericRecognizerConfig()
             {
-                DecibelThresholds = new double?[] { 0.0 },
-
                 Profiles = new Dictionary<string, object>()
                 {
                     {
                         "TestAed",
                         new Aed.AedConfiguration()
                         {
+                            //DecibelThresholds = new double?[] { 0.0 },
                             NoiseReductionType = NoiseReductionType.None,
                             NoiseReductionParameter = 15,
                             SmallAreaThreshold = 150,
@@ -1015,7 +1013,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         {
             var config = new GenericRecognizer.GenericRecognizerConfig()
             {
-                DecibelThresholds = new double?[] { 0.0 },
                 Profiles = new Dictionary<string, object>()
                 {
                     {
@@ -1028,12 +1025,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             BgNoiseThreshold = 0.0,
                             BottomHertzBuffer = 1000,
                             TopHertzBuffer = 500,
+                            DecibelThresholds = new double?[] { 0.0 },
                         }
                     },
                     {
                         "LowerBandDTMF_z",
                         new OscillationParameters()
                         {
+                            SpeciesName = "DTMFlower",
                             FrameSize = 512,
                             FrameStep = 512,
                             BgNoiseThreshold = 0.0,
@@ -1047,13 +1046,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             MinDuration = 4,
                             MaxDuration = 6,
                             EventThreshold = 0.3,
-                            SpeciesName = "DTMF",
+                            DecibelThresholds = new double?[] { 0.0 },
                         }
                     },
                     {
                         "UpperBandDTMF_z",
                         new OscillationParameters()
                         {
+                            SpeciesName = "DTMFupper",
                             FrameSize = 512,
                             FrameStep = 512,
                             BgNoiseThreshold = 0.0,
@@ -1067,7 +1067,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             MinDuration = 4,
                             MaxDuration = 6,
                             EventThreshold = 0.3,
-                            SpeciesName = "DTMF",
+                            DecibelThresholds = new double?[] { 0.0 },
                         }
                     },
                 },
@@ -1104,21 +1104,24 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             Assert.AreEqual(7200, @event.HighFrequencyHertz, 0.1);
             Assert.AreEqual("TestBlob", @event.Profile);
             Assert.AreEqual(null, @event.Name);
+            Assert.AreEqual("SpectralEvent", @event.ComponentName);
 
             @event = (SpectralEvent)results.NewEvents[1];
             Assert.AreEqual(107.78, @event.EventStartSeconds, 0.4);
             Assert.AreEqual(113.57, @event.EventEndSeconds, 0.5);
             Assert.AreEqual(700, @event.LowFrequencyHertz, 0.1);
             Assert.AreEqual(1050, @event.HighFrequencyHertz, 0.1);
-            Assert.AreEqual("DTMF", @event.Name);
+            Assert.AreEqual("DTMFlower", @event.Name);
             Assert.AreEqual("LowerBandDTMF_z", @event.Profile);
+            Assert.AreEqual("OscillationEvent", @event.ComponentName);
+            Assert.AreEqual("acoustic_components", @event.FileName);
 
             @event = (SpectralEvent)results.NewEvents[2];
             Assert.AreEqual(108.1, @event.EventStartSeconds, 0.4);
             Assert.AreEqual(113.15, @event.EventEndSeconds, 0.5);
             Assert.AreEqual(1350, @event.LowFrequencyHertz, 0.1);
             Assert.AreEqual(1650, @event.HighFrequencyHertz, 0.1);
-            Assert.AreEqual("DTMF", @event.Name);
+            Assert.AreEqual("DTMFupper", @event.Name);
             Assert.AreEqual("UpperBandDTMF_z", @event.Profile);
         }
     }

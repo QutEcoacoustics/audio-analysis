@@ -179,21 +179,32 @@ namespace AnalysisPrograms.Recognizers
 
                     var spectrogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
 
+                    var profileResults = new RecognizerResults();
                     foreach (var threshold in decibelThresholds)
                     {
-                        RecognizerResults results = RunOneProfile(spectrogram, profileName, parameters, threshold, segmentStartOffset);
+                        var thresholdResults = RunOneProfile(spectrogram, profileName, parameters, threshold, segmentStartOffset);
 
                         //Log.Debug($"Event count from all profiles at {threshold} dB threshold = {results.NewEvents.Count}");
-                        combinedResults.NewEvents.AddRange(results.NewEvents);
-                        combinedResults.Plots.AddRange(results.Plots);
-                        combinedResults.Sonogram = results.Sonogram;
+                        profileResults.NewEvents.AddRange(thresholdResults.NewEvents);
+                        profileResults.Plots.AddRange(thresholdResults.Plots);
+                        profileResults.Sonogram = thresholdResults.Sonogram;
                     }
 
                     // Running profiles with multiple dB thresholds produces nested (Russian doll) events.
                     // Remove all but the outermost event.
-                    combinedResults.NewEvents = CompositeEvent.RemoveEnclosedEvents(combinedResults.NewEvents);
+                    profileResults.NewEvents = CompositeEvent.RemoveEnclosedEvents(profileResults.NewEvents);
 
-                    Log.Debug($"Profile {profileName}: event count = {combinedResults.NewEvents.Count}");
+                    // Add additional info to the remaining acoustic events
+                    profileResults.NewEvents.ForEach(ae =>
+                    {
+                        ae.FileName = audioRecording.BaseName;
+                        ae.Name = speciesName;
+                        ae.Profile = profileName;
+                    });
+
+                    Log.Debug($"Profile {profileName}: event count = {profileResults.NewEvents.Count}");
+                    combinedResults.NewEvents.AddRange(profileResults.NewEvents);
+                    combinedResults.Sonogram = spectrogram;
                 }
                 else if (profileConfig is Aed.AedConfiguration ac)
                 {
@@ -209,6 +220,15 @@ namespace AnalysisPrograms.Recognizers
 
                     // GET THIS TO RETURN BLOB EVENTS.
                     var spectralEvents = Aed.CallAed(spectrogram, ac, segmentStartOffset, audioRecording.Duration).ToList();
+
+                    // Add additional info to the acoustic events
+                    spectralEvents.ForEach(ae =>
+                    {
+                        ae.FileName = audioRecording.BaseName;
+                        ae.Name = speciesName;
+                        ae.Profile = profileName;
+                    });
+
                     combinedResults.NewEvents.AddRange(spectralEvents);
                     combinedResults.Sonogram = spectrogram;
                 }
@@ -216,18 +236,6 @@ namespace AnalysisPrograms.Recognizers
                 {
                     throw new InvalidOperationException();
                 }
-
-                // Add additional info to the acoustic events
-                combinedResults.NewEvents.ForEach(ae =>
-                {
-                    ae.FileName = audioRecording.BaseName;
-                    ae.Name = speciesName;
-                    ae.Profile = profileName;
-
-                    //ae.SegmentDurationSeconds = audioRecording.Duration.TotalSeconds;
-                    //ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
-                    //ae.SetTimeAndFreqScales(sonogram.FrameStep, sonogram.FrameDuration, sonogram.FBinWidth);
-                });
             }
 
             return combinedResults;
