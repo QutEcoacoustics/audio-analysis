@@ -8,12 +8,6 @@ SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
-# Scan spectrogram at these thresholds
-DecibelThresholds:
-    - 6.0
-    - 9.0
-    - 12.0
-
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recogniser and must have the current name.
 Profiles:
@@ -26,8 +20,14 @@ Profiles:
         # min and max of the freq band to search
         MinHertz: 2000          
         MaxHertz: 7000
+        # min and max bandwidth of the events that are found
         MinBandwidthHertz: 500
         MaxBandwidthHertz: 6000
+        # Scan the frequency band at these thresholds
+        DecibelThresholds:
+            - 6.0
+            - 9.0
+            - 12.0
 
 #################### POST-PROCESSING of EVENTS ###################
 

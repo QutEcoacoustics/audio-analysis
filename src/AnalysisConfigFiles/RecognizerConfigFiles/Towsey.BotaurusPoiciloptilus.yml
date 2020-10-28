@@ -3,8 +3,8 @@
 # Australasian Bittern = Botaurus poiciloptilus
 #NOTE: The parameter values in this config file were optimised on a data set supplied by Elizabeth Znidersic.
 #      It consisted of 14 consecutive hours of recording from Medeas Cove, St. Helens, Tasmania.
-#      The recordings contained 55 Bittern calls.
-#      Recall = 76%. Precision = 88%.
+#      The recordings contain 55 Bittern calls.
+#      Latest test (Oct 2020) on this dataset achieved: Recall = 87%. Precision = 76%.
 
 # Resample rate must be 2 X the desired Nyquist
 ResampleRate: 8000
@@ -27,6 +27,7 @@ Profiles:
         MaxHertz: 210
         MinDuration: 0.2
         MaxDuration: 0.8
+        # Scan the freq band using these thresholds.
         DecibelThresholds:
             - 3.0
             - 6.0
