@@ -62,13 +62,13 @@ namespace AudioAnalysisTools.Events
             }
 
             var maxBandwidth = average + (sd * sigmaThreshold);
-            var outputEvents = events.Where(ev => ((SpectralEvent)ev).BandWidthHertz > minBandwidth && ((SpectralEvent)ev).BandWidthHertz < maxBandwidth).ToList();
+            var outputEvents = events.Where(ev => ((SpectralEvent)ev).BandWidthHertz >= minBandwidth && ((SpectralEvent)ev).BandWidthHertz <= maxBandwidth).ToList();
             return outputEvents;
         }
 
         public static List<EventCommon> FilterOnBandwidth(List<EventCommon> events, double minBandwidth, double maxBandwidth)
         {
-            var outputEvents = events.Where(ev => ((SpectralEvent)ev).BandWidthHertz > minBandwidth && ((SpectralEvent)ev).BandWidthHertz < maxBandwidth).ToList();
+            var outputEvents = events.Where(ev => ((SpectralEvent)ev).BandWidthHertz >= minBandwidth && ((SpectralEvent)ev).BandWidthHertz <= maxBandwidth).ToList();
             return outputEvents;
         }
 
@@ -77,7 +77,7 @@ namespace AudioAnalysisTools.Events
         /// </summary>
         public static List<SpectralEvent> FilterShortEvents(List<SpectralEvent> events, double minimumDurationSeconds)
         {
-            var outputEvents = events.Where(ev => ev.EventDurationSeconds > minimumDurationSeconds).ToList();
+            var outputEvents = events.Where(ev => ev.EventDurationSeconds >= minimumDurationSeconds).ToList();
             return outputEvents;
         }
 
@@ -86,7 +86,7 @@ namespace AudioAnalysisTools.Events
         /// </summary>
         public static List<SpectralEvent> FilterLongEvents(List<SpectralEvent> events, double maximumDurationSeconds)
         {
-            var outputEvents = events.Where(ev => ev.EventDurationSeconds < maximumDurationSeconds).ToList();
+            var outputEvents = events.Where(ev => ev.EventDurationSeconds <= maximumDurationSeconds).ToList();
             return outputEvents;
         }
 
@@ -95,7 +95,7 @@ namespace AudioAnalysisTools.Events
         /// </summary>
         public static List<EventCommon> FilterOnDuration(List<EventCommon> events, double minimumDurationSeconds, double maximumDurationSeconds)
         {
-            var outputEvents = events.Where(ev => ((SpectralEvent)ev).EventDurationSeconds > minimumDurationSeconds && ((SpectralEvent)ev).EventDurationSeconds < maximumDurationSeconds).ToList();
+            var outputEvents = events.Where(ev => ((SpectralEvent)ev).EventDurationSeconds >= minimumDurationSeconds && ((SpectralEvent)ev).EventDurationSeconds <= maximumDurationSeconds).ToList();
             return outputEvents;
         }
 
@@ -117,7 +117,7 @@ namespace AudioAnalysisTools.Events
             }
 
             var maxDuration = average + (sd * sigmaThreshold);
-            var outputEvents = events.Where(ev => ((SpectralEvent)ev).EventDurationSeconds > minDuration && ((SpectralEvent)ev).EventDurationSeconds < maxDuration).ToList();
+            var outputEvents = events.Where(ev => ((SpectralEvent)ev).EventDurationSeconds >= minDuration && ((SpectralEvent)ev).EventDurationSeconds <= maxDuration).ToList();
             return outputEvents;
         }
 
