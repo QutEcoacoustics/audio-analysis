@@ -204,6 +204,7 @@ namespace AnalysisPrograms.Recognizers
 
                     Log.Debug($"Profile {profileName}: event count = {profileResults.NewEvents.Count}");
                     combinedResults.NewEvents.AddRange(profileResults.NewEvents);
+                    combinedResults.Plots.AddRange(profileResults.Plots);
                     combinedResults.Sonogram = spectrogram;
                 }
                 else if (profileConfig is Aed.AedConfiguration ac)
@@ -229,6 +230,7 @@ namespace AnalysisPrograms.Recognizers
                         ae.Profile = profileName;
                     });
 
+                    // AED does not return plots.
                     combinedResults.NewEvents.AddRange(spectralEvents);
                     combinedResults.Sonogram = spectrogram;
                 }
