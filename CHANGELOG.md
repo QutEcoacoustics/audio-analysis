@@ -8,6 +8,41 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v20.11.2.0 2020-11-15
+
+Version v20.11.2.0
+
+
+
+### Details
+
+[Compare v20.11.0.0...v20.11.2.0](https://github.com/QutBioacoustics/audio-analysis/compare/v20.11.0.0...v20.11.2.0)
+
+- 16075878 QUT Ecoacoustics - Update changelog for v20.11.1.24
+- e7e974f4 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Update GenericRecognizer.cs
+- f080005e towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Wrote unit tests for Event filters
+- 7c4cf23d Michael Towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Refactor GenericRecognizer class and associated tests
+- 493a1524 Michael Towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Change recognizer.config.yml files
+- ecff057b Michael Towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Fix Aust Bittern test
+- 1abf01b6 Michael Towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Shift array of decibel thresholds from GenericRecognizer class to CommonParameters
+- e82f81a0 Michael Towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Fixed tests associated with the previous changes
+- 7150e802 Michael Towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Update GenericRecognizer.cs
+- 772e18d8 Michael Towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Changes to the sideband activity filter
+- e80aa2c9 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Fix unit tests for AED and Cisticola
+- 947cf40a towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Adjust yml  configs to new system of decibel thresholds.
+- 4d2ba7a5 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Refactor options for the Aust. Bittern
+- 80a36bde towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Pass decibel threshold to each recognizer.
+- cf30bdf5 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Fixed bug that arose when first implementing multiple decibel thresholds
+- 8630b971 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Update CompositeEvent.cs
+- 120f8cb6 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Create EventFilterTests.cs
+- 828347fc towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Shift some classes into new folder structure
+- 2648ea03 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Rewrite unit tests to work with new method of using multiple decibel thresholds.
+- 43ab9f90 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Update OnebinTrackAlgorithm.cs
+- 631ec947 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Update CompositeEvent.cs
+- aecccbc9 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Update EventFilters.cs
+- 40b48251 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Split the GenericRecognizer class
+- 0d143de8 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Refactor the sideband filter for acoustic events
+- 5d0a3bd2 towsey - ([#390](https://github.com/QutEcoacoustics/audio-analysis/issues/390)) Refactor code for filtering on sideband activity.
 ## Ecoacoustics Audio Analysis Software v20.11.1.24 2020-11-08
 
 Version v20.11.1.24
@@ -1222,6 +1257,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 
