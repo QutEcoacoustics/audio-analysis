@@ -30,8 +30,8 @@
     <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
     <PackageReference Include="StringTokenFormatter" Version="4.0.0" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0058" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-unstable0456" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3-alpha.0.7" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\AnalysisBase\AnalysisBase.csproj" />
@@ -44,5 +44,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shared\Collections\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="StyleCop.Analyzers" Version="1.2.0-beta.261">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>

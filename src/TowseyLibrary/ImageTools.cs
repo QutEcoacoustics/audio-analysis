@@ -12,6 +12,7 @@ namespace TowseyLibrary
     using Acoustics.Shared.ImageSharp;
     using AForge.Imaging.Filters;
     using MathNet.Numerics.LinearAlgebra;
+    using MoreLinq;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.ColorSpaces;
     using SixLabors.ImageSharp.ColorSpaces.Conversion;
@@ -3774,7 +3775,6 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Stacks the passed images one on top of the other.
-        /// Assumes that all images have the same width.
         /// </summary>
         /// <param name="list">A list of images.</param>
         /// <returns>A single image.</returns>
@@ -3788,33 +3788,25 @@ namespace TowseyLibrary
         /// Stacks the passed images one on top of the other.
         /// Assumes that all images have the same width.
         /// </summary>
-        /// <param name="array">An array of images.</param>
+        /// <param name="images">An array of images.</param>
         /// <returns>A single image.</returns>
-        public static Image<T> CombineImagesInLine<T>(params Image<T>[] array)
+        public static Image<T> CombineImagesInLine<T>(params Image<T>[] images)
             where T : unmanaged, IPixel<T>
         {
-            int height = 0;
-            int compositeWidth = 0;
-            foreach (var image in array)
-            {
-                if (image == null)
-                {
-                    continue;
-                }
+            return CombineImagesInLine(Color.Black, images);
+        }
 
-                compositeWidth += image.Width;
-                if (height < image.Height)
-                {
-                    height = image.Height;
-                }
-            }
+        public static Image<T> CombineImagesInLine<T>(Color fill, params Image<T>[] images)
+            where T : unmanaged, IPixel<T>
+        {
+            var maxHeight = images.Max(i => i.Height);
+            var totalWidth = images.Sum(i => i.Width);
 
-            //Image compositeBmp = new Image(compositeWidth, height);
-            var compositeBmp = Drawing.NewImage<T>(compositeWidth, height, Color.Black);
+            var composite = Drawing.NewImage<T>(totalWidth, maxHeight, fill);
             int xOffset = 0;
-            compositeBmp.Mutate(x =>
+            composite.Mutate(x =>
             {
-                foreach (var image in array)
+                foreach (var image in images)
                 {
                     if (image == null)
                     {
@@ -3826,7 +3818,7 @@ namespace TowseyLibrary
                 }
             });
 
-            return compositeBmp;
+            return composite;
         }
 
         public static Tuple<int, double> DetectLine(double[,] m, int row, int col, int lineLength, double centreThreshold, int resolutionAngle)

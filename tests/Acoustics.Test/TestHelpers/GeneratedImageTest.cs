@@ -5,11 +5,15 @@
 namespace Acoustics.Test.TestHelpers
 {
     using System;
+    using System.Collections.Generic;
     using Acoustics.Shared.ImageSharp;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
+    using Towel.DataStructures;
+    using TowseyLibrary;
 
     public abstract class GeneratedImageTest<T> : OutputDirectoryTest
         where T : unmanaged, IPixel<T>
@@ -81,6 +85,13 @@ namespace Acoustics.Test.TestHelpers
                         x.ApplyProcessor(deltaProcessor);
                     });
                 this.SaveImage("delta", delta);
+
+                if (this.ShouldWrite(this.WriteImages))
+                {
+                    // create combined image for easier comparison
+                    var combined = ImageTools.CombineImagesInLine(Color.Transparent, this.ExpectedImage, delta, this.ActualImage);
+                    this.SaveImage("combined", combined);
+                }
             }
         }
 

@@ -60,7 +60,6 @@ namespace Acoustics.Test.AudioAnalysisTools
 
             this.ActualImage = substituteSonogram;
 
-            // BUG: this asset is faulty. See https://github.com/QutEcoacoustics/audio-analysis/issues/300#issuecomment-601537263
             this.ExpectedImage = Image.Load<Rgb24>(
                 PathHelper.ResolveAssetPath("AcousticEventTests_SuperimposeEventsOnImage.png"));
 

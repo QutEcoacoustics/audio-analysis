@@ -48,6 +48,8 @@ namespace Acoustics.Test.TestHelpers
             this.FillPattern(specification);
         }
 
+        public static implicit operator Image<Rgb24>(TestImage testImage) => testImage.Finish();
+
         public static Image<Rgb24> Create(int width, int height, Color color, string specification)
         {
             return new TestImage(width, height, specification, color).Finish();

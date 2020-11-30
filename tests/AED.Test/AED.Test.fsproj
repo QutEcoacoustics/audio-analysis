@@ -41,4 +41,10 @@
         <ProjectReference Include="..\..\src\AED\AED.fsproj" />
         <ProjectReference Include="..\..\src\AnalysisPrograms\AnalysisPrograms.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <PackageReference Update="StyleCop.Analyzers" Version="1.2.0-beta.261">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+    </ItemGroup>
 </Project>

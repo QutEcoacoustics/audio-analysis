@@ -9,6 +9,7 @@ namespace Acoustics.Shared.ImageSharp
     using System.Linq;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing;
     using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
@@ -47,12 +48,15 @@ namespace Acoustics.Shared.ImageSharp
             GraphicsOptions = new GraphicsOptions()
             {
                 Antialias = false,
-                BlendPercentage = 1,
-                ColorBlendingMode = PixelColorBlendingMode.Normal,
-                AntialiasSubpixelDepth = 0,
+                //BlendPercentage = 1,
+                //ColorBlendingMode = PixelColorBlendingMode.Normal,
+                //AntialiasSubpixelDepth = 0,
+                 
             },
-
-            //IntersectionRule = IntersectionRule.OddEven,
+            ShapeOptions = new ShapeOptions()
+            {
+                //IntersectionRule = SixLabors.ImageSharp.Drawing.IntersectionRule.Nonzero,
+            },
         };
 
         /// <summary>
@@ -182,6 +186,32 @@ namespace Acoustics.Shared.ImageSharp
         /// </summary>
         public class NoAA
         {
+            /// <summary>
+            /// Defines behaviour for where to draw stroke relative to the true real line
+            /// defined by a path.
+            /// </summary>
+            //public enum Basis
+            //{
+            //    /// <summary>
+            //    /// Draws the line pixels either left of or above the target line.
+            //    /// Essentially on the side of the line that is closer to canvas origin.
+            //    /// </summary>
+            //    LeftTop = -1,
+
+            //    /// <summary>
+            //    /// Draws the line using the default ImageSharp method, which splits stroke
+            //    /// evenly over either side of the middle line.
+            //    /// </summary>
+            //    Straddle = 0,
+
+            //    /// <summary>
+            //    /// Draws the line pixels either right of or below the target line.
+            //    /// Essentially on the side of the line that is further from the canvas origin.
+            //    /// </summary>
+            //    RightBottom = 1,
+            //}
+
+            // // AT 2020-11: Update bug seems to be fixed.
             public static readonly PointF Bug28Offset = new PointF(0.0f, 0.5f);
 
             private readonly IImageProcessingContext context;
@@ -193,31 +223,45 @@ namespace Acoustics.Shared.ImageSharp
 
             public void DrawLine(IPen pen, int x1, int y1, int x2, int y2)
             {
-                this.DrawLines(pen, new Point(x1, y1), new Point(x2, y2));
+                this.DrawLines(pen, new PointF(x1, y1), new PointF(x2,  y2));
             }
+
+            //public void DrawLine(IPen pen, int x1, int y1, int x2, int y2, Basis basis)
+            //{
+            //    if (basis is not Basis.Straddle)
+            //    {
+            //        basis = basis switch {
+
+            //        }
+            //    }
+            //}
 
             public void DrawLines(IPen pen, params PointF[] points)
             {
-                // i've no idea why, but repeating the first point  and last point
-                // and adding random offsets in reduces visual errors in line drawing!
-                var slope = points[0].Y.CompareTo(points[^1].Y) switch
-                {
-                    -1 => 0.0f,
-                    0 => 0,
-                    1 => 0.5f,
-                    _ => throw new NotImplementedException(),
-                };
-                var offset = new PointF(slope, Bug28Offset.Y);
+                // https://github.com/SixLabors/ImageSharp.Drawing/issues/108
+                var strokeBugOffset = pen.StrokeWidth / 2f;
+                int strokeBugEncountered = 0;
+                var offset = new PointF(0, PenOffset(pen.StrokeWidth));
                 var modifiedPoints = points
                     .Select(p => p + offset)
-                    .Prepend(points[0] + Bug28Offset)
-                    .Append(points[^1] + Bug28Offset)
+                    .Select(p =>
+                    {
+                        if ((p.Y - strokeBugOffset) < 0)
+                        {
+                            strokeBugEncountered++;
+                            return new PointF(p.X, 0f + MathF.Round(strokeBugOffset / 2f));
+                        }
+
+                        return p;
+                    })
                     .ToArray();
 
-                this.context.DrawLines(
-                    NoAntiAlias,
-                    pen,
-                    modifiedPoints);
+                if (strokeBugEncountered > points.Length - 1)
+                {
+                    pen = new Pen(pen.StrokeFill, MathF.Max(1, MathF.Round(strokeBugOffset)), pen.StrokePattern.ToArray());
+                }
+
+                this.context.DrawLines(NoAntiAlias, pen, modifiedPoints);
             }
 
             public void DrawLines(Color color, float thickness, params PointF[] points)
@@ -228,8 +272,8 @@ namespace Acoustics.Shared.ImageSharp
             public void DrawRectangle(Pen pen, int x1, int y1, int x2, int y2)
             {
                 var r = RectangleF.FromLTRB(x1, y1, x2, y2);
-                r.Offset(Bug28Offset);
-                this.context.Draw(Drawing.NoAntiAlias, pen, r);
+                //r.Offset(Bug28Offset);
+                this.context.Draw(NoAntiAlias, pen, r);
             }
 
             /// <summary>
@@ -239,14 +283,14 @@ namespace Acoustics.Shared.ImageSharp
             public void DrawRectangle(Color color, int x1, int y1, int x2, int y2, float thickness = 1f)
             {
                 var r = RectangleF.FromLTRB(x1, y1, x2, y2);
-                r.Offset(Bug28Offset);
-                this.context.Draw(Drawing.NoAntiAlias, color, thickness, r);
+                //r.Offset(Bug28Offset);
+                this.context.Draw(NoAntiAlias, color, thickness, r);
             }
 
             public void DrawRectangle(Pen border, RectangleF rectangle)
             {
-                rectangle.Offset(Bug28Offset);
-                this.context.Draw(Drawing.NoAntiAlias, border, rectangle);
+                //rectangle.Offset(Bug28Offset);
+                this.context.Draw(NoAntiAlias, border, rectangle);
             }
 
             /// <summary>
@@ -258,44 +302,43 @@ namespace Acoustics.Shared.ImageSharp
             ///  ImageSharp's Draw Rectangle is unpredictable and buggy, especially for
             ///  non-antialiased operations. See <c>Acoustics.Test.Shared.Drawing.RectangleCornerBugTest</c>.
             ///  This method instead draws four lines as the border.
+            ///                // AT 2020-11: Update bug seems to be fixed.
             /// </remarks>
             public void DrawBorderInset(Pen border, RectangleF rectangle)
             {
                 // rounder border thickness
                 border = new Pen(
                     border.StrokeFill,
-                    MathF.Round(border.StrokeWidth),
+                    MathF.Floor(border.StrokeWidth),
                     border.StrokePattern.ToArray());
 
                 // first round rectangle to nice coordinates
                 var rect = Rectangle.Round(rectangle);
 
-                // construct point coordinats, offset by pen width inset into rectangle.
-                var penOffset = MathF.Floor(border.StrokeWidth / 2f);
+                // construct point coordinates, offset by pen width inset into rectangle.
+                // the offset wiggle by 0.5 of a pixel defeats the ImageSharp method of straddling a border over
+                // the imaginary centerline of the segment. Without this a border of 2px will be rendered with round
+                // corners and 3px wide.
+                var penOffset = MathF.Floor(border.StrokeWidth / 2.0f) + PenOffset(border.StrokeWidth);
 
-                // empircally found to satisfy tests - i have no idea why it works
-                var widthAdjustment = ((int)border.StrokeWidth % 2) == 0 ? 0.0f : -0.5f;
+                float left = rect.Left + penOffset;
+                float top = rect.Top + penOffset;
+                float right = rect.Right - penOffset - 1;
+                float bottom = rect.Bottom - penOffset - 1;
 
-                float left = rect.Left + penOffset + 0.0f;
-                float top = rect.Top + penOffset + +Bug28Offset.Y;
-                float right = rect.Right - penOffset + widthAdjustment;
-                float bottom = rect.Bottom - penOffset + Bug28Offset.Y + widthAdjustment;
-
-                this.context.DrawPolygon(
-                    NoAntiAlias,
-                    border,
-                    new PointF(left, top),
-                    new PointF(right, top),
-                    new PointF(right, bottom),
-                    new PointF(left, bottom),
-                    new PointF(left, top));
+                this.context.Draw(NoAntiAlias, border, RectangleF.FromLTRB(left, top, right, bottom));
             }
 
             public void FillRectangle(IBrush brush, int x1, int y1, int x2, int y2)
             {
                 var r = RectangleF.FromLTRB(x1, y1, x2, y2);
-                r.Offset(Bug28Offset);
-                this.context.Fill(Drawing.NoAntiAlias, brush, r);
+                //r.Offset(Bug28Offset);
+                this.context.Fill(NoAntiAlias, brush, r);
+            }
+
+            private static float PenOffset(float strokeWidth)
+            {
+                return (strokeWidth % 2f == 0) ? -0.5f : 0;
             }
         }
     }

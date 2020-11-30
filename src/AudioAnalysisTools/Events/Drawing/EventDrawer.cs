@@ -36,11 +36,15 @@ namespace AudioAnalysisTools.Events.Drawing
 
             var rect = options.Converters.GetPixelRectangle(@event);
 
+            // we'drawing events with an inset rectangle border, which means bottom and right borders are one pixel closer than normal
+            // we need to account for this difference here
+            var insetBorderOffset = options.Border.StrokeWidth; // usually 1px
+
             // truncate score bar to neatest whole pixel after scaling by height
             var scaledHeight = (int)((float)normalizedScore * rect.Height);
 
             var top = new PointF(rect.Left, rect.Bottom - scaledHeight);
-            var bottom = new PointF(rect.Left, rect.Bottom);
+            var bottom = new PointF(rect.Left, rect.Bottom - insetBorderOffset);
 
             // the order of the supplied points is important!
             // DO NOT CHANGE

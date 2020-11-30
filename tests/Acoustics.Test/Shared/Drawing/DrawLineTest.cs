@@ -48,8 +48,9 @@ namespace Acoustics.Test.Shared.Drawing
             this.ActualImage = actual;
 
             // this should pass without bug
-            //this.AssertImagesEqual();
+            this.AssertImagesEqual();
 
+            // AT 2020-11: Update bug seems to be fixed. Leaving the passing test to ensure stable.
             /*
                 Assert.Fail failed. Images are not equal - total delta 0.00019455253 is not less than tolerance 0.
                 Difference are:
@@ -69,8 +70,8 @@ namespace Acoustics.Test.Shared.Drawing
             // . R . . .
             // . . . . .
             // . . . . .
-            Assert.AreEqual(color.ToPixel<Rgb24>(), actual[2, 1]);
-            Assert.AreEqual(color.ToPixel<Rgb24>(), actual[1, 2]);
+            //Assert.AreEqual(color.ToPixel<Rgb24>(), actual[2, 1]);
+            //Assert.AreEqual(color.ToPixel<Rgb24>(), actual[1, 2]);
         }
 
         [TestMethod]
@@ -84,15 +85,19 @@ namespace Acoustics.Test.Shared.Drawing
             var pen = new Pen(color, 1);
 
             // a 3-pixel line, bottom left to top right, 1px padding around edge
+            // because offsets drawn with a +0.5px vertical offset, line is drawn either side of middle point
             // . . . . .
             // . . . R .
-            // . . R . .
+            // . . R R .
+            // . R R . .
             // . R . . .
-            // . . . . .
             var expected = new Image<Rgb24>(5, 5);
             expected[1, 3] = color;
+            expected[1, 4] = color;
             expected[2, 2] = color;
+            expected[2, 3] = color;
             expected[3, 1] = color;
+            expected[3, 2] = color;
 
             var actual = new Image<Rgb24>(5, 5);
             actual.Mutate(
@@ -106,8 +111,9 @@ namespace Acoustics.Test.Shared.Drawing
             this.ActualImage = actual;
 
             // this should pass without bug
-            //this.AssertImagesEqual();
+            this.AssertImagesEqual();
 
+            // AT 2020-11: Update bug seems to be fixed. Leaving the passing test to ensure stable.
             /*
                 Assert.Fail failed. Images are not equal - total delta 0.00015564202 is not less than tolerance 0.
                 Difference are:
@@ -127,8 +133,8 @@ namespace Acoustics.Test.Shared.Drawing
             // . R . . .
             // . R . . .
             // . . . . .
-            Assert.AreEqual(color.ToPixel<Rgb24>(), actual[2, 1]);
-            Assert.AreEqual(color.ToPixel<Rgb24>(), actual[1, 2]);
+            //Assert.AreEqual(color.ToPixel<Rgb24>(), actual[2, 1]);
+            //Assert.AreEqual(color.ToPixel<Rgb24>(), actual[1, 2]);
         }
 
         [TestMethod]
@@ -142,15 +148,16 @@ namespace Acoustics.Test.Shared.Drawing
             var pen = new Pen(color, 1);
 
             // a 3-pixel line, bottom left to top right, 1px padding around edge
+            // because offsets drawn with a +0.5px offsets, line is essentially drawn from points 1.5,3.5 to 3.5,1.5
+            // which if you trace along pixel grid, produces chart below
+            // . . . . .
             // . . . . .
             // . . . R .
             // . . R . .
-            // . R . . .
             // . . . . .
             var expected = new Image<Rgb24>(5, 5);
-            expected[1, 3] = color;
-            expected[2, 2] = color;
-            expected[3, 1] = color;
+            expected[3, 2] = color;
+            expected[2, 3] = color;
 
             var actual = new Image<Rgb24>(5, 5);
             actual.Mutate(
@@ -164,8 +171,9 @@ namespace Acoustics.Test.Shared.Drawing
             this.ActualImage = actual;
 
             // this should pass without bug
-            //this.AssertImagesEqual();
+            this.AssertImagesEqual();
 
+            // AT 2020-11: Update bug seems to be fixed. Leaving the passing test to ensure stable.
             /*
                 Assert.Fail failed. Images are not equal - total delta 7.782101E-05 is not less than tolerance 0.
                 Difference are:
@@ -182,7 +190,7 @@ namespace Acoustics.Test.Shared.Drawing
             // . . R . .
             // . . R . .
             // . . . . .
-            Assert.AreEqual(color.ToPixel<Rgb24>(), actual[2, 3]);
+           // Assert.AreEqual(color.ToPixel<Rgb24>(), actual[2, 3]);
         }
 
         [TestMethod]
@@ -234,7 +242,7 @@ namespace Acoustics.Test.Shared.Drawing
                 .Finish();
 
             var path = Enumerable
-                .Range(1, 99)
+                .Range(1, 98)
                 .Select(x => new PointF(x, x))
                 .ToArray();
 

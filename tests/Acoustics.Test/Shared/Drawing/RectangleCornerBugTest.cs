@@ -28,21 +28,21 @@ namespace Acoustics.Test.Shared.Drawing
         {
             var testImage = new Image<Rgb24>(Configuration.Default, 100, 100, Color.Black);
 
-            var rectangle = new RectangleF(10.5f, 10.5f, 79, 79);
+            var rectangle = new RectangleF(10.0f, 10.0f, 79, 79);
             var pen = new Pen(Color.Red, 1f);
 
             var options = new ShapeGraphicsOptions()
             {
                 GraphicsOptions = new GraphicsOptions()
                 {
-                    BlendPercentage = 1,
+                    //BlendPercentage = 1,
                     Antialias = false,
-                    ColorBlendingMode = PixelColorBlendingMode.Normal,
+                    //ColorBlendingMode = PixelColorBlendingMode.Normal,
                     AntialiasSubpixelDepth = 0,
                 },
             };
 
-            testImage.Mutate(x => x.Draw(pen, rectangle));
+            testImage.Mutate(x => x.Draw(options, pen, rectangle));
 
             testImage.Save(this.TestOutputDirectory.CombinePath("rectangle.png"));
 
@@ -52,15 +52,16 @@ namespace Acoustics.Test.Shared.Drawing
             // 89 | R  | R  | B
             // 90 | B  | B  | B
 
+            // AT 2020-11: Update bug seems to be fixed. Leaving the passing test to ensure stable.
             // smoke test: when this test fails, bug in ImageSharp has been fixed
             // should be black
             Assert.AreEqual(
                 Color.Black.ToPixel<Rgb24>(),
                 testImage[88, 88]);
 
-            // should be red (bug is that it is blended)
+            // should be red (bug *was* that it is blended)
             Assert.AreEqual(
-                new Rgb24(249, 0, 0),
+                new Rgb24(255, 0, 0),
                 testImage[89, 89]);
 
             // should be black
@@ -94,17 +95,17 @@ E10R80E10
 
                 // the following two should be equivalent
                 //x.NoAA().DrawRectangle(pen, border);
-                border.Offset(Drawing.NoAA.Bug28Offset);
+                //border.Offset(Drawing.NoAA.Bug28Offset);
                 x.Draw(Drawing.NoAntiAlias, pen, border);
             });
 
             // assert - this should pass without the delta if the bug was fixed
             Assert.That.ImageMatches(expected, actual, MissingCornerDelta);
 
-            // add smoke test - this should fail if bug fixed
+            // AT 2020-11: Update bug seems to be fixed. Leaving the passing test to ensure stable.
             // if there were no bug the expected pixel color is red
             Assert.AreEqual(
-                new Rgb24(0, 0, 0),
+                new Rgb24(255, 0, 0),
                 actual[89, 89]);
         }
     }

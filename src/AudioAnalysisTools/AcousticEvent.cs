@@ -441,7 +441,7 @@ namespace AudioAnalysisTools
 
             imageToReturn.Mutate(g => g.NoAA().DrawRectangle(borderPen, t1, y1, t2, y2));
 
-            //draw on the elements from the hit matrix
+            // draw on the elements from the hit matrix
             if (this.HitElements != null)
             {
                 foreach (var hitElement in this.HitElements)
@@ -450,12 +450,12 @@ namespace AudioAnalysisTools
                 }
             }
 
-            //draw the score bar to indicate relative score
+            // draw the score bar to indicate relative score
             var eventHeight = y2 - y1 + 1;
             int scoreHt = (int)Math.Round(eventHeight * this.ScoreNormalised);
             imageToReturn.Mutate(g =>
             {
-                g.NoAA().DrawLine(scorePen, t1, y2 - scoreHt, t1, y2 + 1);
+                g.NoAA().DrawLine(scorePen, t1, y2 - scoreHt + 1, t1, y2);
                 g.DrawTextSafe(this.Name, Drawing.Tahoma6, Color.Black, new PointF(t1, y1 - 4));
             });
         }

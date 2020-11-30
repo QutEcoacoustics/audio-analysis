@@ -30,7 +30,7 @@ namespace Acoustics.Test.Shared.Drawing
         private readonly TestImage blankExpected;
 
         public DrawingTests()
-            : base()
+            : base(WriteTestOutput.Always)
         {
             this.ActualImage = new Image<Rgb24>(Configuration.Default, 100, 100, Color.Black);
             this.blankExpected = new TestImage(100, 100, Color.Black);
@@ -86,9 +86,20 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestNoAADrawLine1Px()
         {
             // red line at top, 100px wide
-            this.ExpectedImage = this.blankExpected.FillPattern("R100").Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern("R100");
 
             this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenOne, 0, 0, 100, 0));
+
+            this.AssertImagesEqual();
+        }
+
+        [TestMethod]
+        public void TestNoAADrawLine1PxVertical()
+        {
+            // red line at left edge, 100px tall
+            this.ExpectedImage = this.blankExpected.FillPattern("100×R1E99");
+
+            this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenOne, 0, 0, 0, 100));
 
             this.AssertImagesEqual();
         }
@@ -97,7 +108,7 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestNoAADrawLineMiddle1Px()
         {
             // red line, 50px down, 100px wide
-            this.ExpectedImage = this.blankExpected.FillPattern("⬇50\nR100").Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern("⬇50\nR100");
 
             this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenOne, 0, 50, 100, 50));
 
@@ -108,7 +119,7 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestNoAADrawLine2Px()
         {
             // red line at top, 1px high (because line spills over top border, 1px above, 1 below), 100px wide
-            this.ExpectedImage = this.blankExpected.FillPattern("R100").Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern("R100");
 
             this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenTwo, 0, 0, 100, 0));
 
@@ -119,7 +130,7 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestNoAADrawLineMiddle2Px()
         {
             // red line, 49px down, 2px high, 100px wide
-            this.ExpectedImage = this.blankExpected.FillPattern("⬇49\n2×R100").Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern("⬇49\n2×R100");
 
             this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenTwo, 0, 50, 100, 50));
 
@@ -127,10 +138,11 @@ namespace Acoustics.Test.Shared.Drawing
         }
 
         [TestMethod]
+        [Ignore("https://github.com/SixLabors/ImageSharp.Drawing/discussions/110")]
         public void TestNoAADrawLine3Px()
         {
             // red line at top, 2px high (because line spills over top border, 1px above, 2 below), 100px wide
-            this.ExpectedImage = this.blankExpected.FillPattern("2×R100").Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern("2×R100");
 
             this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenThree, 0, 0, 100, 0));
 
@@ -141,7 +153,7 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestNoAADrawLineMiddle3Px()
         {
             // red line, 49px down, 2px high, 100px wide
-            this.ExpectedImage = this.blankExpected.FillPattern("⬇49\n3×R100").Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern("⬇49\n3×R100");
 
             this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenThree, 0, 50, 100, 50));
 
@@ -158,7 +170,7 @@ namespace Acoustics.Test.Shared.Drawing
 1×ER98E
 ⬇1
 ";
-            this.ExpectedImage = this.blankExpected.FillPattern(specification).Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern(specification);
 
             var rect = new Rectangle(1, 1, 98, 98);
             this.ActualImage.Mutate(x => x.NoAA().DrawBorderInset(TestPenOne, rect));
@@ -176,7 +188,7 @@ namespace Acoustics.Test.Shared.Drawing
 2×ERRR94RRE
 ⬇1
 ";
-            this.ExpectedImage = this.blankExpected.FillPattern(specification).Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern(specification);
 
             var rect = new Rectangle(1, 1, 98, 98);
             this.ActualImage.Mutate(x => x.NoAA().DrawBorderInset(TestPenTwo, rect));
@@ -194,7 +206,7 @@ namespace Acoustics.Test.Shared.Drawing
 3×ERRRR92RRRE
 ⬇1
 ";
-            this.ExpectedImage = this.blankExpected.FillPattern(specification).Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern(specification);
 
             var rect = new Rectangle(1, 1, 98, 98);
             this.ActualImage.Mutate(x => x.NoAA().DrawBorderInset(TestPenThree, rect));

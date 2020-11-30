@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyTitle>Acoustics.Shared</AssemblyTitle>
@@ -15,7 +15,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ConsoleTools" Version="0.5.4" />
-    <PackageReference Include="CsvHelper" Version="16.0.0" />
+    <PackageReference Include="CsvHelper" Version="16.2.0" />
     <PackageReference Include="FastMember" Version="1.5.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
     <PackageReference Include="log4net" Version="2.0.12" />
@@ -24,23 +24,23 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="3.1.6" />
+    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="5.0.0-preview.5.20278.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.9" />
-    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
+    <PackageReference Include="Mono.Posix.NETStandard" Version="5.20.1-preview" />
     <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="ObjectCloner" Version="2.2.2" />
     <PackageReference Include="ObjectCloner.Extensions" Version="2.0.1" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0058" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-unstable0456" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3-alpha.0.7" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
     <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.4" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.164">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.261">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.IO.Abstractions" Version="12.2.24" />
-    <PackageReference Include="YamlDotNet" Version="8.1.2" />
+    <PackageReference Include="System.IO.Abstractions" Version="13.2.1" />
+    <PackageReference Include="YamlDotNet" Version="9.1.0" />
   </ItemGroup>
 </Project>
