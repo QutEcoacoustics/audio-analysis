@@ -5,10 +5,11 @@
     <!--<DotnetFscCompilerPath></DotnetFscCompilerPath>-->
     <!-- all of these are 64 bit except for linux-arm -->
     <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-musl-x64;linux-arm;linux-arm64;osx-x64</RuntimeIdentifiers>
-    <Deterministic>true</Deterministic>
     <!--<DocumentationMode>Diagnose</DocumentationMode>-->
     <!--Enable xml documentation output for everything -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TargetFramework>net5.0</TargetFramework>
+    <!--<LangVersion></LangVersion>-->
   </PropertyGroup>
   <PropertyGroup
     Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">

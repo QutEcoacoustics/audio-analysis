@@ -2,7 +2,6 @@
     <PropertyGroup>
         <RootNamespace>Acoustics.Shared.FSharp</RootNamespace>
         <AssemblyName>Acoustics.Shared.FSharp</AssemblyName>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
         <Name>Acoustics.Shared.FSharp</Name>
         <Deterministic>true</Deterministic>
     </PropertyGroup>
