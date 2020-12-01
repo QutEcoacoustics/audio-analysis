@@ -24,7 +24,7 @@ namespace AnalysisBase
     /// This is a strong typed version of <c>IAnalyser</c> intentionally removed from the old inheritance tree.
     /// DO NOT MODIFY THIS FILE UNLESS INSTRUCTED TO!.
     /// </summary>
-    public interface IAnalyser2
+    public interface IAnalyser2 : ICiteable, IHasStatus
     {
         /// <summary>
         /// Gets the name to display for the analysis.

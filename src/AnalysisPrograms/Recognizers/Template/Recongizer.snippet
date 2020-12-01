@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0" >
+    <Header >
+      <Title>Recognizer Template</Title>
+      <Shortcut>recogniser</Shortcut>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet  >
+      <Code Language="CSharp" Kind="type decl">
+        <![CDATA[
+    /// <summary>
+    /// A recognizer for the $CommonName$, https://en.wikipedia.org/wiki/<TODO>.
+    /// <TODO> Description of animal
+    /// <TODO> Context
+    /// </summary>
+    public class $ScientificName$ : RecognizerBase
+    {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        public override string Author => Bibliography.$Author$.LastName;
+
+        public override string SpeciesName => "$ScientificName$";
+
+        public override string CommonName => "$CommonName$";
+
+        public Status Status => Status.Alpha;
+
+        public override string Description => $$"Acoustic event recognizer for the {this.CommonName}.";
+
+        public IReadOnlyCollection<Citation> Citations => new[] {
+            Bibliography.$Project$ with {
+                Authors = Bibliography.BuiltBy$Author$,
+                Title = this.Description,
+            },
+        };
+
+        public override AnalyzerConfig ParseConfig(FileInfo file)
+        {
+            RuntimeHelpers.RunClassConstructor(typeof($ScientificName$Config).TypeHandle);
+            var config = ConfigFile.Deserialize<$ScientificName$Config>(file);
+
+            // validation of configs can be done here
+            GenericRecognizer.ValidateProfileTagsMatchAlgorithms(config.Profiles, file);
+            return config;
+        }
+
+        public override RecognizerResults Recognize(
+            AudioRecording audioRecording,
+            Config configuration,
+            TimeSpan segmentStartOffset,
+            Lazy<IndexCalculateResult[]> getSpectralIndexes,
+            DirectoryInfo outputDirectory,
+            int? imageWidth)
+        {
+            var genericConfig = ($ScientificName$Config)configuration;
+            var recognizer = new GenericRecognizer();
+
+            // Use the generic recognizers to find all generic events.
+            RecognizerResults combinedResults = recognizer.Recognize(
+                audioRecording,
+                genericConfig,
+                segmentStartOffset,
+                getSpectralIndexes,
+                outputDirectory,
+                imageWidth);
+
+            return combinedResults;
+        }
+
+        public class $ScientificName$Config : GenericRecognizer.GenericRecognizerConfig
+        {
+        }
+    }
+]]>
+      </Code>
+      <Declarations>
+        <Literal>
+          <ID>ScientificName</ID>
+          <ToolTip>Target species scientific name (no spaces)</ToolTip>
+          <Default></Default>
+        </Literal>
+          <Literal>
+          <ID>CommonName</ID>
+          <ToolTip>Target species common name (spaced and titled as if in a sentance)</ToolTip>
+          <Default></Default>
+        </Literal>
+          <Literal>
+          <ID>Author</ID>
+          <ToolTip>The primary author of this recogniser</ToolTip>
+          <Default></Default>
+        </Literal>
+          <Literal>
+          <ID>Project</ID>
+          <ToolTip>The project that led to the creation of this recogniser</ToolTip>
+          <Default>QutEcoacousticsProject</Default>
+        </Literal>
+      </Declarations>
+      <Imports>
+        <Import>
+          <Namespace>Acoustics.Shared.ConfigFile</Namespace>
+        </Import>
+        <Import><Namespace>AnalysisBase</Namespace></Import>
+        <Import><Namespace>AnalysisPrograms.Recognizers.Base</Namespace></Import>
+        <Import><Namespace>AudioAnalysisTools.Indices</Namespace></Import>
+        <Import><Namespace>AudioAnalysisTools.WavTools</Namespace></Import>
+        <Import><Namespace>log4net</Namespace></Import>
+        <Import><Namespace>System</Namespace></Import>
+        <Import><Namespace>System.Collections.Generic</Namespace></Import>
+        <Import><Namespace>System.IO</Namespace></Import>
+        <Import><Namespace>System.Reflection</Namespace></Import>
+        <Import><Namespace>System.Runtime.CompilerServices</Namespace></Import>
+        <Import><Namespace>System.Text</Namespace></Import>
+      </Imports>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

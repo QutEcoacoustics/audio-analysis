@@ -132,7 +132,7 @@ namespace AnalysisPrograms
                     var prompt =
 $@"Do you wish to debug?
     Attach now or press [Y] and [ENTER] to attach. Press [N] or [ENTER] to continue.
-See {Meta.GetDocsUrl("debugging.md")} for help.";
+See {Meta.DebuggingHelp} for help.";
 
                     var response = Prompt.GetYesNo(
                         prompt,
