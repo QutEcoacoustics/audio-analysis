@@ -26,7 +26,7 @@ namespace AnalysisPrograms.Recognizers
     /// Its conservation status is "threatened".
     /// This recognizer has been trained on good quality calls provided by NSW DPI by Brad Law and Kristen Thompson.
     /// </summary>
-    internal class NinoxStrenua : RecognizerBase
+    public class NinoxStrenua : RecognizerBase
     {
         private static readonly ILog PowerfulOwlLog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -36,13 +36,15 @@ namespace AnalysisPrograms.Recognizers
 
         public override string Description => "[ALPHA] Detects acoustic events for the Australian Powerful Owl.";
 
+        public override string CommonName => "Powerful Owl";
+
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {
             RuntimeHelpers.RunClassConstructor(typeof(NinoxStrenuaConfig).TypeHandle);
             var config = ConfigFile.Deserialize<NinoxStrenuaConfig>(file);
 
             // validation of configs can be done here
-            GenericRecognizer.ValidateProfileTagsMatchAlgorithms(config.Profiles, file);
+            ValidateProfileTagsMatchAlgorithms(config.Profiles, file);
             return config;
         }
 

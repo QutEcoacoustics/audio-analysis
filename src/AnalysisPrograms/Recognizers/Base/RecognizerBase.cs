@@ -31,26 +31,11 @@ namespace AnalysisPrograms.Recognizers.Base
 
     public abstract class RecognizerBase : AbstractStrongAnalyser, IEventRecognizer
     {
-        public class RecognizerConfig : AnalyzerConfig
-        {
-            public RecognizerConfig()
-            {
-                this.Loaded += config =>
-                    {
-                        var file = ConfigFile.Resolve(this.HighResolutionIndicesConfig ?? "Towsey.Acoustic.HiResIndicesForRecognisers.yml");
-                        var indicesConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(file);
-                        this.HighResolutionIndices = indicesConfig;
-                    };
-            }
-
-            public string HighResolutionIndicesConfig { get; set; }
-
-            public AcousticIndices.AcousticIndicesConfig HighResolutionIndices { get; private set; }
-        }
-
         public abstract string Author { get; }
 
         public abstract string SpeciesName { get; }
+
+        public abstract string CommonName { get; }
 
         public override string Identifier => this.Author + "." + this.SpeciesName;
 
@@ -64,6 +49,42 @@ namespace AnalysisPrograms.Recognizers.Base
             SegmentOverlapDuration = TimeSpan.Zero,
             AnalysisTargetSampleRate = AppConfigHelper.DefaultTargetSampleRate,
         };
+
+        public static Image<Rgb24> DrawDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
+        {
+            const bool doHighlightSubband = false;
+            const bool add1KHzLines = true;
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines, doMelScale: false));
+
+            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            if (scores != null)
+            {
+                foreach (var plot in scores)
+                {
+                    // assumes data normalised in 0,1
+                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
+                }
+            }
+
+            if (hits != null)
+            {
+                image.OverlayRainbowTransparency(hits);
+            }
+
+            if (events.Count > 0)
+            {
+                // set colour for the events
+                foreach (var ev in events)
+                {
+                    ev.BorderColour = AcousticEvent.DefaultBorderColor;
+                    ev.ScoreColour = AcousticEvent.DefaultScoreColor;
+                }
+
+                image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            }
+
+            return image.GetImage().CloneAs<Rgb24>();
+        }
 
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {
@@ -411,38 +432,21 @@ namespace AnalysisPrograms.Recognizers.Base
             return new Lazy<IndexCalculateResult[]>(Callback, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        public static Image<Rgb24> DrawDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
+        public class RecognizerConfig : AnalyzerConfig
         {
-            const bool doHighlightSubband = false;
-            const bool add1KHzLines = true;
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines, doMelScale: false));
-
-            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            if (scores != null)
+            public RecognizerConfig()
             {
-                foreach (var plot in scores)
+                this.Loaded += config =>
                 {
-                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
-                }
+                    var file = ConfigFile.Resolve(this.HighResolutionIndicesConfig ?? "Towsey.Acoustic.HiResIndicesForRecognisers.yml");
+                    var indicesConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(file);
+                    this.HighResolutionIndices = indicesConfig;
+                };
             }
 
-            if (hits != null)
-            {
-                image.OverlayRainbowTransparency(hits);
-            }
+            public string HighResolutionIndicesConfig { get; set; }
 
-            if (events.Count > 0)
-            {
-                foreach (var ev in events) // set colour for the events
-                {
-                    ev.BorderColour = AcousticEvent.DefaultBorderColor;
-                    ev.ScoreColour = AcousticEvent.DefaultScoreColor;
-                }
-
-                image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-            }
-
-            return image.GetImage().CloneAs<Rgb24>();
+            public AcousticIndices.AcousticIndicesConfig HighResolutionIndices { get; private set; }
         }
     }
 }

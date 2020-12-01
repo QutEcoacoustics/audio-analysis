@@ -25,19 +25,15 @@ namespace Acoustics.Shared
 
         private static Assembly[] ourAssemblies;
 
-        public static string BinaryName(bool isSelfContained)
-        {
-            var extension = isSelfContained ? string.Empty : ".dll";
-            return AppConfigHelper.IsWindows ? Name : "AnalysisPrograms" + extension;
-        }
-
         public static string Organization { get; } = "QUT";
 
-        public static string Website { get; } = "http://research.ecosounds.org/";
+        public static string Website { get; } = "https://ap.qut.ecoacoustics.info/";
 
         public static string OrganizationTag => CopyrightSymbol + " " + NowYear + " " + Organization;
 
         public static string Repository { get; } = "https://github.com/QutBioacoustics/audio-analysis";
+
+        public static string DebuggingHelp => GetDocsUrl("technical/debugging.html");
 
         internal static Assembly[] QutAssemblies
         {
@@ -64,9 +60,15 @@ namespace Acoustics.Shared
             }
         }
 
+        public static string BinaryName(bool isSelfContained)
+        {
+            var extension = isSelfContained ? string.Empty : ".dll";
+            return AppConfigHelper.IsWindows ? Name : "AnalysisPrograms" + extension;
+        }
+
         public static string GetDocsUrl(string page)
         {
-            return $"{Repository}/blob/master/docs/{page}";
+            return $"{Website}/{page}";
         }
 
         public static IEnumerable<TypeInfo> GetTypesFromQutAssemblies<T>()
