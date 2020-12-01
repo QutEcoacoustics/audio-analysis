@@ -118,6 +118,7 @@ jobs:
           - task: DotNetCoreCLI@2
             inputs:
               command: build
+              projects: src/AnalysisPrograms/AnalysisPrograms.csproj
               versioningScheme: 'off'
               arguments: --configuration ${{ configuration }} --no-restore $(runtimeArgument)
             displayName: Build solution (${{ configuration }}, ${{ coalesce(platform.rid, 'any') }})

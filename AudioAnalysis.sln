@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		src\AP.VersionBuild.targets = src\AP.VersionBuild.targets
 		src\AssemblyMetadata.cs.template = src\AssemblyMetadata.cs.template
 		src\AssemblyMetadata.Generated.targets = src\AssemblyMetadata.Generated.targets
+		azure-pipelines.yml = azure-pipelines.yml
 		Directory.Build.props = Directory.Build.props
 		build\download_ap.ps1 = build\download_ap.ps1
 		src\git_version.ps1 = src\git_version.ps1
@@ -45,6 +46,8 @@ EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Acoustics.Shared.FSharp", "src\Acoustics.Shared.FSharp\Acoustics.Shared.FSharp.fsproj", "{0A247CB0-779D-4E71-BD86-D3F1D233B7E9}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AED.Test", "tests\AED.Test\AED.Test.fsproj", "{007BCD6A-6381-42D7-B5BB-61D07D54A311}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{B3123A8D-7CA1-464F-8E3F-1736B570351E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,6 +114,7 @@ Global
 		{D5DFD3D5-EF64-4F5B-867F-192DAA7594FC} = {2C6A426C-01D7-432E-AF76-824346A9CD38}
 		{0A247CB0-779D-4E71-BD86-D3F1D233B7E9} = {2C6A426C-01D7-432E-AF76-824346A9CD38}
 		{007BCD6A-6381-42D7-B5BB-61D07D54A311} = {1DEC9774-CCB2-437E-A134-7E4CBF2724DB}
+		{B3123A8D-7CA1-464F-8E3F-1736B570351E} = {A050BD53-DEE0-40F3-BEAB-1F7474533C40}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9E5E3702-8669-498C-955C-8285AC9C8A38}
