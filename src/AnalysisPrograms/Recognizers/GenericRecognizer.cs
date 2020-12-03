@@ -40,9 +40,12 @@ namespace AnalysisPrograms.Recognizers
 
         public override string SpeciesName => "GenericRecognizer";
 
-        public override string Description => "[ALPHA] Finds acoustic events with generic component detection algorithms";
+        /// <inheritdoc />
+        public override string Description => "Finds acoustic events with generic component detection algorithms";
 
         public override string CommonName => "Generic Recognizer";
+
+        public override Status Status => Status.Maintained;
 
         /// <inheritdoc />
         public override AnalyzerConfig ParseConfig(FileInfo file)
@@ -213,7 +216,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     speciesName = parameters.SpeciesName;
                     var decibelThresholds = parameters.DecibelThresholds;
-                    var message = $"Decibel dectection thresholds: " + decibelThresholds.Join(", ");
+                    var message = $"Decibel detection thresholds: " + decibelThresholds.Join(", ");
                     Log.Info(message);
 
                     var spectrogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);

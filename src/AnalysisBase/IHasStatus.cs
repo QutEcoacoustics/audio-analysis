@@ -13,6 +13,6 @@ namespace AnalysisBase
 {
     public interface IHasStatus
     {
-        public Status Status => Status.Unknown;
+        public Status Status { get; }
     }
 }

@@ -782,6 +782,8 @@ namespace AnalysisPrograms
 
         public AnalysisSettings DefaultSettings { get; private set; }
 
+        public Status Status => Status.Unmaintained;
+
         public AnalyzerConfig ParseConfig(FileInfo file)
         {
             return ConfigFile.Deserialize<AnalyzerConfig>(file);

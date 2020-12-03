@@ -33,11 +33,15 @@ namespace AnalysisPrograms.Recognizers.Frogs
     /// </summary>
     internal class LitoriaFreycineti : RecognizerBase
     {
-        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria freycineti";
+        public override string Description => "Detects acoustic events of Litoria freycineti";
 
         public override string Author => "Stark";
 
         public override string SpeciesName => "LitoriaFreycineti";
+
+        public override string CommonName => "Freycinet's frog";
+
+        public override Status Status => Status.Unmaintained;
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 

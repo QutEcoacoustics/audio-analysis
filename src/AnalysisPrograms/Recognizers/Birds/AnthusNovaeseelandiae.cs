@@ -43,6 +43,10 @@ namespace AnalysisPrograms.Recognizers
 
         public override string Description => "[ALPHA] Designed to detect chirrup calls of the Australian Pipit.";
 
+        public override string CommonName => "Australasian pipit";
+
+        public override Status Status => Status.Alpha;
+
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {
             RuntimeHelpers.RunClassConstructor(typeof(PipitConfig).TypeHandle);

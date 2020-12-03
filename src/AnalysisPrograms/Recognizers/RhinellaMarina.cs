@@ -40,11 +40,15 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class RhinellaMarina : RecognizerBase
     {
-        public override string Description => "[BETA/Experimental] Cane Toad. Recogniser looks for 12 Hz oscillation around 600 Hz band.";
+        public override string Description => "Cane Toad. Recogniser looks for 12 Hz oscillation around 600 Hz band.";
 
         public override string Author => "Towsey";
 
         public override string SpeciesName => "RhinellaMarina";
+
+        public override string CommonName => "Canetoad";
+
+        public override Status Status => Status.Beta;
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 

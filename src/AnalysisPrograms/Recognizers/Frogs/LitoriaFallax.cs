@@ -45,6 +45,10 @@ namespace AnalysisPrograms.Recognizers.Frogs
 
         public override string SpeciesName => "LitoriaFallax";
 
+        public override string CommonName => "Eastern dwarf tree frog";
+
+        public override Status Status => Status.InDevelopment;
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>

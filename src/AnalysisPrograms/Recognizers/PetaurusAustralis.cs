@@ -34,7 +34,7 @@ namespace AnalysisPrograms.Recognizers
 
         public override string CommonName => "Yellow-bellied glider";
 
-        public Status Status => Status.InDevelopment;
+        public override Status Status => Status.InDevelopment;
 
         public override string Description => $"Acoustic event recognizer for the {this.CommonName}.";
 

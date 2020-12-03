@@ -34,9 +34,11 @@ namespace AnalysisPrograms.Recognizers
 
         public override string SpeciesName => "NinoxStrenua";
 
-        public override string Description => "[ALPHA] Detects acoustic events for the Australian Powerful Owl.";
+        public override string Description => "Detects acoustic events for the Australian Powerful Owl.";
 
         public override string CommonName => "Powerful Owl";
+
+        public override Status Status => Status.Alpha;
 
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {

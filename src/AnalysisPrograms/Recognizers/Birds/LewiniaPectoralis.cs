@@ -46,6 +46,10 @@ namespace AnalysisPrograms.Recognizers.Birds
 
         public override string SpeciesName => "LewiniaPectoralis";
 
+        public override string CommonName => "Lewin's Rail";
+
+        public override Status Status => Status.Beta;
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         //private const bool DoRecognizerTest = true;

@@ -34,6 +34,8 @@ namespace AnalysisBase
         /// <inheritdoc/>
         public virtual AnalysisSettings DefaultSettings => new AnalysisSettings();
 
+        public abstract Status Status { get; }
+
         /// <inheritdoc cref="IAnalyser2.ParseConfig"/>
         public virtual AnalyzerConfig ParseConfig(FileInfo file)
         {

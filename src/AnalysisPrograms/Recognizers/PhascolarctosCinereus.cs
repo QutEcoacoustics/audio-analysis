@@ -37,7 +37,11 @@ namespace AnalysisPrograms.Recognizers
 
         public override string SpeciesName => "PhascolarctosCinereus";
 
-        public override string Description => "[WIP] Detects acoustic events for the Koala.";
+        public override string Description => "Detects acoustic events for the Koala. This will be Koala V3";
+
+        public override string CommonName => "Koala";
+
+        public override Status Status => Status.InDevelopment;
 
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {

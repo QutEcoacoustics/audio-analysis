@@ -36,6 +36,7 @@ namespace AnalysisPrograms.Recognizers
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared.ConfigFile;
+    using AnalysisBase;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -62,7 +63,11 @@ namespace AnalysisPrograms.Recognizers
 
         public override string SpeciesName => "PteropusSpecies";
 
-        public override string Description => "[ALPHA] Detects acoustic events for species of Flying Fox, Pteropus species";
+        public override string Description => "Detects acoustic events for species of Flying Fox, Pteropus species";
+
+        public override string CommonName => "Flying fox";
+
+        public override Status Status => Status.Alpha;
 
         /*
         /// <summary>

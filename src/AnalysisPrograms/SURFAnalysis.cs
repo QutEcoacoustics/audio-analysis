@@ -500,6 +500,8 @@ namespace AnalysisPrograms
 
         public AnalysisSettings DefaultSettings { get; private set; }
 
+        public Status Status => Status.Retired;
+
         public AnalyzerConfig ParseConfig(FileInfo file)
         {
             return ConfigFile.Deserialize<AnalyzerConfig>(file);

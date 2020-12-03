@@ -57,7 +57,7 @@ namespace AnalysisPrograms
 
         public const int ResampleRate = 17640;
 
-        public override string Description => "[BETA/EXPERIMENTAL] Recogniser for male koalla bellow. Detects inhalation oscillations.";
+        public override string Description => "Recogniser for male koalla bellow. Detects inhalation oscillations.";
 
         public string DefaultConfiguration => string.Empty;
 
@@ -73,6 +73,8 @@ namespace AnalysisPrograms
         public override string DisplayName => "Koala Male";
 
         public override string Identifier => "Towsey." + AnalysisName;
+
+        public override Status Status => Status.Unmaintained;
 
         public static KoalaMaleResults Analysis(FileInfo segmentOfSourceFile, IDictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {

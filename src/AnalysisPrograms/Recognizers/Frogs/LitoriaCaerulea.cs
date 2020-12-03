@@ -38,11 +38,15 @@ namespace AnalysisPrograms.Recognizers.Frogs
     /// </summary>
     public class LitoriaCaerulea : RecognizerBase
     {
-        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria caerulea";
+        public override string Description => "Detects acoustic events of Litoria caerulea";
 
         public override string Author => "Towsey";
 
         public override string SpeciesName => "LitoriaCaerulea";
+
+        public override string CommonName => "Common Green Tree Frog";
+
+        public override Status Status => Status.InDevelopment;
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
