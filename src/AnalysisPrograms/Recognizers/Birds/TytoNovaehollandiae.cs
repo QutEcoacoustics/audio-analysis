@@ -31,7 +31,7 @@ namespace AnalysisPrograms.Recognizers.Birds
 
         public override string CommonName => "Masked owl";
 
-        public Status Status => Status.Alpha;
+        public override Status Status => Status.Alpha;
 
         public override string Description => $"Acoustic event recognizer for the {this.CommonName}.";
 

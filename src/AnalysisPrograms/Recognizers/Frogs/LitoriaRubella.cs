@@ -44,13 +44,17 @@ namespace AnalysisPrograms.Recognizers.Frogs
     /// </summary>
     public class LitoriaRubella : RecognizerBase
     {
-        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria rubella.";
+        public override string Description => "Detects acoustic events of Litoria rubella.";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public override string Author => "Towsey";
 
         public override string SpeciesName => "LitoriaRubella";
+
+        public override string CommonName => "Desert tree frog";
+
+        public override Status Status =>  Status.InDevelopment;
 
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.

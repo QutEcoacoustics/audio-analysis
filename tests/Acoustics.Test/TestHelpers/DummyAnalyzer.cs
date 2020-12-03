@@ -29,6 +29,10 @@ namespace Acoustics.Test.TestHelpers
 
         public override string Identifier { get; } = "Ecosounds.TempusSubstitutus";
 
+        public bool IsPaused => !this.waitingFor?.IsCompleted ?? false;
+
+        public override Status Status => Status.Maintained;
+
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
             this.Pause("Analyze" + segmentSettings.SegmentStartOffset.TotalMinutes);
@@ -121,7 +125,5 @@ namespace Acoustics.Test.TestHelpers
 
             this.waitingFor = null;
         }
-
-        public bool IsPaused => !this.waitingFor?.IsCompleted ?? false;
     }
 }

@@ -28,7 +28,7 @@ namespace AnalysisPrograms.EventStatistics
 
         public override string Identifier { get; } = "Ecosounds.EventStatistics";
 
-        public override string Description { get; } = "[BETA] Calculates useful statistics (features) from an acoustic event";
+        public override string Description { get; } = "Calculates useful statistics (features) from an acoustic event";
 
         public override AnalysisSettings DefaultSettings { get; } = new AnalysisSettings
         {
@@ -40,6 +40,8 @@ namespace AnalysisPrograms.EventStatistics
             // bounds defined by a fixed sample rate. Thus, do not normalize sample rate.
             AnalysisTargetSampleRate = null,
         };
+
+        public override Status Status => Status.Maintained;
 
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {

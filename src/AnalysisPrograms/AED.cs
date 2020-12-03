@@ -119,6 +119,8 @@ namespace AnalysisPrograms
         /// </summary>
         public override string Identifier => EcosoundsAedIdentifier;
 
+        public override Status Status => Status.Maintained;
+
         public static Tuple<EventCommon[], AudioRecording, BaseSonogram> Detect(
             FileInfo audioFile,
             AedConfiguration aedConfiguration,

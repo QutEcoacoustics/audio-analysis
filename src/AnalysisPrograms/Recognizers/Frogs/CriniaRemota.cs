@@ -48,11 +48,15 @@ namespace AnalysisPrograms.Recognizers.Frogs
     /// </summary>
     internal class CriniaRemota : RecognizerBase
     {
-        public override string Description => "[BETA/Experimental] Remote froglet. See class header for algorithm description.";
+        public override string Description => "Remote froglet. See class header for algorithm description.";
 
         public override string Author => "Towsey";
 
         public override string SpeciesName => "CriniaRemota";
+
+        public override string CommonName => "The Remote froglet";
+
+        public override Status Status => Status.Beta;
 
         //private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 

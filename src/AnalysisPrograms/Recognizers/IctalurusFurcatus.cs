@@ -40,6 +40,10 @@ namespace AnalysisPrograms.Recognizers
 
         public override string SpeciesName => "IctalurusFurcatus";
 
+        public override string CommonName => "Blue catfish";
+
+        public override Status Status => Status.InDevelopment;
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         internal class CatFishCallData

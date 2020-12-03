@@ -42,7 +42,7 @@ namespace AnalysisPrograms
         private const string EcosoundsGroundParrotIdentifier = "Ecosounds.GroundParrot";
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public override string Description => "[UNMAINTAINED] Uses event pattern recognition for ground-parrots";
+        public override string Description => "Uses event pattern recognition for ground-parrots";
 
         [Command(
             CommandName,
@@ -274,6 +274,8 @@ namespace AnalysisPrograms
         public override string DisplayName => "Ground Parrot Recognizer";
 
         public override string Identifier => EcosoundsGroundParrotIdentifier;
+
+        public override Status Status => Status.Unmaintained;
 
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {

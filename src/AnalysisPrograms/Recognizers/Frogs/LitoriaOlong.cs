@@ -30,11 +30,15 @@ namespace AnalysisPrograms.Recognizers.Frogs
     /// </summary>
     internal class LitoriaOlong : RecognizerBase
     {
-        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria olong.";
+        public override string Description => "Detects acoustic events of Litoria olong.";
 
         public override string Author => "Stark";
 
-        public override string SpeciesName => "LitoriaOlong";
+        public override string SpeciesName => "LitoriaOlongburensis";
+
+        public override string CommonName => "Olongburra Tree Frog";
+
+        public override Status Status => Status.Unmaintained;
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 

@@ -58,6 +58,8 @@ namespace AnalysisPrograms.ContentDescription
             AnalysisTargetSampleRate = ContentSignatures.SampleRate,
         };
 
+        public override Status Status => Status.InDevelopment;
+
         public override void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
             // Read in the functional templates file. These doe the content description.

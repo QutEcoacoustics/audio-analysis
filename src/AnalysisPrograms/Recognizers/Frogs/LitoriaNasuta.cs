@@ -41,11 +41,15 @@ namespace AnalysisPrograms.Recognizers.Frogs
     /// </summary>
     internal class LitoriaNasuta : RecognizerBase
     {
-        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria nasuta";
+        public override string Description => "Detects acoustic events of Litoria nasuta";
 
         public override string Author => "Towsey";
 
         public override string SpeciesName => "LitoriaNasuta";
+
+        public override string CommonName => "The Striped Rocket Frog";
+
+        public override Status Status => Status.InDevelopment;
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 

@@ -44,11 +44,15 @@ namespace AnalysisPrograms.Recognizers.Frogs
     /// </summary>
     internal class LitoriaPallida : RecognizerBase
     {
-        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria pallida.";
+        public override string Description => "Detects acoustic events of Litoria pallida.";
 
         public override string Author => "Towsey";
 
         public override string SpeciesName => "LitoriaPallida";
+
+        public override string CommonName => "Pale frog";
+
+        public override Status Status => Status.InDevelopment;
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 

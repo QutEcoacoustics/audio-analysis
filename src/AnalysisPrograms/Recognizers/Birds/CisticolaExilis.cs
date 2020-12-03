@@ -39,7 +39,11 @@ namespace AnalysisPrograms.Recognizers
 
         public override string SpeciesName => "CisticolaExilis";
 
-        public override string Description => "[ALPHA] Detects acoustic events for the golden-headed cisticola.";
+        public override string Description => "Detects acoustic events for the golden-headed cisticola.";
+
+        public override string CommonName => "Golden-headed cisticola";
+
+        public override Status Status => Status.InDevelopment;
 
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {

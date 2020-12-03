@@ -44,6 +44,8 @@ namespace AnalysisPrograms.StandardizedFeatures
 
         public override string Identifier => "Ecosounds.StandardizedFeatures";
 
+        public override Status Status => Status.Retired;
+
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {
             // Construct variable 'configuration' that stores the properties of config file as strongly typed object

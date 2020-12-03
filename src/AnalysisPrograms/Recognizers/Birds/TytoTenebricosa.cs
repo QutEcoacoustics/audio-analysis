@@ -33,7 +33,7 @@ namespace AnalysisPrograms.Recognizers.Birds
 
         public override string CommonName => "Greater sooty owl";
 
-        public Status Status => Status.InDevelopment;
+        public override Status Status => Status.InDevelopment;
 
         public override string Description => $"Acoustic event recognizer for the {this.CommonName}.";
 

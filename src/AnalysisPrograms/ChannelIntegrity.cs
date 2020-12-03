@@ -27,6 +27,8 @@ namespace AnalysisPrograms
 
         public override string Identifier => "Towsey.ChannelIntegrity";
 
+        public override Status Status => Status.Alpha;
+
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
             // boilerplate Analyzer

@@ -47,6 +47,10 @@ namespace AnalysisPrograms.Recognizers.Frogs
 
         public override string SpeciesName => "LitoriaRothii";
 
+        public override string CommonName => "Roth's tree frog";
+
+        public override Status Status =>  Status.InDevelopment;
+
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>

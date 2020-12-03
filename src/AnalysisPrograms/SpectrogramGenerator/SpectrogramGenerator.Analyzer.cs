@@ -45,6 +45,8 @@ namespace AnalysisPrograms.SpectrogramGenerator
 
         public AnalysisSettings DefaultSettings { get; private set; }
 
+        public Status Status => Status.Maintained;
+
         public AnalyzerConfig ParseConfig(FileInfo file)
         {
             var config = ConfigFile.Deserialize<SpectrogramGeneratorConfig>(file);

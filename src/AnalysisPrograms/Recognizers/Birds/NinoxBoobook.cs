@@ -40,7 +40,11 @@ namespace AnalysisPrograms.Recognizers
 
         public override string SpeciesName => "NinoxBoobook";
 
-        public override string Description => "[ALPHA] Detects acoustic events for the Australian Boobook owl.";
+        public override string Description => "Detects acoustic events for the Australian Boobook owl.";
+
+        public override string CommonName => "Boobook Owl";
+
+        public override Status Status => Status.Alpha;
 
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {

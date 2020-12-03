@@ -50,6 +50,10 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public override string SpeciesName => "MultiRecognizer";
 
+        public override string CommonName => string.Empty;
+
+        public override Status Status => Status.Unmaintained;
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public override AnalyzerConfig ParseConfig(FileInfo file)

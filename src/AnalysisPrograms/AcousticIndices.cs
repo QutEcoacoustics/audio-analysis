@@ -54,7 +54,7 @@ namespace AnalysisPrograms
         public string Identifier => TowseyAcoustic;
 
         public string Description
-            => "[BETA] Generates all our default summary & spectral acoustic indices. Also generates false color spectrograms IFF IndexCalculationDuration==60.0";
+            => "Generates all our default summary & spectral acoustic indices. Also generates false color spectrograms IFF IndexCalculationDuration==60.0";
 
         public void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
@@ -489,5 +489,7 @@ namespace AnalysisPrograms
             SegmentMediaType = MediaTypes.MediaTypeWav,
             SegmentOverlapDuration = TimeSpan.Zero,
         };
+
+        public Status Status => Status.Maintained;
     }
 }

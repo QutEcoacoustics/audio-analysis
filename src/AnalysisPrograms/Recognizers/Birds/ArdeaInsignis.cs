@@ -33,11 +33,15 @@ namespace AnalysisPrograms.Recognizers.Birds
     /// </summary>
     public class ArdeaInsignis : RecognizerBase
     {
-        public override string Description => "[BETA/Experimental] White Heron - Bhutan";
+        public override string Description => "White Heron - Bhutan";
 
         public override string Author => "Towsey";
 
         public override string SpeciesName => "ArdeaInsignis";
+
+        public override string CommonName => "White Heron";
+
+        public override Status Status => Status.Beta;
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 

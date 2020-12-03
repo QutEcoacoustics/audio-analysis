@@ -34,7 +34,7 @@ namespace AnalysisPrograms.Recognizers
 
         public override string CommonName => "Sugar glider";
 
-        public Status Status => Status.Alpha;
+        public override Status Status => Status.Alpha;
 
         public override string Description => $"Acoustic event recognizer for the {this.CommonName}.";
 
