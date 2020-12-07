@@ -2,9 +2,6 @@
 // <copyright file="Interval.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
-// <summary>
-//   Range of Min-Max.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace Acoustics.Shared
@@ -58,7 +55,7 @@ namespace Acoustics.Shared
 
             this.Minimum = minimum;
             this.Maximum = maximum;
-            this.Topology = Topology.Default;
+            this.Topology = default;
         }
 
         public Interval(T minimum, T maximum, Topology topology)
@@ -144,7 +141,7 @@ namespace Acoustics.Shared
             return !(first == second);
         }
 
-        public bool Contains(T scalar, Topology type = Topology.Default)
+        public bool Contains(T scalar, Topology type = default)
         {
             return ScalarEqualOrGreaterThanAnchor(scalar, this.Minimum, this.IsMinimumInclusive) &&
                    ScalarEqualOrLessThanAnchor(scalar, this.Maximum, this.IsMaximumInclusive);
@@ -247,7 +244,7 @@ namespace Acoustics.Shared
 
         /// <summary>
         /// Gets string representation of the Interval.
-        /// technially incorrectly representing this value.
+        /// technically incorrectly representing this value.
         /// </summary>
         /// <returns>
         /// String representation.
@@ -259,7 +256,7 @@ namespace Acoustics.Shared
 
         /// <summary>
         /// Gets string representation of the Interval.
-        /// technially incorrectly representing this value.
+        /// technically incorrectly representing this value.
         /// </summary>
         /// <param name="suppressName">
         /// If true only prints interval data and not type name.

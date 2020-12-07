@@ -302,7 +302,7 @@ namespace Acoustics.Test.Shared
         [DataRow(100, 300, 300, Topology.LeftOpenRightClosed, true)]
         public void DoubleContainsWorks(double a1, double a2, double scalar, Topology? type, bool result)
         {
-            var range = a1.AsIntervalTo(a2, type ?? Topology.Default);
+            var range = a1.AsIntervalTo(a2, type ?? default);
 
             var actual = type.HasValue ? range.Contains(scalar, type.Value) : range.Contains(scalar);
 
@@ -327,7 +327,7 @@ namespace Acoustics.Test.Shared
         [DataRow(100, 300, 300, 400, Topology.LeftOpenRightClosed, true)]
         public void DoubleIntersectsWithWorks(double a1, double a2, double b1, double b2, Topology? type, bool result)
         {
-            var a = a1.AsIntervalTo(a2, type ?? Topology.Default);
+            var a = a1.AsIntervalTo(a2, type ?? default);
             var b = b1.AsIntervalTo(b2);
 
             var actual = a.IntersectsWith(b);
@@ -363,7 +363,7 @@ namespace Acoustics.Test.Shared
         [DataRow(100, 300, 101, 300, Topology.LeftOpenRightClosed, true, false)]
         public void DoubleContainsIntervalWorks(double a1, double a2, double b1, double b2, Topology? type, bool result, bool reverseResult)
         {
-            var a = a1.AsIntervalTo(a2, type ?? Topology.Default);
+            var a = a1.AsIntervalTo(a2, type ?? default);
             var b = b1.AsIntervalTo(b2);
 
             var actual = a.Contains(b);
@@ -435,7 +435,7 @@ namespace Acoustics.Test.Shared
             var actual = default(Interval<double>);
             Assert.AreEqual(0, actual.Minimum);
             Assert.AreEqual(0, actual.Maximum);
-            Assert.AreEqual(Topology.Default, actual.Topology);
+            Assert.AreEqual(default, actual.Topology);
             Assert.IsTrue(actual.IsEmpty);
             Assert.IsTrue(actual.IsMinimumInclusive);
             Assert.IsFalse(actual.IsMaximumInclusive);

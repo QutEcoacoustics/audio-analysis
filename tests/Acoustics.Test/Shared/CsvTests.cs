@@ -30,7 +30,7 @@ namespace Acoustics.Test.Shared
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class CsvTests
+    public class CsvTests : OutputDirectoryTest
     {
         private static readonly double[,] TestMatrix =
             {
@@ -41,8 +41,7 @@ namespace Acoustics.Test.Shared
                 { 17.0, 18.0, 19.0, 20.0 },
             };
 
-        private DirectoryInfo outputDirectory;
-        private FileInfo testFile;
+        private readonly FileInfo testFile;
 
         static CsvTests()
         {
@@ -53,18 +52,14 @@ namespace Acoustics.Test.Shared
             _ = new ImportedEvent();
         }
 
-        [TestInitialize]
-        public void Setup()
+        public CsvTests()
         {
-            this.outputDirectory = PathHelper.GetTempDir();
-
-            this.testFile = PathHelper.GetTempFile(".csv");
+            this.testFile = PathHelper.GetTempFile(this.TestOutputDirectory, ".csv");
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            this.outputDirectory.Delete();
             this.testFile.Delete();
         }
 
@@ -508,6 +503,18 @@ namespace Acoustics.Test.Shared
             Assert.AreEqual("Property\r\n\"[0.5, 3)\"\r\n", storage.ToString());
         }
 
+        public void TestIntervalTopologyRoundTrip()
+        {
+            var topology = Topology.Exclusive;
+
+            var file = this.TestOutputDirectory.CombineFile("timespan_roundtrip.csv");
+            Csv.WriteToCsv(file, new[] { new CsvTestClass2() { SomeNumber = 3, SomeTopology = topology } });
+
+            var actual = Csv.ReadFromCsv<CsvTestClass2>(file).ToArray();
+
+            Assert.AreEqual(Topology.Exclusive, actual.First().SomeTopology);
+        }
+
         private static void AssertCsvEqual(string expected, FileInfo actual)
         {
             var lines = File.ReadAllText(actual.FullName);
@@ -541,6 +548,13 @@ namespace Acoustics.Test.Shared
             public int SomeNumber { get; set; }
 
             public TimeSpan SomeTimeSpan { get; set; }
+        }
+
+        public class CsvTestClass2
+        {
+            public int SomeNumber { get; set; }
+
+            public Topology SomeTopology { get; set; }
         }
 
         public class CultureDataTester
