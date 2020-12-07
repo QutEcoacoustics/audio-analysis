@@ -63,7 +63,7 @@ namespace Acoustics.Test.TestHelpers
                 var newPath = this
                     .DailyOutputDirectory
                     .CombinePath(newName);
-                savedFile.CopyTo(newPath);
+                savedFile.CopyTo(newPath, overwrite: true);
             }
 
             return savedFile;
