@@ -1052,7 +1052,15 @@ namespace AudioAnalysisTools
                 i = maxFrame;
                 while (values[i] > thresholdValue)
                 {
-                    i++;
+                    // AT: added this condition otherwise index can grow larger than values array
+                    if (i + 1 < values.Length)
+                    {
+                        i++;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
 
                 endFrame = i;
