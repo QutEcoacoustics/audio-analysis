@@ -444,7 +444,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 };
             }
 
-            public string HighResolutionIndicesConfig { get; set; }
+            public string HighResolutionIndicesConfig { get; set; } = "Towsey.Acoustic.HiResIndicesForRecognisers.yml";
 
             public AcousticIndices.AcousticIndicesConfig HighResolutionIndices { get; private set; }
         }

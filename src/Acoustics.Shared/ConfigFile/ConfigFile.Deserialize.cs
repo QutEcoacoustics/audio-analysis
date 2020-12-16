@@ -120,6 +120,11 @@ namespace Acoustics.Shared.ConfigFile
                         (generic, loadedConfig) = Yaml.LoadAndDeserialize<T>(path);
                     }
 
+                    if (loadedConfig is null)
+                    {
+                        throw new ConfigFileException($"Tried to load the {path} config file but it looks like it was empty. Add some content?", path);
+                    }
+
                     // if implements Config in any subtype (more specific than IConfig)
                     if (loadedConfig is Config config)
                     {
