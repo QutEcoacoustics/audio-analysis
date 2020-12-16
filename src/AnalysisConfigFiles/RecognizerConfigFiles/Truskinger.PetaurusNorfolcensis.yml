@@ -1,0 +1,73 @@
+---
+
+# Squirrel glider = Truskinger.PetaurusNorfolcensis.yml
+# Resample rate must be 2 X the desired Nyquist
+#ResampleRate: 22050
+# SegmentDuration: units=seconds;
+SegmentDuration: 60
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+
+# temporary hack to make aed usable
+SpeciesName: Petaurus norfolcensis
+
+
+# Each of these profiles will be analyzed
+# This profile is required for the species-specific recognizer and must have the current name.
+Profiles:
+    SquirrelGliderBark: !AedParameters
+        IntensityThreshold: 3
+        SmallAreaThreshold: 1000
+        BandpassMinimum: 500
+        BandpassMaximum: 1800
+
+
+#################### POST-PROCESSING of EVENTS ###################
+
+PostProcessing:
+# # The following generic post-processing steps are determined by config settings.
+# # Step 1: Combine overlapping events - events derived from all profiles.
+# # Step 2: Combine possible syllable sequences and filter on excess syllable count.
+# # Step 3: Remove events whose bandwidth is too small or large.
+# # Step 4: Remove events that have excessive noise in their side-bands.
+
+#     # 1: Combine overlapping events
+#     CombineOverlappingEvents: true
+
+#     # 2: Combine possible syllable sequences
+#     SyllableSequence:
+#         CombinePossibleSyllableSequence: true
+#         SyllableStartDifference: 0.6
+#         SyllableHertzGap: 350
+#         FilterSyllableSequence: true
+#         SyllableMaxCount: 2
+#         ExpectedPeriod: 0.4
+
+#     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
+#     #Duration:
+#         ExpectedDuration: 0.14
+#         DurationStandardDeviation: 0.01
+
+#     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
+#  #   Bandwidth:
+#         ExpectedBandwidth: 280
+#         BandwidthStandardDeviation: 40
+
+#     # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
+#     SidebandActivity:
+#         LowerHertzBuffer: 150
+#         UpperHertzBuffer: 400
+#         MaxAverageSidebandDecibels: 3.0
+
+# Options to save results files
+# Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
+SaveSonogramImages: WhenEventsDetected
+
+# Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+
+
+
+...
