@@ -261,7 +261,11 @@ namespace AudioAnalysisTools.Events.Types
         /// </summary>
         public class SyllableSequenceConfig
         {
-            // ################ The first two properties concern the combining of syllables into a sequence or stroph.
+
+            /// <summary>
+            /// Gets or sets a value indicating Whether or not to combine events that constitute a sequence of the same strophe.
+            /// </summary>
+            public bool CombinePossibleSyllableSequence { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating the maximum allowable start time gap (seconds) between events within the same strophe.
