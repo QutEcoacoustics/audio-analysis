@@ -1,0 +1,53 @@
+name: docs
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-docs:
+
+    # docfx v2 is a .NET Framework project and only runs on Windows
+    runs-on: windows-latest
+
+    steps:
+    # checkout and cache lfs
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 100
+
+    - name: Create LFS file list
+      run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+    - name: Restore LFS cache
+      uses: actions/cache@v2
+      id: lfs-cache
+      with:
+        path: .git/lfs
+        key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+    - name: Git LFS Pull
+      run: git lfs pull
+
+    # setup and build solution
+    # - name: Setup .NET
+    #   uses: actions/setup-dotnet@v1
+
+    # - name: Restore dependencies
+    #   run: dotnet restore
+
+    # - name: Build
+    #   run: dotnet build --no-restore
+
+    - name: Generate docs
+      shell: pwsh
+      run: ./build/generate_docs.ps1
+
+    - name: Publish docs
+      shell: pwsh
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      run: ./build/publish_docs.ps1

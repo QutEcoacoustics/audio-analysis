@@ -2,5 +2,8 @@ _exported
 
 # apMetadata json is templated so we only want to store defaults and ignore future changes
 apMetadata.json
+ap_manual.json
+ap_manual*.pdf
+pdf_xrefmap.yml
 
 verbose

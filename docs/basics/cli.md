@@ -1,3 +1,7 @@
+---
+uid: cli
+---
+
 # Introduction To Running Commands
 
 ## You need a shell

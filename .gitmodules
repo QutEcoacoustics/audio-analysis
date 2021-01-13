@@ -1,0 +1,3 @@
+[submodule "docs2/theme"]
+	path = docs2/theme
+	url = https://github.com/statiqdev/CleanBlog.git

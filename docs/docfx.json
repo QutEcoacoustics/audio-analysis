@@ -5,11 +5,12 @@
         {
           "src": "..",
           "files": [
-            "src/**.csproj",
-            "tests/Acoustics.Test/**.csproj"
+            "src/**.csproj"
           ],
           "exclude": [
             "src/**.fsproj",
+            "**/*.fsproj",
+            "*.fsproj",
             "test/**"
           ]
         }
@@ -44,7 +45,9 @@
         ],
         "exclude": [
           "images/README.md",
-          "README.md"
+          "README.md",
+          "pdf/**",
+          "_ignore"
         ]
       }
     ],
@@ -52,10 +55,16 @@
       {
         "files": [
           "images/**",
-          "netlify.toml"
+          "netlify.toml",
+
         ],
         "exclude": [
           "images/README.md"
+        ]
+      },
+      {
+        "files": [
+          "ap_manual*.pdf"
         ]
       }
     ],
@@ -73,28 +82,137 @@
     "xrefService": [
       "https://xref.docs.microsoft.com/query?uid={uid}"
     ],
+    "cleanupCacheHistory": false,
     "dest": "../_site",
+    "disableGitFeatures": false,
     "globalMetadata": {
       "_appTitle": "AnalysisPrograms.exe",
       "_appLogoPath": "images/ap.svg",
       "_appFaviconPath": "images/ap.svg",
       "_gitContribute": {
         "repo": "https://github.com/QutEcoacoustics/audio-analysis"
-      }
+      },
+      "_enableSearch": true
     },
     "globalMetadataFiles": [
       "apMetadata.json"
     ],
     "fileMetadataFiles": [],
+    "keepFileLink": false,
+    "markdownEngineName": "markdig",
+    "noLangKeyword": false,
+    "postProcessors": [],
     "template": [
       "default",
       "templates/AP"
     ],
-    "postProcessors": [],
-    "markdownEngineName": "markdig",
-    "noLangKeyword": false,
-    "keepFileLink": false,
-    "cleanupCacheHistory": false,
-    "disableGitFeatures": false
+    "xref": [
+      "pdf_xrefmap.yml"
+    ]
+  },
+  "pdf": {
+    "content": [
+      {
+        "files": [
+          "technical/api/**.yml",
+          "technical/api/index.md"
+        ],
+        "exclude": [
+          "**/toc.yml",
+          "**/toc.md",
+          "index.md"
+        ]
+      },
+      {
+        "files": [
+          "articles/**.md",
+          "articles/**/toc.yml",
+          "toc.yml",
+          "*.md",
+          "pdf/*",
+          "pdf/cover.md"
+        ],
+        "exclude": [
+          "**/bin/**",
+          "**/obj/**",
+          "**/toc.yml",
+          "**/toc.md"
+        ]
+      },
+      {
+        "files": "pdf/toc.yml"
+      },
+      {
+        "src": "..",
+        "files": [
+          "CHANGELOG.md",
+          "CODE_OF_CONDUCT.md",
+          "CONTRIBUTING.md"
+        ],
+        "dest": "technical"
+      },
+      {
+        "files": [
+          "*.md",
+          "**/*.md"
+        ],
+        "exclude": [
+          "images/README.md",
+          "README.md"
+        ]
+      }
+
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ],
+        "exclude": [
+          "**/bin/**",
+          "**/obj/**",
+          "images/README.md"
+        ]
+      }
+    ],
+    "overwrite": [
+      {
+        "files": [
+          "technical/apidoc/**.md"
+        ],
+        "exclude": [
+          "**/bin/**",
+          "**/obj/**"
+        ]
+      }
+    ],
+    "wkhtmltopdf": {
+      "additionalArguments": "--enable-local-file-access  --footer-center [page] --footer-font-size 10 --no-stop-slow-scripts"
+    },
+    "dest": ".",
+    "generatesAppendices": false,
+    "globalMetadata": {
+      "_appTitle": "AnalysisPrograms.exe",
+      "_appLogoPath": "images/ap.svg",
+      "_appFaviconPath": "images/ap.svg",
+      "_gitContribute": {
+        "repo": "https://github.com/QutEcoacoustics/audio-analysis"
+      },
+      "AP_authors": "Michael Towsey & Anthony Truskinger",
+      "AP_organization": "QUT Ecoacoustics",
+      "AP_website": "https://ap.qut.ecoacoustics.info/"
+    },
+    "globalMetadataFiles": [
+      "apMetadata.json"
+    ],
+    "keepRawFiles": false,
+    "name": "ap_manual",
+    "noStdin": true,
+    "outline": "WkDefaultOutline",
+    "template": [
+      "pdf.default",
+      "templates/AP",
+      "templates/AP_PDF"
+    ]
   }
 }
