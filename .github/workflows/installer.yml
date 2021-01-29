@@ -1,0 +1,114 @@
+name: installer
+
+on:
+  push:
+    paths:
+      - build/*
+      - .github/*
+  pull_request:
+    paths:
+      - build/*
+      - .github/*
+  release:
+defaults:
+  run:
+    shell: pwsh
+env:
+  SCRIPT_URL: "https://raw.githubusercontent.com/QutEcoacoustics/audio-analysis/${{ github.sha }}/build/download_ap.ps1"
+jobs:
+  test-script-host:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ensure script host serves the script with "charset=utf-8"
+        run: |
+          curl -Ii "$env:SCRIPT_URL" | Write-Output -OutVariable "response"
+          $response | grep "charset=utf-8"
+      - name: ensure short url redirects to download script
+        # if this test ever fails, recreate short url and update the installing.md docs
+        run: |
+          curl -Ii "https://git.io/JtOo3"  | Write-Output -OutVariable "response"
+          $response | grep "https://raw.githubusercontent.com/QutEcoacoustics/audio-analysis/.*/build/download_ap.ps1"
+
+  test-installer:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+          - macos-latest
+        include:
+          - os: windows-latest
+            alias_name: "AP.exe"
+            bin_dir: "~\\AP"
+          - os: ubuntu-latest
+            alias_name: "AP"
+            bin_dir: "~/.local/bin"
+          - os: macos-latest
+            alias_name: "AP"
+            bin_dir: "~/.local/bin"
+    # https://raw.githubusercontent.com/QutEcoacoustics/audio-analysis/5f08faa96d8f044fb278b68f1c7d577fe218e8a1/build/download_ap.ps1
+    runs-on: ${{ matrix.os }}
+    name: Test installer (${{ matrix.os }})
+    # This workflow tests if our "installer"
+    # script works.
+    # It needs to test:
+    # - remote download
+    # - install
+    # - adding to PATH
+    # - uninstall
+    # Need to use -Force on commands because CI is not interactive
+    # https://github.com/PowerShell/PowerShell/issues/3337
+    steps:
+      - name: Get info about action runner
+        run: |
+          $PSVersionTable
+      - name: Test installer (remote download)
+        uses: knicknic/os-specific-run@v1.0.3
+        with:
+          macos: >
+            echo '$function:i=irm "$env:SCRIPT_URL";i -Force' | pwsh -nop -c -
+          linux: >
+            echo '$function:i=irm "$env:SCRIPT_URL";i -Force' | pwsh -nop -c -
+          windows: >
+            '$function:i=irm "$env:SCRIPT_URL";i -Force' | pwsh -nop -ex B -c -
+      - name: Test installer (upgrade)
+        uses: knicknic/os-specific-run@v1.0.3
+        with:
+          macos: >
+            echo '$function:i=irm "$env:SCRIPT_URL";i -Force -Prerelease' | pwsh -nop -c -
+          linux: >
+            echo '$function:i=irm "$env:SCRIPT_URL";i -Force -Prerelease' | pwsh -nop -c -
+          windows: >
+            '$function:i=irm "$env:SCRIPT_URL";i -Force -Prerelease' | pwsh -nop -ex B -c -
+      - name: Update PATH
+        # Github actions doesn't persist changes to PATH during steps
+        # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#adding-a-system-path
+        run: >
+          echo "$env:AP_PATH" | Resolve-Path | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        env:
+          AP_PATH: ${{ matrix.bin_dir }}
+      - name: Check alias works
+        run: |
+          Get-ChildItem "$env:AP_PATH/$env:ALIAS_NAME"
+          AP --version
+        env:
+          AP_PATH: ${{ matrix.bin_dir }}
+          ALIAS_NAME: ${{ matrix.alias_name }}
+      - name: Test installer (uninstall)
+        uses: knicknic/os-specific-run@v1.0.3
+        with:
+          macos: >
+            echo '$function:i=irm "$env:SCRIPT_URL";i -Force -Uninstall' | pwsh -nop -c -
+          linux: >
+            echo '$function:i=irm "$env:SCRIPT_URL";i -Force -Uninstall' | pwsh -nop -c -
+          windows: >
+            '$function:i=irm "$env:SCRIPT_URL";i -Force -Uninstall' | pwsh -nop -ex B -c -
+      - name: Check alias no longer works
+        run: |
+          Get-Command AP -ErrorAction 'Continue'
+          if ($error[0] -match "The term 'AP' is not recognized") {
+            exit 0
+          }
+          exit 1
+
