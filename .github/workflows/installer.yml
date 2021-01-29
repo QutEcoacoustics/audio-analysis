@@ -15,6 +15,7 @@ defaults:
     shell: pwsh
 env:
   SCRIPT_URL: "https://raw.githubusercontent.com/QutEcoacoustics/audio-analysis/${{ github.sha }}/build/download_ap.ps1"
+  GITHUB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 jobs:
   test-script-host:
     runs-on: ubuntu-latest

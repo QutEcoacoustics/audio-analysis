@@ -18,7 +18,7 @@ try {
     # }
 
     log "Extracting git version metadata" "Prepare metadata"
-    & $PSScriptRoot/../src/git_version.ps1 -json -prefix "AP_"  > "$PSScriptRoot/../docs/apMetadata.json"
+    & $PSScriptRoot/../src/git_version.ps1 -json -prefix "AP_" | Tee-Object -FilePath "$PSScriptRoot/../docs/apMetadata.json"
     log "Extracting git version metadata (ENVIRONMENT VARIABLES)"
     & $PSScriptRoot/../src/git_version.ps1 -env_vars -prefix "AP_" | set-content
 
