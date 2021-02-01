@@ -20,19 +20,19 @@ how large analyses might be completed. Thus the scripts you find in this
 folder contain various examples (in various languages) of composing
 workflows with _AnalysisPrograms.exe_.
 
-**You can find a collection of example scripts here: https://github.com/QutEcoacoustics/audio-analysis/tree/master/scripts**
+You can find a collection of example scripts here: https://github.com/QutEcoacoustics/audio-analysis/tree/master/scripts
 
 ## PowerShell
 
 You'll see a lot of scripts in that folder that are written in PowerShell.
 If you're not familiar with it, you can consider it as the Windows equivalent
-of the Bash shell. 
+of the Bash shell.
 
 We like PowerShell because we think the syntax is more reasonable than Bash
 and the enhanced support for dates, times, and regular expressions are well worth the investment.
 
 As of [PowerShell 6.0](https://github.com/PowerShell/PowerShell#-powershell)
-the shell is cross platform!. If you're not
+the shell is cross platform! If you're not
 convinced, the scripts should be easy enough to reimplement in your favourite
 language (like Bash)--and we would of course appreciate any translated
 scripts sent back to us as contributed examples.

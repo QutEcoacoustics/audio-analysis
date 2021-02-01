@@ -3,3 +3,14 @@
     width: auto;
     height: 100%;
 }
+
+.index-toc {
+
+}
+
+.index-toc .nav {
+    list-style-type: decimal;
+}
+.index-toc .nav li{
+    display: revert;
+}

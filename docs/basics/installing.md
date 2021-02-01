@@ -3,11 +3,8 @@ uid: basics-installing
 ---
 # Installing
 
-## Beginner Tutorial
-
 If you're new to using _AP.exe_ we recommend following the instructions
-in the <xref:tutorial-01> practical
-to setup and install _AP.exe_
+in the <xref:tutorial-01> practical.
 
 ## Supported Platforms
 
@@ -25,40 +22,98 @@ to setup and install _AP.exe_
 
 The automatic install will download AP.exe and may install required perquisites.
 
-1. Prerequisite: install Powershell 6+
-    - Go [here](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7) to install PowerShell
-2. Run the following command in a PowerShell prompt:
+1. Prerequisite: install Powershell 7+
+    - Go to <https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>
+      to find instructions for installing PowerShell
+2. Then:
 
+<!-- https://git.io/JtOo3 created with git.io and should point to-->
+<!-- https://raw.githubusercontent.com/QutEcoacoustics/audio-analysis/master/build/download_ap.ps1 -->
 
-# [Windows](#tab/windows-automatic)
+### [Windows install](#tab/windows)
+
 Run the following command in an elevated (_Run as Administrator_) prompt:
 
+```powershell
+ pwsh -nop -ex B -c '$function:i=irm "https://git.io/JtOo3";i'
 ```
-PowerShell -NoProfile -ExecutionPolicy Bypass -Command "$t = \"$env:Temp\download_ap.ps1\"; (New-Object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/QutEcoacoustics/audio-analysis/master/build/download_ap.ps1', $t); & $t; rm $t"
+
+Or, to install the prerelease version:
+
+```powershell
+ pwsh -nop -ex B -c '$function:i=irm "https://git.io/JtOo3";i -Pre'
 ```
-# [Linux](#tab/linux-automatic)
+
+### [Linux install](#tab/linux)
+
 Run the following command:
 
+```bash
+ pwsh -nop -c '$function:i=irm "https://git.io/JtOo3";i'
 ```
-sudo pwsh -NoProfile -ExecutionPolicy Bypass -Command "\$t = \"\$env:Temp/download_ap.ps1\"; (New-Object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/QutEcoacoustics/audio-analysis/master/build/download_ap.ps1', \$t); & \$t; rm \$t"
+
+Or, to install the prerelease version:
+
+```bash
+ pwsh -nop -c '$function:i=irm "https://git.io/JtOo3";i -Pre'
 ```
-# [MacOSX](#tab/osx-automatic)
+
+### [MacOSX install](#tab/osx)
+
 Run the following command in _Terminal_:
 
+```bash
+ pwsh -nop -c '$function:i=irm "https://git.io/JtOo3";i'
 ```
-sudo pwsh -NoProfile -ExecutionPolicy Bypass -Command "\$t = \"\$env:Temp/download_ap.ps1\"; (New-Object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/QutEcoacoustics/audio-analysis/master/build/download_ap.ps1', \$t); & \$t; rm \$t"
+
+Or, to install the prerelease version:
+
+```bash
+ pwsh -nop -c '$function:i=irm "https://git.io/JtOo3";i -Pre'
 ```
+
 ***
 
-<br />
-
 > [!NOTE]
-> Please inspect
-> https://github.com/QutEcoacoustics/audio-analysis/blob/master/build/download_ap.ps1
-> prior to running to ensure safety. We already know it's safe, but you should verify
+> Please inspect <https://git.io/JtOo3> which should point to
+> <https://github.com/QutEcoacoustics/audio-analysis/blob/master/build/download_ap.ps1>
+> prior to running these commands.
+>
+> We already know the script is safe, but you should verify
 > the security and contents of any script from the internet you are not familiar
 > with. The above command downloads a remote PowerShell script and executes it on
 > your machine.
+
+> [!WARN]
+> The installer script is brand new. There may be bugs. No warranties provided.
+
+## Uninstall
+
+If you used our automatic install you can use the same script to uninstall:
+
+### [Windows uninstall](#tab/windows)
+
+Run the following command in an elevated (_Run as Administrator_) prompt:
+
+```powershell
+ pwsh -nop -ex B -c '$function:i=irm "https://git.io/JtOo3";i -Un'
+```
+
+### [Linux uninstall](#tab/linux)
+
+Run the following command:
+
+```bash
+ pwsh -nop -c '$function:i=irm "https://git.io/JtOo3";i  -Un'
+```
+
+### [MacOSX uninstall](#tab/osx)
+
+Run the following command in _Terminal_:
+
+```bash
+ pwsh -nop -c '$function:i=irm "https://git.io/JtOo3";i  -Un'
+```
 
 ## Manual Install
 
@@ -70,31 +125,36 @@ sudo pwsh -NoProfile -ExecutionPolicy Bypass -Command "\$t = \"\$env:Temp/downlo
 4. Download the version of AnalysisPrograms suitable for your computer (see [Choosing the asset](#choosing-the-asset))
 5. Extract the folder
     - It can be installed in any directory
-    - We typically extract to a directory named `C:\AP` or `/AP` on Linux
-7. Make sure any [Prerequisites](#prerequisites) are installed
-6. Finally, check the install by running:
+    - We typically extract to a directory named `~\AP` or `~/.local/share/AP` on Linux
+6. Make sure any [Prerequisites](#prerequisites) are installed
+7. [Optional] Add the install directory to your PATH environment variable
+8. Finally, check the install by running:
 
 Run the following command:
 
-# [Windows](#tab/windows-automatic)
-```bash
+### [Windows Check](#tab/windows)
+
+```powershell
 C:\AP\AnalysisPrograms.exe CheckEnvironment
 ```
-# [Linux](#tab/linux-automatic)
-```bash
-/AP/AnalysisPrograms CheckEnvironment
-```
-# [MacOSX](#tab/osx-automatic)
-```bash
-/AP/AnalysisPrograms CheckEnvironment
-```
-***
 
+### [Linux Check](#tab/linux)
+
+```bash
+/AP/AnalysisPrograms CheckEnvironment
+```
+
+### [MacOSX Check](#tab/osx)
+
+```bash
+/AP/AnalysisPrograms CheckEnvironment
+```
+
+***
 
 ### Choosing the asset
 
 [!include[<Asset chooser>](<./assetChooser.html>)]
-
 
 ## Prerequisites
 
@@ -104,40 +164,27 @@ None. Self contained download.
 
 ### MacOSX
 
-
 None. Self contained download.
 
 ### Linux/Unix
 
 The following additional dependencies may be required for Linux/Unix machines:
 
-- **MAYBE**: ffmpeg 
+- **MAYBE**: ffmpeg
     - a packaged version with AP.exe should work for all platforms except ARM and ARM64
 - **MAYBE**:  wavpack
 - libsox-fmt-all, sox
 - libav-tools (on some distros only, not needed in Ubuntu 18)
 
-
-
 ## Build Packages
 
-There are three packages AP.exe:
+There are two variants of AP.exe:
 
 1. The **Stable** release is well tested used by QUT Ecoacoustics on our servers
     and is usually a few months old
-2. The **Weekly** release is automatically built every Monday. It has more
+2. The **Prerelease** release is automatically built weekly, every Monday. It has more
     features and bug fixes than the stable release but it also could have more
     bugs.
-3. The **Continuous** package is created every time there is a change to our
-    code. It is the bleeding edge:  always up to date but conversely the most
-    likely to have bugs.
 
-You should use the **Stable** release unless there is a specific feature or bug
-you need.
-
-
-
-
-
-
-
+You should use the **Stable** release unless there is a recent
+feature implemented or bug fix in the prerelease version that you need.

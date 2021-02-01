@@ -1,0 +1,111 @@
+{{!Copyright (c) Microsoft. All rights reserved. Licensed under the MIT license. See LICENSE file in the project root for full license information.}}
+{{!master(layout/_master.tmpl)}}
+<style>
+.cover-header {
+    width: 100vw;
+    height: 100vh;
+    text-align: center;
+    font-size: 200%;
+    line-height: 200%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+.cover-header .logo {
+
+    margin: 15% 25%;
+    width: 50%;
+    flex: 0 0 auto;
+}
+.cover-title {
+    flex: 0 1 auto;
+}
+.cover-header .organization {
+    flex: 0 1 auto;
+}
+.cover-header .authors {
+    flex: 0 1 auto;
+    font-style: italic;
+}
+.cover-header .url {
+    flex: 0 1 auto;
+    font-size: 66%;
+}
+.cover-header .version-info {
+    flex: 1 1 auto;
+    font-size: 50%;
+    line-height: normal;
+    margin: 5em 10vw;
+
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    justify-content: center;
+}
+
+dl {
+    width: 100%;
+}
+dt {
+    width: 49%;
+    padding: 0 0.5em;
+    text-align: right;
+    font-weight: bold;
+    display: inline-block;
+
+    margin: 0;
+    float: none;
+}
+dd {
+    width: 49%;
+    padding: 0 0.5em;
+    text-align: left;
+    display: inline-block;
+
+    margin: 0;
+    float: none;
+}
+</style>
+
+<header class="cover-header">
+    <img class="svg logo" src="{{_rel}}{{{_appLogoPath}}}{{^_appLogoPath}}logo.svg{{/_appLogoPath}}" alt="{{_appName}}" >
+    <div class="cover-title">
+        {{{rawTitle}}}
+    </div>
+    <div class="organization">
+        {{{AP_organization}}}
+    </div>
+    <div class="authors">
+        {{{AP_authors}}}
+    </div>
+    <div class="url">
+        <a href="{{{AP_website}}}">{{{AP_website}}}</a>
+    </div>
+    <div class="version-info">
+        <dl>
+            <dt>
+                Version:
+            </dt>
+            <dd>
+                <a href="{{{_gitContribute.repo}}}/tree/{{{AP_CommitHash}}}" >{{{AP_Version}}}</a>
+            </dd>
+            <dt>
+                Git Hash:
+            </dt>
+            <dd>
+                <a href="{{{_gitContribute.repo}}}/tree/{{{AP_CommitHash}}}" >{{{AP_CommitHash}}}</a>
+            </dd>
+            <dt>
+                Build Date:
+            </dt>
+            <dd>
+                {{{AP_BuildDate}}}
+            </dd>
+
+        </dl>
+    </div>
+</header>
+
+{{{conceptual}}}
+

@@ -1,6 +1,5 @@
 ---
 uid: tutorial-01
-layout: content
 title: "Using AnalysisPrograms.exe (Practical)"
 subtitle: "Ecoacoustics Congress 2018: Workshop 7"
 redirect_from: "/AP/"
@@ -27,28 +26,27 @@ Congress.
 
 This practical will guide you through:
 
--   Downloading a copy of AnalysisPrograms.exe
--   Opening and using a terminal
--   Calculating acoustic Indices for your data
--   Running an acoustic event recognizer on your data
+- Downloading a copy of AnalysisPrograms.exe
+- Opening and using a terminal
+- Calculating acoustic Indices for your data
+- Running an acoustic event recognizer on your data
 
 After the completion of this practical you can find more documentation and
 resources from our [documentation](xref:home-index)
 
-
 **Please note**:
--  _AnalysisPrograms.exe_ will be frequently abbreviated to _AP.exe_
-in this document.
+
+- _AnalysisPrograms.exe_ will be frequently abbreviated to _AP.exe_
+  in this document
 - You **will** need a laptop to do this practical. If you don't have one please
-find a buddy and work through the examples together.
+  find a buddy and work through the examples together.
 - If you need help please let one of our helpers know.
 - If your internet is slow or not working, our helpers have copies of this practical,
   AP.exe, and some test data on USB that they can share with you.
 - There are also *Orchestrating*, *Tips and Tricks*, and *Glossary* sections at the end of this
   document.
 
----
-
+<hr/>
 
 ## Downloading AP.exe
 
@@ -57,6 +55,7 @@ Please refer to <xref:basics-installing>.
 ## Preparing the data
 
 ### Our data
+
 If you have not brought any data with you, don’t worry, you can use some of ours.
 This data was generously donated for this workshop by Liz Znidersic
 ([@LizZnidersic](https://twitter.com/LizZnidersic)). Liz's data is licensed under
@@ -555,7 +554,7 @@ Tips:
   can be cumbersome because each tweak requires the recogniser to be run again.
   We recommend automating a parameter sweep.
 
----
+<hr/>
 
 ## End of practical
 

@@ -5,8 +5,45 @@ param(
     [string]$configuration,
     [string]$self_contained,
     [string]$runtime_identifier,
-    [switch]$set_ci = $false
+    [switch]$set_ci = $false,
+    [switch]$json = $false,
+    [switch]$env_vars = $false,
+    [string]$prefix = ''
 )
+
+function construct_string($values) {
+
+    $final += "$prologue"
+    $total = $values.Count
+    $index = 0
+    foreach($key in $values.Keys) {
+        $value = $values[$key]
+        $thisDelimiter = $index + 1 -eq $total ? "" : $delimiter
+        $final += "${prefix}${key}${seperator}${value}${suffix}${thisDelimiter}"
+
+        $index++
+    }
+    $final += "$epilogue"
+    return $final
+}
+
+class PathAndValue {
+    [string]$Path
+    [object]$Value
+
+    PathAndValue(
+        [string]$Path,
+        [string]$Value
+    ){
+        $this.Path = $Path
+        $this.Value = $Value
+    }
+
+    [string]ToString(){
+        return $this.Value
+    }
+}
+
 
 Push-Location
 Set-Location $PSScriptRoot
@@ -29,7 +66,8 @@ $self_contained = if ($self_contained -eq 'true') { 'true' } else { 'false' }
 
 $commit_hash = git show -s --format="%H"
 
-$branch = ((git show -s --pretty=%D HEAD) -split ',').Trim().TrimStart('origin/') | Where-Object { -not $_.Contains("HEAD") }
+# process "HEAD -> github-actions, origin/github-actions"
+$branch = (git show -s --pretty='%D' HEAD) -split ',' | Where-Object { -not $_.Contains("HEAD") } | % { $_ -replace '.*/','' }  | Select-Object -First 1
 if ([string]::IsNullOrWhiteSpace($branch)) {
     $branch = git rev-parse --abbrev-ref HEAD
 }
@@ -59,35 +97,67 @@ $content = Get-Content -Raw $template_file
 $templated = $ExecutionContext.InvokeCommand.ExpandString($content)
 $templated | Out-File $metadata_file -Force -Encoding utf8NoBOM
 
-# if we're on the CI, register these variables
-$prefix = ''
-$seperator = '='
-if ($set_ci) {
-    $prefix = "##vso[task.setvariable variable=AP_"
-    $seperator = "]"
+
+$values =  [ordered]@{
+    "Year" = $short_year;
+    "Month" = $short_month;
+    "BuildDate" = $build_date;
+    "BuildNumber" = $build_number;
+    "CommitHash" = $commit_hash;
+    "CommitHashShort" = $describe_hash;
+    "Branch" = $branch;
+    "LastTag" = $describe_tag;
+    "CommitsSinceLastTag" = $describe_commit_count;
+    "TagsThisMonth" = $tag_count_this_month;
+    "IsDirty" = $is_dirty;
+    "Version" = $version;
+    "InformationalVersion" = $informational_version;
+    "GeneratedMetadata" = $metadata_file;
+    "CacheWarning" = $cache_warning;
+    "MsBuildSelfContained" = $self_contained;
+    "MsBuildRuntimeIdentifer" = $runtime_identifier;
+    "MsBuildConfiguration" = $configuration;
 }
 
-$props = @"
-${prefix}Year${seperator}$short_year
-${prefix}Month${seperator}$short_month
-${prefix}BuildDate${seperator}$build_date
-${prefix}BuildNumber${seperator}$build_number
-${prefix}CommitHash${seperator}$commit_hash
-${prefix}CommitHashShort${seperator}$describe_hash
-${prefix}Branch${seperator}$branch
-${prefix}LastTag${seperator}$describe_tag
-${prefix}CommitsSinceLastTag${seperator}$describe_commit_count
-${prefix}TagsThisMonth${seperator}$tag_count_this_month
-${prefix}IsDirty${seperator}$is_dirty
-${prefix}Version${seperator}$version
-${prefix}InformationalVersion${seperator}$informational_version
-${prefix}GeneratedMetadata${seperator}$metadata_file
-${prefix}CacheWarning${seperator}$cache_warning
-${prefix}MsBuildSelfContained${seperator}$self_contained
-${prefix}MsBuildRuntimeIdentifer${seperator}$runtime_identifier
-${prefix}MsBuildConfiguration${seperator}$configuration
-"@
 
-Write-Output $props
+$prologue = ''
+#$prefix = '' - now a parameter
+$seperator = '='
+$suffix = ''
+$delimiter = "`n"
+$epilogue = ""
+
+# if we're on the CI, register these variables
+if ($set_ci) {
+    $prefix = "##vso[task.setvariable variable=AP_" + $prefix
+    $seperator = "]"
+    Write-Output (construct_string $values)
+}
+elseif ($json) {
+    $prologue = "{`n"
+    $prefix = '    "' + $prefix
+    $seperator = '": "'
+    $suffix = '"'
+    $delimiter = ",`n"
+    $epilogue = "`n}"
+    Write-Output (construct_string $values)
+}
+elseif ($env_vars) {
+    # https://github.com/PowerShell/PowerShell/issues/5543
+    # Due to a bug with set-content, it cna't bind to the property for a value in
+    # an object, which makes the pipeline version rather intolerable.
+    # Hence we're adding a toString() to our pscustomobject that ensures only
+    # the value is represented when Set-Content calls toString
+    foreach($key in $values.Keys) {
+        $value = $values[$key]
+        Write-Output ([PathAndValue]::new("Env:${prefix}$key", $value))
+    }
+
+}
+else {
+    Write-Output (construct_string $values)
+}
+
 
 Pop-Location
+

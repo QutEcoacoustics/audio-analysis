@@ -1,0 +1,36 @@
+{{!master(layout/_master.tmpl)}}
+{{{rawTitle}}}
+{{{conceptual}}}
+
+{{#contentsTitle}}
+<h2>{{{contentsTitle}}}</h2>
+{{/contentsTitle}}
+{{^contentsTitle}}
+<h2>Contents</h2>
+{{/contentsTitle}}
+
+
+{{#_toc}}
+<div class="index-toc">
+    {{^leaf}}
+        <ol class="nav level{{level}}">
+            {{#items}}
+            <li class="{{#active}}active{{/active}}">
+                {{^leaf}}
+                <span class="expand-stub"></span>
+                {{/leaf}}
+                {{#href}}
+                <a href="{{href}}" title="{{name}}" class="{{#active}}active{{/active}}">{{name}}</a>
+                {{/href}}
+                {{^href}}
+                <a class="{{#active}}active{{/active}}">{{{name}}}</a>
+                {{/href}}
+                {{^leaf}}
+                {{>partials/li}}
+                {{/leaf}}
+            </li>
+            {{/items}}
+        </ol>
+    {{/leaf}}
+</div>
+{{/_toc}}

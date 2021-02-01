@@ -1,5 +1,4 @@
 ---
-layout: content
 title: "Using AnalysisPrograms.exe (Practical) Downloads"
 subtitle: "Ecoacoustics Congress 2018: Workshop 7"
 redirect_from: "/AP_Download/"

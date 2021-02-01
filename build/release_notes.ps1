@@ -10,6 +10,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $DebugPreference = 'Continue'
+. $PSScriptRoot/exec.ps1
 
 Write-Debug "`$tag_name:$tag_name"
 Write-Debug "`$output_file:$output_file"
@@ -32,18 +33,6 @@ function formatIssueList {
     }
 }
 
-function script:exec {
-    [CmdletBinding()]
-
-    param(
-        [Parameter(Position = 0, Mandatory = 1)][scriptblock]$cmd,
-        [Parameter(Position = 1, Mandatory = 0)][string]$errorMessage = ("Error executing command: {0}" -f $cmd)
-    )
-    & $cmd
-    if ($lastexitcode -ne 0) {
-        throw $errorMessage
-    }
-}
 
 Write-Output "Creating release message"
 # we assumed we've already tagged before describing this release
@@ -67,7 +56,7 @@ foreach ($line in $commit_summary) {
 
     $issue_refs = ($line | Select-String "#\d+" -AllMatches).Matches.Value | Where-Object { $null -ne $_ }
     $current.Issues += $issue_refs
-    
+
 }
 $commits += $current
 #Write-debug ($commits | format-table | out-string)
@@ -76,7 +65,7 @@ Write-debug ($commits.Count)
 $commit_list = $commits | formatIssueList | Join-String -Separator "`n"
 
 # get any notes from the change log
-$changelog_path = "$PSScriptRoot/../CHANGELOG.md" 
+$changelog_path = "$PSScriptRoot/../CHANGELOG.md"
 $changelog = Get-Content $changelog_path -Raw
 # find notes and insertion point
 $changelog_regex = "<!--manual-content-insert-here-->([\s\S]*)<!--generated-content-insert-here-->(\s)"

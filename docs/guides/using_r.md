@@ -1,12 +1,12 @@
 # Scripting with R
 
-For those more comfortable with R over a terminal, here is an example of an R 
+For those more comfortable with R over a terminal, here is an example of an R
 script that runs *AP.exe*.
 
 Using R like this, where we run *AP.exe* with `system2` is identical to using a
 shell; `system2` is R's method for running a command.
 
-It is important to still know how to [use a shell](./cli.md) because you may need
+It is important to still know how to [use a shell](xref:cli) because you may need
 to get help (`--help`) for a command, or construct a command that does something else.
 Using R is just a wrapper around this process.
 
