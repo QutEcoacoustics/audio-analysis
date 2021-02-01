@@ -18,7 +18,7 @@ function script:log {
     # *     - anything else, new group
     if ($section -ne "") {
         # reset group
-        if ((is_CI) -and $null -ne $script:current_section) {
+        if ((Test-CI) -and $null -ne $script:current_section) {
             Write-Output "::endgroup::"
         }
 
@@ -26,7 +26,7 @@ function script:log {
         $script:current_section = $section
 
         # if starting a new group
-        if ($null -ne $section -and (is_CI)) {
+        if ($null -ne $section -and (Test-CI)) {
             # emit new section
             Write-Output "::group::$script:current_section"
         }
@@ -41,7 +41,7 @@ function script:finish_log {
     param()
 
     $script:current_section = $null
-    if ((is_CI)) {
+    if ((Test-CI)) {
         Write-Output "::endgroup::"
     }
 }

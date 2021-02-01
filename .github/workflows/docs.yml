@@ -33,8 +33,8 @@ jobs:
 
     # fetch more tag info so git_version.ps1 works properly
     - name: Ensure tags are fetched
-      run: |
-        git fetch --tags --force # Retrieve annotated tags.
+      # Retrieve annotated tags.
+      run: git fetch --tags --force 
 
     # disabled due to bug in docfx that leads to a stack overflow
     # also disabled in generate_docs.ps1

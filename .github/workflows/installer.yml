@@ -35,17 +35,26 @@ jobs:
       fail-fast: false
       matrix:
         os:
+          # https://docs.github.com/en/actions/reference/specifications-for-github-hosted-runners#supported-runners-and-hardware-resources
           - windows-latest
-          - ubuntu-latest
-          - macos-latest
+          - ubuntu-18.04
+          - ubuntu-20.04
+          - macos-11.0
+          - macos-10.15
         include:
           - os: windows-latest
             alias_name: "AP.exe"
             bin_dir: "~\\AP"
-          - os: ubuntu-latest
+          - os: ubuntu-18.04
             alias_name: "AP"
             bin_dir: "~/.local/bin"
-          - os: macos-latest
+          - os: ubuntu-20.04
+            alias_name: "AP"
+            bin_dir: "~/.local/bin"
+          - os: macos-11.0
+            alias_name: "AP"
+            bin_dir: "~/.local/bin"
+          - os: macos-10.15
             alias_name: "AP"
             bin_dir: "~/.local/bin"
     # https://raw.githubusercontent.com/QutEcoacoustics/audio-analysis/5f08faa96d8f044fb278b68f1c7d577fe218e8a1/build/download_ap.ps1
@@ -62,26 +71,30 @@ jobs:
     # https://github.com/PowerShell/PowerShell/issues/3337
     steps:
       - name: Get info about action runner
-        run: |
-          $PSVersionTable
+        run: $PSVersionTable
+
+        # must use -Force on CI to suppress interactive steps
+        # otherwise interactive steps will crash (e.g. when warning on install overwrite)
       - name: Test installer (remote download)
         uses: knicknic/os-specific-run@v1.0.3
         with:
           macos: >
-            echo '$function:i=irm "$env:SCRIPT_URL";i -Force' | pwsh -nop -c -
+            pwsh -nop -c '$function:i=irm "$env:SCRIPT_URL";i -Force'
           linux: >
-            echo '$function:i=irm "$env:SCRIPT_URL";i -Force' | pwsh -nop -c -
+            pwsh -nop -c '$function:i=irm "$env:SCRIPT_URL";i -Force'
           windows: >
-            '$function:i=irm "$env:SCRIPT_URL";i -Force' | pwsh -nop -ex B -c -
+            pwsh -nop -ex B -c '$function:i=irm "$env:SCRIPT_URL";i -Force'
+
       - name: Test installer (upgrade)
         uses: knicknic/os-specific-run@v1.0.3
         with:
           macos: >
-            echo '$function:i=irm "$env:SCRIPT_URL";i -Force -Prerelease' | pwsh -nop -c -
+            pwsh -nop -c '$function:i=irm "$env:SCRIPT_URL";i -Force -Prerelease'
           linux: >
-            echo '$function:i=irm "$env:SCRIPT_URL";i -Force -Prerelease' | pwsh -nop -c -
+            pwsh -nop -c '$function:i=irm "$env:SCRIPT_URL";i -Force -Prerelease'
           windows: >
-            '$function:i=irm "$env:SCRIPT_URL";i -Force -Prerelease' | pwsh -nop -ex B -c -
+            pwsh -nop -ex B -c '$function:i=irm "$env:SCRIPT_URL";i -Force -Prerelease'
+
       - name: Update PATH
         # Github actions doesn't persist changes to PATH during steps
         # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#adding-a-system-path
@@ -89,6 +102,7 @@ jobs:
           echo "$env:AP_PATH" | Resolve-Path | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         env:
           AP_PATH: ${{ matrix.bin_dir }}
+
       - name: Check alias works
         run: |
           Get-ChildItem "$env:AP_PATH/$env:ALIAS_NAME"
@@ -96,15 +110,17 @@ jobs:
         env:
           AP_PATH: ${{ matrix.bin_dir }}
           ALIAS_NAME: ${{ matrix.alias_name }}
+
       - name: Test installer (uninstall)
         uses: knicknic/os-specific-run@v1.0.3
         with:
           macos: >
-            echo '$function:i=irm "$env:SCRIPT_URL";i -Force -Uninstall' | pwsh -nop -c -
+            pwsh -nop -c '$function:i=irm "$env:SCRIPT_URL";i -Force -Uninstall'
           linux: >
-            echo '$function:i=irm "$env:SCRIPT_URL";i -Force -Uninstall' | pwsh -nop -c -
+            pwsh -nop -c '$function:i=irm "$env:SCRIPT_URL";i -Force -Uninstall'
           windows: >
-            '$function:i=irm "$env:SCRIPT_URL";i -Force -Uninstall' | pwsh -nop -ex B -c -
+            pwsh -nop -ex B -c '$function:i=irm "$env:SCRIPT_URL";i -Force -Uninstall'
+
       - name: Check alias no longer works
         run: |
           Get-Command AP -ErrorAction 'Continue'

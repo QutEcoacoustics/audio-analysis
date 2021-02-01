@@ -1,6 +1,6 @@
 
 
-function is_CI() {
+function Test-CI() {
     $env:CI -eq "true"
 }
 

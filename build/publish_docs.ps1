@@ -23,7 +23,7 @@ if ($l -eq 0) {
 }
 
 $commit_hash = git show -s --format="%H"
-log "Sstart deploy" "Deploy"
+log "Start deploy" "Deploy"
 try {
     Push-Location
     Set-Location "$PSScriptRoot/../_site"

@@ -35,13 +35,13 @@ The automatic install will download AP.exe and may install required perquisites.
 Run the following command in an elevated (_Run as Administrator_) prompt:
 
 ```powershell
-'$function:i=irm "https://git.io/JtOo3";i' | pwsh -nop -ex B -c - 
+ pwsh -nop -ex B -c '$function:i=irm "https://git.io/JtOo3";i'
 ```
 
 Or, to install the prerelease version:
 
 ```powershell
-'$function:i=irm "https://git.io/JtOo3";i -Pre' | pwsh -nop -ex B -c - 
+ pwsh -nop -ex B -c '$function:i=irm "https://git.io/JtOo3";i -Pre'
 ```
 
 ### [Linux install](#tab/linux)
@@ -49,13 +49,13 @@ Or, to install the prerelease version:
 Run the following command:
 
 ```bash
-echo '$function:i=irm "https://git.io/JtOo3";i' | pwsh -nop -c - 
+ pwsh -nop -c '$function:i=irm "https://git.io/JtOo3";i'
 ```
 
 Or, to install the prerelease version:
 
 ```bash
-echo '$function:i=irm "https://git.io/JtOo3";i -Pre' | pwsh -nop -c - 
+ pwsh -nop -c '$function:i=irm "https://git.io/JtOo3";i -Pre'
 ```
 
 ### [MacOSX install](#tab/osx)
@@ -63,19 +63,19 @@ echo '$function:i=irm "https://git.io/JtOo3";i -Pre' | pwsh -nop -c -
 Run the following command in _Terminal_:
 
 ```bash
-echo '$function:i=irm "https://git.io/JtOo3";i' | sudo pwsh -nop -c - 
+ pwsh -nop -c '$function:i=irm "https://git.io/JtOo3";i'
 ```
 
 Or, to install the prerelease version:
 
 ```bash
-echo '$function:i=irm "https://git.io/JtOo3";i -Pre' | sudo pwsh -nop -c - 
+ pwsh -nop -c '$function:i=irm "https://git.io/JtOo3";i -Pre'
 ```
 
 ***
 
 > [!NOTE]
-> Please inspect <https://git.io/JtOo3"> which should point to
+> Please inspect <https://git.io/JtOo3> which should point to
 > <https://github.com/QutEcoacoustics/audio-analysis/blob/master/build/download_ap.ps1>
 > prior to running these commands.
 >
@@ -96,7 +96,7 @@ If you used our automatic install you can use the same script to uninstall:
 Run the following command in an elevated (_Run as Administrator_) prompt:
 
 ```powershell
-'$function:i=irm "https://git.io/JtOo3";i -Un' | pwsh -nop -ex B -c - 
+ pwsh -nop -ex B -c '$function:i=irm "https://git.io/JtOo3";i -Un'
 ```
 
 ### [Linux uninstall](#tab/linux)
@@ -104,7 +104,7 @@ Run the following command in an elevated (_Run as Administrator_) prompt:
 Run the following command:
 
 ```bash
-echo '$function:i=irm "https://git.io/JtOo3";i  -Un' | pwsh -nop -c - 
+ pwsh -nop -c '$function:i=irm "https://git.io/JtOo3";i  -Un'
 ```
 
 ### [MacOSX uninstall](#tab/osx)
@@ -112,7 +112,7 @@ echo '$function:i=irm "https://git.io/JtOo3";i  -Un' | pwsh -nop -c -
 Run the following command in _Terminal_:
 
 ```bash
-echo '$function:i=irm "https://git.io/JtOo3";i  -Un' | sudo pwsh -nop -c - 
+ pwsh -nop -c '$function:i=irm "https://git.io/JtOo3";i  -Un'
 ```
 
 ## Manual Install
@@ -176,7 +176,6 @@ The following additional dependencies may be required for Linux/Unix machines:
 - libsox-fmt-all, sox
 - libav-tools (on some distros only, not needed in Ubuntu 18)
 
-
 ## Build Packages
 
 There are two variants of AP.exe:
@@ -187,5 +186,5 @@ There are two variants of AP.exe:
     features and bug fixes than the stable release but it also could have more
     bugs.
 
-You should use the **Stable** release unless there is a specific feature or bug
-you need.
+You should use the **Stable** release unless there is a recent
+feature implemented or bug fix in the prerelease version that you need.
