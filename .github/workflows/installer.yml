@@ -39,7 +39,8 @@ jobs:
           - windows-latest
           - ubuntu-18.04
           - ubuntu-20.04
-          - macos-11.0
+          # macos-11.0 is in private preview stage https://github.com/actions/virtual-environments/issues/2486
+          # - macos-11.0
           - macos-10.15
         include:
           - os: windows-latest
@@ -51,9 +52,9 @@ jobs:
           - os: ubuntu-20.04
             alias_name: "AP"
             bin_dir: "~/.local/bin"
-          - os: macos-11.0
-            alias_name: "AP"
-            bin_dir: "~/.local/bin"
+          # - os: macos-11.0
+          #   alias_name: "AP"
+          #   bin_dir: "~/.local/bin"
           - os: macos-10.15
             alias_name: "AP"
             bin_dir: "~/.local/bin"
