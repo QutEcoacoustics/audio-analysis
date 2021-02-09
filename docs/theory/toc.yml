@@ -1,4 +1,11 @@
+- name: Spectrograms
+  href: xref:theory-spectrograms
+
+- name: Acoustic Events
+  href: xref:theory-acoustic-events
+
 - name: Acoustic Indices
   href: indices.md
+
 - name: Glossary
   href: glossary.md

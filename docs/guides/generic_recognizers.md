@@ -1,158 +1,174 @@
-`File: DIY_CallRecognizersUsingAP.md`
-# Welcome to "DIY Call Recognizer"
+---
+title: DIY Call Recognizer
+uid: guides-generic-recognizers
+---
 
-         
-> **DIY Call Recognizer** is a utility within **Analysis Programs**, a command line program that analyses long-duration audio-recordings of the environment. `AnalysisPrograms.exe` (abbreviated from here to `APexe`) can execute several different utlities or functions, one of which is the ability to write your own call recognizer. This manual describes how to write a **DIY call recognizer**. Refer to other manuals [here](https://github.com/QutEcoacoustics/audio-analysis/blob/master/README.md) for other utilities.
+# DIY Call Recognizers
 
-## Contents ##
-1. Why bother with a DIY call recognizer?
-2. Calls, syllables, harmonics
-3. Acoustic events
-4. Detecting acoustic events
-5. Configuration files
-6. Parameter names and values
-7. An efficient strategy to tune parameters
-8. Seven stages to building a DIY call recognizer
-9. The command line
-10. Building a larger data set
+A **DIY Call Recognizer** is a utility within [_Analysis Programs_](xref:basics-introduction) which allows you to write
+your own call recognizers.
 
-==============================================================
+A **DIY call recognizer** uses our _generic recognizer_ tools. This guide will help you make your own
+_generic recognizer_. The generic recognizer allows a user to generically reuse and parametrize our syllable detectors.
+Once you can detect new syllables those syllables can be combined to form new call recognizers.  
 
-NOTE:
-- Incomplete parts of the manual are indicated by _**TODO**_.
-- Features not yet implemented are marked with a construction emoji (🚧). 
+> [!NOTE]
+>
+> - Incomplete parts of the manual are indicated by _**TODO**_.
+> - Features not yet implemented are marked with a construction emoji (🚧).
 
-==============================================================
-
-
-.
-
-
-## 1. Why bother with a DIY call recognizer?
+## 1. Why make a DIY call recognizer?
 
 There are three levels of sophistication in automated call recognizers:
-- The simplist is the handcrafted template.
+
+- The simplest is the handcrafted template.
 - More powerful is a _machine learned_ model.
 - The current cutting edge of call recognizers is *deep-learning* using a convolutional neural network.
 
 A comparison of these recognizer types is shown in the following table and explained further in the subsequent paragraph.
 
- ### **TABLE. A comparison of three different kinds of call recognizer**
+<figure>
 
-| Type of Recognizer | Who does the feature extraction? | Required dataset | Skill level | Accuracy |
-|:---:|:---:|:---:|:---:|:---:|
-|Template matching | User | Small (even 1!) | Least | Sometimes good |
-|Supervised machine learning | User | Moderate (50-100s) | Some | Better |
-|CNN | Part of CNN learning | Very large (10k to 1M) | A lot! | Best? |
-||||
+|      Type of Recognizer     | Who does the feature extraction? |    Required dataset    | Skill level |    Accuracy    |
+|:---------------------------:|:--------------------------------:|:----------------------:|:-----------:|:--------------:|
+|      Template matching      |               User               |     Small (even 1!)    |    Least    | Sometimes good |
+| Supervised machine learning |               User               |   Moderate (50-100s)   |     Some    |     Better     |
+|             CNN             |       Part of CNN learning       | Very large (10k to 1M) |    A lot!   |      Best?     |
 
+<figcaption>A comparison of three different kinds of call recognizer</figcaption>
+</figure>
 
-Hand-crafted, *rule-based* templates can be built using just one or a few examples of the target call. But like any rule-based *AI* system, they are *brittle*, that is, they break easily if the target call falls even slightly outside the bounds of the rules. A supervised machine-learning model, for example an SVM or Random Forest, is far more resilient to slight changes in the range of the target call but they require many more training examples, on the order of 100 training examples. Finally, the convolutional neural network (CNN) is the most powerful learning machine available today (2021) but this power is achieved only by supplying thousands of examples of the each target call.
+Hand-crafted, *rule-based* templates can be built using just one or a few examples of the target call. But like any
+ule-based *AI* system, they are *brittle*, that is, they break easily if the target call falls even slightly outside
+the bounds of the rules.
 
-> **Note**: The following two rules apply to the preparation of training/test datasets, regardless of the recognizer type.
+A supervised machine-learning model, for example an SVM or Random Forest, is far more resilient to slight changes in the
+range of the target call but they require many more training examples, on the order of 100 training examples.
 
-> - **Rule 1.** Rubbush in => rubbish out!! That is, think carefully about your chosen training/test examples.
+Finally, the convolutional neural network (CNN) is the most powerful learning machine available today (2021) but this
+power is achieved only by supplying thousands of examples of the each target call.
 
-> -  **Rule 2.** Training and test sets should be representative (in some loose statistical sense) of the intended operational environment.
+> [!TIP]
+> The following two rules apply to the preparation of training/test datasets, regardless of the recognizer type.
+>
+> - **Rule 1.** Rubbish in ➡ rubbish out!  
+>    That is, think carefully about your chosen training/test examples.
+> - **Rule 2.** Training and test sets should be representative (in some loose statistical sense) of the intended
+>    operational environment.
 
+To summarize (and at the risk of over-simplification):
 
-To summarise (and at the risk of over-simplification), a hand-crafted template has low cost and low benefit; a machine-learned model has medium cost and medium benefit, while a deep-learned model has high cost and high benefit. The cost/benefit ratio in each case is similar but here is the catch - the cost must be paid _before_ you get the benefit! Furthermore, in a typical ecological study, a bird species is of interest precisely because it is threatened or cryptic. When not many calls are available, the more sophisticated approaches become untenable. Hence there is a place for hand-crafted templates in call recognition.
+- a hand-crafted template has low cost and low benefit
+- a machine-learned model has medium cost and medium benefit
+- while a deep-learned model has high cost and high benefit
 
-These ideas are summarised in the following table:
-| Type of Recognizer | Cost | Benefit | Cost/benefit ratio | The catch !|
-|:---:|:---:|:---:|:---:|:---:|
-|  Template matching | Low | Low | A number | You must pay ... |
-|  Machine learning | Medium | Medium | A similar number | ... the cost before ... |
-|CNN | High | High | A similar number | ... you get the benefit! |
-||||
+The cost/benefit ratio in each case is similar but here is the catch - the cost must be paid _before_ you get the
+benefit! Furthermore, in a typical ecological study, a bird species is of interest precisely because it is threatened or
+cryptic. When not many calls are available, the more sophisticated approaches become untenable. Hence there is a place
+for hand-crafted templates in call recognition.
 
+These ideas are summarized in the following table:
 
+| Type of Recognizer |  Cost  | Benefit | Cost/benefit ratio |        The catch !       |
+|:------------------:|:------:|:-------:|:------------------:|:------------------------:|
+|  Template matching |   Low  |   Low   |      A number      |     You must pay ...     |
+|  Machine learning  | Medium |  Medium |  A similar number  |  ... the cost before ... |
+|         CNN        |  High  |   High  |  A similar number  | ... you get the benefit! |
 
-**To summarise, the advantages of a hand-crafted DIY call recognizer are:**
+To summarize, the advantages of a hand-crafted DIY call recognizer are:
+
 1. You can do it yourself!
-2. You can start with just one or two calls.
-3. Allows you to collect a larger dataset for machine learning purposes.
-4. Exposes the variability of the target call as you go. 
-
-
-.
+2. You can start with just one or two calls
+3. Allows you to collect a larger dataset (and refine it) for machine learning purposes
+4. Exposes the variability of the target call as you go
 
 ## 2. Calls, syllables, harmonics
-The algorithmic approach of **DIY Call Recognizer** makes particular assumptions about animals calls and how they are structured. A *call* is taken to be any sound of animal origin (whether for communication purposes or not) and includes bird songs/calls, animal vocalisations of any kind, the stridulation of insects, the wingbeats of birds and bats and the various sounds produced by acquatic animals. Calls typically have temporal and spectral structure. For example they may consist of a temporal sequence of two or more *syllables* (with "gaps" in between) or a set of simultaneous *harmonics* or *formants*. (The distinction between harmonics and formants does not concern us here.)
 
-**DIY Call Recognizer** attempts to recognize calls in a noise-reduced spectrogram, which is processed as a matrix of real values but visualised as a grey-scale image. Each row of pixels is a frqeuency bin and each column of pixels is a time-frame. The value in each spectrogram/matrix cell (represented visually by one image pixel) is the acoustic intensity in decibels with respect to the background noise baseline. Note that the decibel values in a noise-reduced spectrogram are always positive.
+The algorithmic approach of **DIY Call Recognizer** makes particular assumptions about animals calls and how they are
+structured. A *call* is taken to be any sound of animal origin (whether for communication purposes or not) and include
+bird songs/calls, animal vocalizations of any kind, the stridulation of insects, the wingbeats of birds and bats and the
+various sounds produced by aquatic animals. Calls typically have temporal and spectral structure. For example they may
+consist of a temporal sequence of two or more *syllables* (with "gaps" in between) or a set of simultaneous *harmonics*
+or *formants*. (The distinction between harmonics and formants does not concern us here.)
 
-.
-
+A **DIY Call Recognizer** attempts to recognize calls in a noise-reduced [spectrogram](xref:theory-spectrograms).
 
 ## 3. Acoustic events
 
-An *acoustic event* is defined as a contiguous set of spectrogram cells/pixels whose decibel values exceed some user defined threshold. In the ideal case, an acoustic event should encompass a discrete component of acoustic energy within a call, syllable or harmonic. It will be separated from other acoustic events by intervening pixels having decibel values *below* the user defined threshold. **DIY Call Recognizer** contains algorithms to recognize seven different kinds of _"generic"_ acoustic event based on their shape in the spectrogram. We describe these in turn.
+An [_acoustic event_](xref:theory-acoustic-events) is defined as a contiguous set of spectrogram cells/pixels whose decibel values exceed some user
+defined threshold. In the ideal case, an acoustic event should encompass a discrete component of acoustic energy within
+a call, syllable or harmonic. It will be separated from other acoustic events by gaps having decibel values *below*
+ the user defined threshold.
 
-### 3.1. Shreik 
-This is a diffuse acoustic event that is extended in both time and frequency. While a shriek may have some internal structure, it is treated by **DIY Call Recognizer** as a "blob" of acoustic energy. A typical example is a parrot shriek.
+**DIY Call Recognizer** contains algorithms to recognize seven different kinds of _generic_ acoustic events based on
+their shape in the spectrogram.
 
-### 3.2. Whistle
-This is a narrow band, "pure" tone having duration over several to many time frames but having very restricted bandwidth. In theory a pure tone occupies a single frequency bin, but in practice bird whistles can occupy several freqeuncy bins and appear as a horizontal *spectral track* in the spectrogram.
+There are seven types of acoustic events:
 
-### 3.3. Chirp
-This sounds like a whistle whose frequency increases or decreases over time. A chirp is said to be a *frqeuency modulated* tone. It appears in the spectrogram as a gently ascending or descending *spectral track*.
+1. [Shrieks](xref:theory-acoustic-events#shrieks):
+   diffuse events treated as "blobs" of acoustic energy. A typical example is a parrot shriek.
+2. [Whistles](xref:theory-acoustic-events#whistles):
+  "pure" tones (often imperfect) appearing as horizontal lines on a spectrogram
+3. [Chirps](xref:theory-acoustic-events#chirps):
+  whistle like events that increases in frequency over time. Appears like a sloping line in a spectrogram.
+4. [Whips](xref:theory-acoustic-events#whips):
+  sound like a "whip crack". They appear as steeply ascending or descending *spectral track* in the spectrogram.
+5. [Clicks](xref:theory-acoustic-events#clicks):
+  appear as a single vertical line in a spectrogram and sounds, like the name suggests, as a very brief click.
+6. [Oscillations](xref:theory-acoustic-events#oscillations):
+  An oscillation is the same (or nearly the same) syllable (typically whips or clicks) repeated at a fixed periodicity over several to many time-frames.
+7. [Harmonics](xref:theory-acoustic-events#harmonics):
+  Harmonics are the same/similar shaped *whistle* or *chirp* repeated simultaneously at multiple intervals of frequency. Typically, the frequency intervals are similar as one ascends the stack of harmonics.
 
-### 3.4. Whip
-A *whip* is like a *chirp* except that the frequency modulation can be extremely rapid so that it sounds like a "whip crack". It has the appearance of a steeply ascending or descending *spectral track* in the spectrogram. An archetypal whip is the final component in the whistle-whip of the Australian whip-bird. Within the DIY Recognizer software, the distinction between a chirp and a whip is not sharp. That is, a *spectral track* that is ascending diagonally (cell-wise) at 45 degrees in the spectrogram will be detected by both the *chirp* and the *whip* algorithms.
+For more detail on event types see [_acoustic events_](xref:theory-acoustic-events).
 
-### 3.5. Click
-The *click* appears as a single vertical line in a spectrogram and sounds, like the name suggests, as a very brief click. In practice, depending on spectrogram configuration settings, a *click* may occupy two or more adjacent time-frames.
+<figure>
 
-Note that each of the above five acoustic events are "simple" events. The remaining two kinds of acoustic event are said to be composite, that is, they are composed of more than one acoustic event but the detection algorithm is designed to pick them up as a single event.
+![Seven Kinds Of Acoustic Event](../images/SevenKindsAcousticEvent.jpg)
 
-### 3.6. Oscillations
-An oscillation is the same (or nearly the same) syllable (typically whips or clicks) repeated at a fixed periodicity over several to many time-frames.
-
-### 3.7. Harmonics
-Harmonics are the same/similar shaped *whistle* or *chirp* repeated simultaneously at multiple intervals of frequency. Typically, the frequency intervals are similar as one ascends the stack of harmonics.
-
-**Figure. The seven kinds of generic acoustic event**
-![Seven Kinds Of Acoustic Event](./Images/SevenKindsAcousticEvent.jpg)
-
-.
-
+<figcaption>The seven kinds of generic acoustic event</figcaption>
+</figure>
 
 ## 4. Detecting acoustic events
-**DIY Call Recognizer** detects or recognizes target calls in an audio recording using a sequence of seven steps: 
-1. Audio segmentation
-2. Audio resampling
-3. Spectrogram preparation
-4. Call syllable detection
-5. Combining syllable events into calls
-6. Syllable/call filtering
-7. Saving Results
 
-It helps to group these detection steps into four parts:
-- Steps 1 and 2: _Pre-processing_ steps to prepare the recording for subsequent analysis.
-- Steps 3 and 4: _Processing_ steps to identify target syllables as _"generic"_ acoustic events. 
-- Steps 5 and 6: _Post-processing_ steps which simplify the output from step 4 by combining related acoustic events and filtering events to remove false-positives. 
-- Step 7: The final step is to save those events which remain.
+A **DIY Call Recognizer** detects or recognizes target calls in an audio recording using a sequence of steps:
 
-To execute these seven detection steps correctly, you must enter suitable _parameter values_ into a _configuration file_. 
+1. Preprocessing—steps to prepare the recording for subsequent analysis.
+    1. Input audio is broken up into 1-minute chunks
+    2. Audio resampling
+2. Processing—steps to identify target syllables as _"generic"_ acoustic events
+    1. Spectrogram preparation
+    1. Call syllable detection
+3. Postprocessing—steps which simplify the output combining related acoustic events and filtering events to remove false-positives
+    1. Combining syllable events into calls
+    1. Syllable/call filtering
+4. Saving Results
 
-
-
-.
+To execute these detection steps, suitable _parameter values_ must be placed into a [_configuration file_](xref:basics-config-files).
 
 ## 5. Configuration files
-### The structure of the config file name
-**DIY Call Recognizer** is a command line tool. It requires a _configuration file_ (henceforth, _config_ file) in order to find calls of interest in a recording. The name of the config file is included as a command line argument. `APexe` reads the file containing a list of _parameters_ and then executes the detection steps accordingly. The command line will be described in a subsequent section. 
 
-> NOTE: The config filename must have the correct structure in order to be recognized by `APexe`. For example, given a config file with the name `AuthorId.GenericRecognizer.NinoxBoobook.yml`:
+All analyses in _AP_ require a [_configuration file_](xref:basics-config-files) (henceforth, _config_ file) in order to tune the analysis.
+
+It is no different for generic recognizer. To find calls of interest in a recording _AP_ reads the config file
+which contains _parameters_ and then executes the detection steps accordingly.
+
+> [!IMPORTANT]
+> If you're not familiar with AP's config files please review our <xref:basics-config-files> page.
+
+### Naming
+
+Configuration files must be named in a certain format.
+
+> NOTE: The config filename must have the correct structure in order to be recognized by _AP_. For example, given a config file with the name `AuthorId.GenericRecognizer.NinoxBoobook.yml`:
 > - `AuthorId` is simply to keep track of the origins of the config.
-> - `GenericRecognizer` tells `APexe` that this is a call recognition task and to parse the config file accordingly. Note this must be in second place in the file name.
-> - `NinoxBoobook` (the Boobook owl) is an optional species name. `APexe` does not read/use this info but note that there must be no spaces in the file name.
-> - `.yml` informs `APexe` what syntax to expect, in this case YAML.
+> - `GenericRecognizer` tells _AP_ that this is a call recognition task and to parse the config file accordingly. Note this must be in second place in the file name.
+> - `NinoxBoobook` (the Boobook owl) is an optional species name. _AP_ does not read/use this info but note that there must be no spaces in the file name.
+> - `.yml` informs _AP_ what syntax to expect, in this case YAML.
 
 **_TODO_** need to check with Anthony re changes to structure of the config file name.
 
-`APexe` config files must be written in a language called YAML. For an introduction to YAML syntax please see this article: https://sweetohm.net/article/introduction-yaml.en.html. 
+_AP_ config files must be written in a language called YAML. For an introduction to YAML syntax please see this article: https://sweetohm.net/article/introduction-yaml.en.html. 
 We highly recommend using Notepad++ or Visual Studio Code to edit your YAML config files. Both are free, and both come with built in syntax highlighting for YAML files.
 
 ### Parameters
@@ -200,7 +216,7 @@ Profiles:
         MaxDuration: 1.2
 ```
 
-This artificial example illustrates three profiles (i.e. syllables or acoustic events) under the key word `Profiles`. Each profile has a user defined name (eg. BoobookSyllable3) and type. The `!` following the colon should be read as "of event type".  Each profile in this example has four parameters. (The lines starting with `#` are comments and ignored by the yaml interpreter.) All three profiles have the same values for `MinHertz` and `MaxHertz` but different values for their time duration. Each profile is processed separately by `APexe`.
+This artificial example illustrates three profiles (i.e. syllables or acoustic events) under the key word `Profiles`. Each profile has a user defined name (eg. BoobookSyllable3) and type. The `!` following the colon should be read as "of event type".  Each profile in this example has four parameters. (The lines starting with `#` are comments and ignored by the yaml interpreter.) All three profiles have the same values for `MinHertz` and `MaxHertz` but different values for their time duration. Each profile is processed separately by _AP_.
 
 
 > *IMPORTANT NOTE ABOUT INDENTATION: In YAML syntax, the levels of a hierarchy are distinguished by indentation alone. It is extremely important that the indentation is retained or the config file will not be read correctly. Use four spaces for indentation, not the TAB key.
@@ -271,7 +287,7 @@ Profiles:
 
 > The default value for *WindowFunction* is `HANNING`. There should never be a need to change this but you might like to try a `HAMMING` window if you are not satisfied with the appearance of your spectrograms.
 
-> The "Bg" in *BgNoiseThreshold* means *background*. This parameter determines the degree of severity of noise removal from the spectrogram. The units are decibels. Zero sets the least severe noise removal. It is the safest default value and probably does not need to be changed. Increasing the value to say 3-4 decibels increases the likelihood that you will lose some important components of your target calls. For more on the noise removal algorithm used by `APexe` see [Towsey, Michael W. (2013) Noise removal from wave-forms and spectrograms derived from natural recordings of the environment.](https://eprints.qut.edu.au/61399/). 
+> The "Bg" in *BgNoiseThreshold* means *background*. This parameter determines the degree of severity of noise removal from the spectrogram. The units are decibels. Zero sets the least severe noise removal. It is the safest default value and probably does not need to be changed. Increasing the value to say 3-4 decibels increases the likelihood that you will lose some important components of your target calls. For more on the noise removal algorithm used by _AP_ see [Towsey, Michael W. (2013) Noise removal from wave-forms and spectrograms derived from natural recordings of the environment.](https://eprints.qut.edu.au/61399/). 
 
 
 ### Step 4. Call syllable detection
@@ -542,7 +558,7 @@ We described above the various steps required to tune the parameter values in a 
 
 > **Step 6.** Repeat steps 3, 4 and 5 until you appear to have achieved the best possible accuracy. In order to minimise the number of iterations of stages 3 to 5, it is best to tune the configuration parameters in the sequence described in the previous section.
 
-> **Step 7.** At this point you should have a recognizer that performs "as accurately as possible" on your training examples. The next step is to test your recognizer on one or a few examples that it has not seen before. That is, repeat steps 3, 4, 5 and 6 adding in a new example each time as they become available. It is also useful at this stage to accumulate a set of recordings that do *not* contain the target call. See Section 10 for more suggestions on building datasets. 
+> **Step 7.** At this point you should have a recognizer that performs "as accurately as possible" on your training examples. The next step is to test your recognizer on one or a few examples that it has not seen before. That is, repeat steps 3, 4, 5 and 6 adding in a new example each time as they become available. It is also useful at this stage to accumulate a set of recordings that do *not* contain the target call. See Section 10 for more suggestions on building datasets.
 
 > **Step 8:** At some point you are ready to use your recognizer on recordings obtained from the operational environment.
 
@@ -551,22 +567,22 @@ We described above the various steps required to tune the parameter values in a 
 
 
 ## 9. The DIY Call Recognizer command line
-`APexe` performs several functions or actions, each one requiring a different command line. In its most general form, the command line takes the form:
+_AP_ performs several functions or actions, each one requiring a different command line. In its most general form, the command line takes the form:
 
 >`AnalysisPrograms.exe action arguments options` 
 
 In this section we only describe the command line for the _call recognizer_ action where:
 - action = "audio2csv".
 - arguments = three file paths, to an audio file, a config file and an output directory. 
-- options = short strings beginning with a single or double hyphen (`-` or `--`) that influence `APexe`'s execution.
+- options = short strings beginning with a single or double hyphen (`-` or `--`) that influence _AP_'s execution.
 
-Refer to other manuals [here](https://github.com/QutEcoacoustics/audio-analysis/blob/master/README.md) for a more complete description of `APexe`'s functionality. Note that the three file arguments must be in the order shown, that is: audio file, config file, output directory.
+Refer to other manuals [here](https://github.com/QutEcoacoustics/audio-analysis/blob/master/README.md) for a more complete description of _AP_'s functionality. Note that the three file arguments must be in the order shown, that is: audio file, config file, output directory.
 
 **Options:** There are three frequently useful options:
 
     1. The debug/no-debug options: Use "-d" for debug or "-n" for no debugging.
     2. The verbosity options: "--quiet", "-v", "-vv", "-vvv" for different levels of verbosity.
-    3. The analysis-identifier option: Use "-a" or "--analysis-identifier" followed by the <analysis type>, which in the case of DIY call recognizers is "NameId.GenericRecognizer". This is a useful addition to the command line because it informs `APexe` that this as a call recognition task in case the config file is not named correctly.  
+    3. The analysis-identifier option: Use "-a" or "--analysis-identifier" followed by the <analysis type>, which in the case of DIY call recognizers is "NameId.GenericRecognizer". This is a useful addition to the command line because it informs _AP_ that this as a call recognition task in case the config file is not named correctly.  
     
 For other possible options, see the above referenced manual.
 
@@ -594,7 +610,7 @@ In the above command line, the options are no-debugging and minimal logging.
 
 As indicated at Step 7 in Section 8 (*Eight steps to building a DIY Call Recognizer*), it is useful to accumulate a set of recordings, some of which contain the target call and some of which *do not*. The *negative* examples should include acoustic events that have previously been detected as FPs. You now have two sets of recordings, one set containing the target call(s) and one set containing previous FPs and other possible confusing acoustic events. The idea is to tune parameter values, while carefully watching for what effect the changes have on both data sets. Eventually, these two labelled data sets can be used for machine learning purposes.
 
-In order to facilitate the determination of recognizer performance on labelled datasets, `APexe` can be run from the `Egret` software. `Egret` can greatly speed up the preparation of labelled datasets and can greatly improve the performance of a recognizer by more careful selection of positive and negative examples. `Egret` is available from  [https://github.com/QutEcoacoustics/egret](https://github.com/QutEcoacoustics/egret).  
+In order to facilitate the determination of recognizer performance on labelled datasets, _AP_ can be run from the `Egret` software. `Egret` can greatly speed up the preparation of labelled datasets and can greatly improve the performance of a recognizer by more careful selection of positive and negative examples. `Egret` is available from  [https://github.com/QutEcoacoustics/egret](https://github.com/QutEcoacoustics/egret).  
 
 
 ==================================================================

@@ -37,6 +37,19 @@
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+          "label": "docs-save-build",
+          "command": "docfx",
+          "args": ["build"],
+          "type": "process",
+          "options": {
+            "cwd": "docs"
+          },
+          "runOptions": {
+            "instanceLimit": 1,
+            "runOn": "default"
+          }
         }
     ]
 }

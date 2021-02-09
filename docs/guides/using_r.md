@@ -57,6 +57,7 @@ for(file in files) {
 ## Script explained
 
 ### Set the directory containing the files
+
 Assign using the left arrow operator `<- `the folder where the audio files
 are located to the variable `directory `, like this:
 
