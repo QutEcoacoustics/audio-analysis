@@ -150,7 +150,7 @@ To execute these detection steps, suitable _parameter values_ must be placed int
 
 All analyses in _AP_ require a [_configuration file_](xref:basics-config-files) (henceforth, _config_ file) in order to tune the analysis.
 
-It is no different for generic recognizer. To find calls of interest in a recording _AP_ reads the config file
+It is no different for a generic recognizer. To find calls of interest in a recording _AP_ reads the config file
 which contains _parameters_ and then executes the detection steps accordingly.
 
 > [!IMPORTANT]
@@ -158,43 +158,54 @@ which contains _parameters_ and then executes the detection steps accordingly.
 
 ### Naming
 
-Configuration files must be named in a certain format.
+Configuration files must be named in a certain format. The basic format is:
 
-> NOTE: The config filename must have the correct structure in order to be recognized by _AP_. For example, given a config file with the name `AuthorId.GenericRecognizer.NinoxBoobook.yml`:
-> - `AuthorId` is simply to keep track of the origins of the config.
-> - `GenericRecognizer` tells _AP_ that this is a call recognition task and to parse the config file accordingly. Note this must be in second place in the file name.
-> - `NinoxBoobook` (the Boobook owl) is an optional species name. _AP_ does not read/use this info but note that there must be no spaces in the file name.
-> - `.yml` informs _AP_ what syntax to expect, in this case YAML.
+[!include[config_naming](../basics/config_file_name.md)]
 
-**_TODO_** need to check with Anthony re changes to structure of the config file name.
-
-_AP_ config files must be written in a language called YAML. For an introduction to YAML syntax please see this article: https://sweetohm.net/article/introduction-yaml.en.html. 
-We highly recommend using Notepad++ or Visual Studio Code to edit your YAML config files. Both are free, and both come with built in syntax highlighting for YAML files.
+See [Naming in the Config Files](xref:basics-config-files#naming) document for more details and examples.
 
 ### Parameters
+
 Config files contain a list of parameters, each of which is written as a name-value pair, for example:
+
 ```yml
 ResampleRate: 22050
 ```
 
-Note that the parameter name `ResampleRate` is followed by a colon, a space and then a value for the parameter. In this manual we will use typical or default values as examples. Obviously, the values must be "tuned" to the target syllables. 
+Changing these parameters allows for the construction of a generic recognizer. This guide will explain the various
+parameters than can be changed and their typical values. However, this guide will not produce a functional recognizer;
+each recognizer has to be "tuned" to the target syllables for species to be recognized. Only you can do that.
 
+There are many of parameters available. To make config files easier to read we order these parameters roughly in the
+order that they are applied. This aligns with the [basic recognition](#4-detecting-acoustic-events) steps from above.
 
-In order to be read correctly, the 20 or more parameters in a config file must be grouped and nested correctly. They are typically ordered according to the seven recognition steps above, that is:
- 
-- Parameters that determine pre-processing (detection steps 1 and 2)
-- Parameters that describe the target syllables (detection steps 3 and 4)
-- Parameters that determine post-processing of the retrieved acoustic events (steps 5 and 6)
-- Parameters that determine saving of results (step 7)
+1. Parameters for preprocessing
+2. Parameters for processing
+3. Parameters for postprocessing
+4. Parameters for  saving Results
 
 ### Profiles
 
-A config file may target more than one syllable or acoustic event. The parameters that describe a single acoustic event are grouped into what is called a _profile_. And all the profiles in a config file are listed under the heading or _key word_, `Profiles`. So we have a three level hierarchy:
+[Profiles](xref:basics-config-files#profiles) are a list of detection algorithms to use in our processing stage.
+
+> [!TIP]
+> For an introduction to profiles see the <xref:basics-config-files#profiles> page.
+
+Each algorithm is designed to detect a syllable. Thus to make a generic recognizer there should be at least one (1)
+profile in the `Profiles` list. A config file may target more than one syllable or acoustic event, in that case there
+would be profile for each target syllable or acoustic event.
+
+The `Profiles` list has profile item, and each profile has parameters. So we have a three level hierarchy:
+
 1. the _profile list_ headed by the key-word `Profiles`.
-2. the _profile_ headed by the profile name (the key word) and the event type.
-3. the profile _parameters_ consisting of a list of name:value pairs relevant to the profile.. 
+2. Each _profile_ in the list
+    - There are two parts to each profile entry:
+        1. A  user defined name
+        2. And the algorithm type to use with this profile (prefixed with an exclamation mark (`!`))
+3. the profile _parameters_ consisting of a list of name:value pairs
 
 Here is an (abbreviated) example:
+
 ```yml
 Profiles:  
     BoobookSyllable1: !ForwardTrackParameters
@@ -216,70 +227,89 @@ Profiles:
         MaxDuration: 1.2
 ```
 
-This artificial example illustrates three profiles (i.e. syllables or acoustic events) under the key word `Profiles`. Each profile has a user defined name (eg. BoobookSyllable3) and type. The `!` following the colon should be read as "of event type".  Each profile in this example has four parameters. (The lines starting with `#` are comments and ignored by the yaml interpreter.) All three profiles have the same values for `MinHertz` and `MaxHertz` but different values for their time duration. Each profile is processed separately by _AP_.
+This artificial example illustrates three profiles (i.e. syllables or acoustic events) under the key word `Profiles`.
 
+We can see one of the profile has been given the name `BoobookSyllable3` and has the type `ForwardTrackParameters`.
+This means for the `BoobookSyllable3` we want _AP_ to use the _forward track_ algorithm to look for a _chirp_ or a _whistle_.
 
-> *IMPORTANT NOTE ABOUT INDENTATION: In YAML syntax, the levels of a hierarchy are distinguished by indentation alone. It is extremely important that the indentation is retained or the config file will not be read correctly. Use four spaces for indentation, not the TAB key.
+Each profile in this example has four parameters. All three profiles have the same values for `MinHertz` and `MaxHertz` 
+but different values for their time duration. Each profile is processed separately by _AP_.
 
-### Profile Types
-In the above example the line `BoobookSyllable1: !ForwardTrackParameters` is to be read as "the name of the target syllable is "BoobookSyllable1" and its type is "ForwardTrackParameters". There are seven profile types corresponding to the seven kinds of acoustic event identified above. The event names are an attempt to describe what they sound like. But the corresponding profile type is descriptive of the algorithm used to find the event. This table lists the seven "generic" events and their corresponding profile types. It is vitally important that you define the correct profile type when write your own config file.
+### Algorithm types
 
-| Acoustic Event  | Type of the Corresponding Detection Algorithm |
-|:---:|:---:|:---:|:---:|:---:|
-|  Shriek | `!Blob` |
-|  Whistle | `!HorizontalTrackParameters` |
-|  Chirp   | `!ForwardTrackParameters` |
-|  Whip    | `!UpwardsTrackParameters` |
-|  Click   | `!VerticalTrackParameters` |
-|  Oscillation | `!OscillationParameters` |
-|  Harmonic | `!HarmonicParameters` |
-||||
+In the above example the line `BoobookSyllable1: !ForwardTrackParameters` is to be read as:
 
+> the name of the target syllable is "BoobookSyllable1" and its type is "ForwardTrackParameters"
 
- ### An additional note about acoustic events
-> All seven "generic" acoustic events are characterised by common properties, such as their minumum and maximum temporal duration, bandwidth, decibel intensity. In fact, every acoustic event is bounded by an _implicit_ rectangle or marquee whose height represents the bandwidth of the event and whose width represents the duration of the event. Even a _chirp_ or _whip_ which consists only of a single sloping *spectral track*, is enclosed by a rectangle, two of whose vertices sit at the start and end of the track.
+There are currently seven algorithm types, each designed to detect different types of acoustic events.
+The names of the acoustic events previously defined describe what they events sound like, whereas,
+the names of the algorithms used to find these events are describe how the algorithms work.
 
+ This table lists the "generic" events, the algorithm used to detect the, and the name of the parameters needed.
 
-.
+| Acoustic Event | Algorithm name    | Parameters name              |
+|:--------------:|:-----------------:|:----------------------------:|
+| Shriek         | `Blob`            | `!Blob`                      |
+| Whistle        | `HorizontalTrack` | `!HorizontalTrackParameters` |
+| Chirp          | `ForwardTrack`    | `!ForwardTrackParameters`    |
+| Whip           | `UpwardsTrack`    | `!UpwardsTrackParameters`    |
+| Click          | `VerticalTrack`   | `!VerticalTrackParameters`   |
+| Oscillation    | `Oscillation`     | `!OscillationParameters`     |
+| Harmonic       | `Harmonic`        | `!HarmonicParameters`        |
 
-## 6. Parameter names and values
+Each of these detection algorithms has some common parameters.
 
-This section describes how to set the parameters values (using correct yaml syntax) for each of the seven call-detection steps. We use, as a concrete example, the config file for the Boobook Owl, *Ninox boobook*.
+See <xref:AnalysisPrograms.Recognizers.Base.CommonParameters> for more details.
+
+## 6. Config parameters and values
+
+This section describes how to set the parameters values for each of the seven call-detection steps. We use, as a concrete example, the config file for the Boobook Owl, *Ninox boobook*.
 
 The `YAML` lines are followed by an explanation of each parameter.
 
-### Step 1. Audio segmentation
+### Steps 1 & 2 Audio segmentation and resampling
+
 Analysis of long recordings is made tractable by breaking them into shorter (typically 60-second) segments.
-```yml
-SegmentDuration: 60    
-SegmentOverlap: 0
-```    
-> The default values are 60 and 0 seconds respectively and these seldom need to be changed. You may wish to work at finer resolution by reducing _SegmentDuration_ to 20 or 30 seconds. If your target call is comparitively long (such as a koala bellow, e.g. greater than 10 - 15 seconds), you could 
-increase _SegmentOverlap_ to 10 seconds. This actually increases the segment duration to 70 seconds (60+10) so reducing the probability that a call will be split across segments. It also maintains a 60-second interval between segment-starts, which helps to identify where you are in a recording.
+This is done with the <xref:command-analyze-long-recording> command.
 
-### Step 2. Audio resampling
-Specifies the sample rate at which the recording will be processed.   
-```yml
-ResampleRate: 22050
-```
-> If this parameter is not specified in the config file, the default is to _resample_ each recording segment (up or down) to 22050 samples per second. This has the effect of limiting the maximum frequency (the Nyquist) to 11025 Hertz.  *ResampleRate* must be twice the desired Nyquist. Specify the resample rate that gives the best result for your target call. If the target call is in a low frequency band (e.g. < 2kHz), then lower the resample rate to somewhat more than twice the maximum frequency of interest. This will reduce processing time and produce better focused spectrograms. If you down-sample, you will lose high frequency content. If you up-sample, there will be undefined "noise" in spectrograms above the original Nyquist.
+The first part of a generic recognizer config file is as follows:
 
-**Figure. Parameters for the first three detection steps**
-![First Three Detection Steps](./Images/ParametersForSteps1-3.png)
+[!code-yaml[prep](./Ecosounds.NinoxBoobook.yml#L4-L9 "Audio segmentation")]
+
+These parameters control:
+
+- what the size of segments of audio are when we break up a file for analysis
+- how much overlap there between one segment and the next
+- and whether or not the sample rate of the recording is converted
+
+For more information on these parameters see the <xref:AnalysisBase.AnalyzerConfig> page.
+
+They have good defaults set and you should not need to change them.
+
+<figure>
+
+![First Three Detection Steps](~/images/generic_recognizer/ParametersForSteps1-3.png)
+
+<figcaption>Segmenting and resampling</figcaption>
+</figure>
+
+
 
 ### Step 3. Spectrogram preparation
 
-As noted above, the parameters for detection steps 3 and 4 are grouped into _profiles_ and multiple _profiles_ are nested under the keyword `Profiles`. The example below declares just one profile under the kepword `Profiles`. Its name is `BoobookSyllable` which is declared as type `ForwardTrackParameters` (a chirp). Indented below the profile declaration are its first six parameters.
+As noted above, the parameters for detection steps 3 and 4 are grouped into _profiles_ and multiple _profiles_ are
+nested under the keyword `Profiles`. The example below declares just one profile under the keyword `Profiles`.
+Its name is `BoobookSyllable` which is declared as type `ForwardTrackParameters` (a chirp). Indented below the profile declaration are its first six parameters.
+
 ```yml
 Profiles:  
     BoobookSyllable: !ForwardTrackParameters
         SpeciesName: NinoxBoobook
-        ComponentName: Chirp 
         FrameSize: 512
         FrameStep: 512
         WindowFunction: HANNING
         BgNoiseThreshold: 0.0
-``` 
+```
 
 > The first two parameters, _SpeciesName_ and _ComponentName_, are optional. They assign descriptive names to the target species and syllable.
 
@@ -289,10 +319,10 @@ Profiles:
 
 > The "Bg" in *BgNoiseThreshold* means *background*. This parameter determines the degree of severity of noise removal from the spectrogram. The units are decibels. Zero sets the least severe noise removal. It is the safest default value and probably does not need to be changed. Increasing the value to say 3-4 decibels increases the likelihood that you will lose some important components of your target calls. For more on the noise removal algorithm used by _AP_ see [Towsey, Michael W. (2013) Noise removal from wave-forms and spectrograms derived from natural recordings of the environment.](https://eprints.qut.edu.au/61399/). 
 
-
 ### Step 4. Call syllable detection
 
 A complete definition of the `BoobookSyllable` profile includes ten parameters, five for detection step 3 and five for step 4. The step 4 parameters direct the actual search for target syllables in the spectrogram.
+
 ```yml
 Profiles:  
     BoobookSyllable: !ForwardTrackParameters
@@ -320,12 +350,12 @@ Profiles:
 **Figure. Common parameters for all acoustic events, using an oscillation event as example.**
 ![Common parameters](./Images/Fig2EventParameters.png)
 
-
 The above parameters are common to all target events. _Oscillations_ and _harmonics_, being more complex events, have additional parameters as described below. 
 
 **_Oscillation Events_**
 
-The algorithm to find oscillation events uses a _discrete cosine transform_ or *DCT*. Setting the correct DCT for the target syllable requires additional parameters. Here is the `Profiles` declaration in the config file for the _flying fox_. It contains two profiles, the first for a vocalisastion and the second to detect the rythmic sound of wing beats as a flying fox takes off or comes in to land. 
+The algorithm to find oscillation events uses a _discrete cosine transform_ or *DCT*. Setting the correct DCT for the target syllable requires additional parameters. Here is the `Profiles` declaration in the config file for the _flying fox_. It contains two profiles, the first for a vocalization and the second to detect the rhythmic sound of wing beats as a flying fox takes off or comes in to land.
+
 ```yml
 Profiles:
     Territorial: !BlobParameters
@@ -357,6 +387,7 @@ Profiles:
         # Event threshold - use this to determine FP/FN trade-off.
         EventThreshold: 0.5
 ```
+
 > Note the first six _wingbeat_ parameters are common to all events - parameters 2-6 determine the search band, the allowable event duration and the decibel threshold. The remaining five parameters determine the search for oscillations. _MinOscilFreq_ and _MaxOscilFreq_ specify the oscillation bounds in beats or oscillations per second. These values were established by measuring a sample of flying fox wingbeats. The next two parameters, the DCT duration in seconds and the DCT threshold can be tricky to establish but are critical for success. The DCT is computationally expensive but for accuracy it needs to span at least two or three oscillations. In this case a duration of 0.5 seconds is just enough to span at least two oscillations. The output from a DCT operation is an array of coefficients (taking values in [0, 1]). The index into the array is the oscillation rate and the value at that index is the amplitude. The index with largest amplitude indicates the likely oscillation rate, but _DctThreshold_ sets the minimum acceptable amplitude value. Lowering _DctThreshold_ increases the likelihood that random noise will be accepted as a true oscillation; increasing _DctThreshold_ increases the likelihood that a target oscillation is rejected.
 
 > The optimum values for _DctDuration_ and _DctThreshold_ interact. It requires some experimentation to find the best values for your target syllable. Experiment with _DctDuration_ first while keeping the _DctThreshold_ value low. Once you have a reliable value for _DctDuration_, gradually increase the value for _DctThreshold_.
@@ -496,9 +527,7 @@ HighResolutionIndicesConfig: "../File.Name.HiResIndicesForRecognisers.yml"
 ```
 This parameter is irrelevant to call recognizers and can be ignored, but it must be retained in the config file.
 
-
-.
-
+> All seven "generic" acoustic events are characterized by common properties, such as their minimum and maximum temporal duration, bandwidth, decibel intensity. In fact, every acoustic event is bounded by an _implicit_ rectangle or marquee whose height represents the bandwidth of the event and whose width represents the duration of the event. Even a _chirp_ or _whip_ which consists only of a single sloping *spectral track*, is enclosed by a rectangle, two of whose vertices sit at the start and end of the track.
 
 ## 7. An efficient strategy to tune parameters
 
@@ -510,7 +539,7 @@ Turn off all post-processing steps. That is, set all post-processing booleans to
 **Step 2.**
     Initially set all profile parameters so as to catch the maximum possible number of target calls/syllables.
 
-> Step 2a. Set the array of decibel thresholds to cover the expected range of call amplitudes from minimum to maxumum decibels.
+> Step 2a. Set the array of decibel thresholds to cover the expected range of call amplitudes from minimum to maximum decibels.
 
 > Step 2b. Set the minimum and maximum duration values to catch every target call by a wide margin. At this stage, do not worry that you are also catching a lot of false-positive events.
 
@@ -534,7 +563,7 @@ At this point you should have "captured" all the target calls/syllables (i.e. th
 
 > Step 5d. Set the parameters for filtering based on the _acoustic activity in their side bands_.
 
-At the end of this process, you are likely to have a mixture of true-positives, false-postives and false-negatives. The goal is to set the parameter values so that the combined FP+FN total is minimised. You should adjust parameter values so that the final FN/FP ratio reflects the relative costs of FN and FP errors. For example, lowering a decibel threshold may pick up more TPs but almost certainly at the cost of more FPs. 
+At the end of this process, you are likely to have a mixture of true-positives, false-positives and false-negatives. The goal is to set the parameter values so that the combined FP+FN total is minimized. You should adjust parameter values so that the final FN/FP ratio reflects the relative costs of FN and FP errors. For example, lowering a decibel threshold may pick up more TPs but almost certainly at the cost of more FPs. 
 
 > **NOTE:** A working DIY Call Recognizer can be built with just one example or training call. A machine learning algorithm typically requires 100 true and false examples. The price that you (the ecologist) pays for this simplicity is the need to exercise some of the "intelligence" that would otherwise be exercised by the machine learning algorithm. That is, you must select calls and set parameter values that reflect the variability of the target calls and the relative costs of FN and FP errors.
 
@@ -562,55 +591,42 @@ We described above the various steps required to tune the parameter values in a 
 
 > **Step 8:** At some point you are ready to use your recognizer on recordings obtained from the operational environment.
 
+## 9. Running a generic recognizer
 
-.
+_AP_ performs several functions. Each function is selected by altering the command used to run _AP_.
 
+For running a generic recognizer we need to to use the [`audio2csv`](xref:command-analyze-long-recording) command.
 
-## 9. The DIY Call Recognizer command line
-_AP_ performs several functions or actions, each one requiring a different command line. In its most general form, the command line takes the form:
+- For an introduction to running commands see <xref:cli>
+- For detailed help on the audio2csv command see <xref:command-analyze-long-recording>
 
->`AnalysisPrograms.exe action arguments options` 
+The basic form of the command is:
 
-In this section we only describe the command line for the _call recognizer_ action where:
-- action = "audio2csv".
-- arguments = three file paths, to an audio file, a config file and an output directory. 
-- options = short strings beginning with a single or double hyphen (`-` or `--`) that influence _AP_'s execution.
-
-Refer to other manuals [here](https://github.com/QutEcoacoustics/audio-analysis/blob/master/README.md) for a more complete description of _AP_'s functionality. Note that the three file arguments must be in the order shown, that is: audio file, config file, output directory.
-
-**Options:** There are three frequently useful options:
-
-    1. The debug/no-debug options: Use "-d" for debug or "-n" for no debugging.
-    2. The verbosity options: "--quiet", "-v", "-vv", "-vvv" for different levels of verbosity.
-    3. The analysis-identifier option: Use "-a" or "--analysis-identifier" followed by the <analysis type>, which in the case of DIY call recognizers is "NameId.GenericRecognizer". This is a useful addition to the command line because it informs _AP_ that this as a call recognition task in case the config file is not named correctly.  
-    
-For other possible options, see the above referenced manual.
-
-In powershell, the code to prepare and execute a commandline might look like this:
-```powershell
-    ...
-    # prepare the arguments
-    $audioFile = "path to the audio file"
-    $configFile = "path to the config file"
-    $outputDirectory = "path to the output directory"
-
-    # prepare command line
-    $command = " .\AnalysisPrograms.exe audio2csv $audioFile $configFile 
-                    $outputDirectory -a NameId.GenericRecognizer -n --quiet"
-
-    # EXECUTE the command
-    Invoke-Expression $command
+```bash
+AnalysisPrograms.exe audio2csv <input_file> <config_file> <output_folder> --analysis-identifier "Ecosounds.GenericRecognizer"
 ```
-In the above command line, the options are no-debugging and minimal logging.
 
-.
+When you run the command swap out `<input_file>`, `<config_file>`, and `<output_folder>` for the paths to your audio,
+your config file, and your desired output folder respectively.
 
+For example; if the files `birds.wav` and `NinoxBoobook.yml` were in the current folder one could run:
+
+```bash
+AnalysisPrograms.exe audio2csv birds.wav NinoxBoobook.yml BoobookResults --analysis-identifier "Ecosounds.GenericRecognizer"
+```
+
+to save the output of your own boobook recognizer to the folder `BoobookResults`.
+
+> [!NOTE]
+> The analysis-identifier (`--analysis-identifier` followed by the `"Ecosounds.GenericRecognizer"`) is required for
+> generic recognizers.  Using `--analysis-identifier` informs _AP_ that this is generic recognition task and runs the 
+> correct analysis code.
+
+If you want to run your generic recognizer more than once, you might want to
+[use powershell](xref:guides-scripting-pwsh) or [use R](xref:guides-scripting-r) to script _AP_.
 
 ## 10. Building a larger data set
 
 As indicated at Step 7 in Section 8 (*Eight steps to building a DIY Call Recognizer*), it is useful to accumulate a set of recordings, some of which contain the target call and some of which *do not*. The *negative* examples should include acoustic events that have previously been detected as FPs. You now have two sets of recordings, one set containing the target call(s) and one set containing previous FPs and other possible confusing acoustic events. The idea is to tune parameter values, while carefully watching for what effect the changes have on both data sets. Eventually, these two labelled data sets can be used for machine learning purposes.
 
-In order to facilitate the determination of recognizer performance on labelled datasets, _AP_ can be run from the `Egret` software. `Egret` can greatly speed up the preparation of labelled datasets and can greatly improve the performance of a recognizer by more careful selection of positive and negative examples. `Egret` is available from  [https://github.com/QutEcoacoustics/egret](https://github.com/QutEcoacoustics/egret).  
-
-
-==================================================================
+In order to facilitate the determination of recognizer performance on labelled datasets, _AP_ can be run from the _Egret_ software. _Egret_ can greatly speed up the preparation of labelled datasets and can greatly improve the performance of a recognizer by more careful selection of positive and negative examples. _Egret_ is available from  [https://github.com/QutEcoacoustics/egret](https://github.com/QutEcoacoustics/egret).

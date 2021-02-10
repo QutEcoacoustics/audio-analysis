@@ -1,3 +1,8 @@
+---
+title: Scripting with PowerShell
+uid: guides-scripting-pwsh
+---
+
 # Scripting AP.exe
 
 _AnalysisPrograms.exe_ works best when processing single audio files.

@@ -2,6 +2,7 @@
 title: Analyze Long Recordings
 uid: command-analyze-long-recording
 ---
+
 # Analyze Long Recordings (audio2csv)
 
 - **Command**: audio2csv
@@ -19,7 +20,7 @@ determines what kind of analysis is run.
 
 To see a list of all analyses that can be used by _audio2csv_, execute:
 
-```
+```shell
 AnalysisPrograms.exe analysesavailable
 ```
 
@@ -37,13 +38,13 @@ calculate acoustic indices derived from a single audio file.
 
 To run the command, type:
 
-```
+```shell
 $ AnalysisPrograms.exe audio2csv [arguments] [options]
 ```
 
 Here is an example of a command line with abbreviated path names:
 
-```
+```shell
 $ AnalysisPrograms.exe audio2csv "audioPath\fileName.wav" "configPath\fileName.yml" "outputPath\directoryName"
 ```
 
@@ -79,3 +80,7 @@ Here is more detail about the command line options:
   calculated on the mixed down waveform.
 - `--parallel`: If you have access to a multi-core CPU you can set this option
   to true. Otherwise, the segments will be cut and analysed in sequence.
+
+Use the analysis-identifier option (`-a` or `--analysis-identifier`) followed by the `<analysis type>` to choose the
+analysis to run. If you do this _AP_ will not have to guess the name of your config file and this your config file
+can be named anyway you like.

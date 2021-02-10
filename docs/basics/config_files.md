@@ -19,8 +19,10 @@ start with a hash symbol `#`
 - Typically, you will only need to adjust a subset of the available parameters
 - Most parameters have default values
 
-You can find an introduction to YAML here:
-<https://support.ehelp.edu.au/support/solutions/articles/6000055385-introduction-to-yaml>
+You can find a introductions to YAML here:
+
+- <https://support.ehelp.edu.au/support/solutions/articles/6000055385-introduction-to-yaml>
+- <https://sweetohm.net/article/introduction-yaml.en.html>
 
 You can validate YAML files (to check for syntax errors) here:
 <http://yaml-online-parser.appspot.com/>
@@ -53,11 +55,7 @@ the naming format of the config files is now important. We use the name to deter
 For any config file used by `audio2csv`/`AnalyzeLongRecording`
 the name of the config file must follow this format:
 
-```ebnf
-<author>.<analysis>[.<tag>]*.yml
-```
-
-The `author` and `analysis` name sections are mandatory. The `tag` section is optional, ignored by _AP_, and can be repeated.
+[!include[config_naming](./config_file_name.md)]
 
 Here are some valid examples:
 
@@ -92,6 +90,8 @@ needs to be changed:
 +ResampleRate: 16000
 ```
 
+Note that the parameter name `ResampleRate` is followed by a colon, a space and then a value. 
+
 Most of our config files contain comments next to the parameters that explain what a parameter does. A comment is any
 line that begins with an hash symbol (`#`). You can see the text that is a comment is coloured differently from the 
 parameter in the example below:
@@ -110,7 +110,7 @@ The most variable part of a config file is the `Profiles` section. Profiles
 allow us to add extra sections to an analysis. This can be useful for dealing with:
 
 - Geographical variation in calls.
-  Often a  species call will vary between regions. The same detector can work for the different variants of a call but
+  Often a species' call will vary between regions. The same detector can work for the different variants of a call but
   slightly different parameters are needed. In this case we add a profile for each regional variation of the call that
   have slightly different parameters or thresholds.
 - Generic recognition efforts.
@@ -130,7 +130,8 @@ Profiles:
         SomeParameter: 123
         AnotherParameter: "hello"
     # more than one profile can be added
-    #            We use the `!type` notation to tell AP what type of parameters we're giving it
+    #            We use the `!type` notation to tell AP
+    #            what type of parameters we're giving it
     KoalaExhale: !OscillationParameters
         ComponentName: Oscillation 
         SpeciesName: PhascolarctosCinereus
@@ -147,7 +148,8 @@ Profiles:
         MinOcilFreq: 20
         MaxOcilFreq: 55
         EventThreshold: 0.2
-    # And another profile using the blob type (!BlobParameters) parameters
+    # And another profile using the blob type 
+    # (!BlobParameters) parameters
     KoalaInhale: !BlobParameters
         ComponentName: Inhale
         MinHertz: 800          
@@ -162,3 +164,55 @@ Profiles can get complicated. Each configuration file should detail the differen
 please let us know!
 
 For more information on constructing generic recognizers see <xref:guides-generic-recognizers>.
+
+## Indentation
+
+Whenever a line is indented (add trailing spaces) in a YAML configuration file, it must be indented to a consistent level.
+If it is inconsistent then _AP_ will not be able to read the config file properly.
+
+Here are some examples. Note spaces are represented with a _middle dot_ (`·`).
+
+### Good
+
+```yml
+Profiles:  
+····BoobookSyllable1: !ForwardTrackParameters
+········MinHertz: 400
+········MaxHertz: 1100
+········MinDuration: 0.1
+········MaxDuration: 0.499
+```
+
+Note that each indentation step uses four (4) spaces, and each line in the same level has the same indentation.
+
+### Bad: inconsistent indentation
+
+```yml
+Profiles:  
+····BoobookSyllable1: !ForwardTrackParameters
+······MinHertz: 400
+········MaxHertz: 1100
+········MinDuration: 0.1
+········MaxDuration: 0.499
+```
+
+Note that the `MinHertz` entry is indented with six (6) spaces instead of eight (8). This means _AP_ will try to read
+`MaxHertz` as a child (a sub-item) of `MinHertz` - which is incorrect because they are siblings belonging to the same item.
+
+
+### Bad: mixing tabs and spaces
+
+Note in this example the `⇥` symbol represents pressing the <kbd>Tab ↹</kbd> key.
+
+```yml
+Profiles:  
+····BoobookSyllable1: !ForwardTrackParameters
+⇥⇥⇥⇥⇥MinHertz: 400
+········MaxHertz: 1100
+········MinDuration: 0.1
+········MaxDuration: 0.499
+```
+
+Note that the `MinHertz` entry is indented with five (5) tabs instead of eight (8) spaces. Again, this means that
+`MinHertz` and `MaxHertz` are not part of the same group (they do not have the same indentation), even though it looks like
+they are aligned.

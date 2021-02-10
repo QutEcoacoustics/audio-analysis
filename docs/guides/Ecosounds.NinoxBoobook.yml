@@ -1,9 +1,9 @@
 ---
-
+# This is a non-functional example used for docs. Please see the real config file for the Boobook recognizer.
 # Boobook Owl = Towsey.NinoxBoobook
 # Resample rate must be 2 X the desired Nyquist
-#ResampleRate: 22050
-# SegmentDuration: units=seconds;    
+ResampleRate: 22050
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
@@ -12,14 +12,14 @@ SegmentOverlap: 0
 # This profile is required for the species-specific recogniser and must have the current name.
 Profiles:
     BoobookSyllable: !ForwardTrackParameters
-        ComponentName: RidgeTrack 
+        ComponentName: RidgeTrack
         SpeciesName: NinoxBoobook
         FrameSize: 1024
         FrameStep: 256
         WindowFunction: HANNING
-        
+
         # min and max of the freq band to search
-        MinHertz: 400          
+        MinHertz: 400
         MaxHertz: 1100
         MinDuration: 0.17
         MaxDuration: 1.2
@@ -28,15 +28,15 @@ Profiles:
             - 6.0
             - 9.0
             - 12.0
-   
+
 #################### POST-PROCESSING of EVENTS ###################
 
 PostProcessing:
-# The following generic post-processing steps are determined by config settings.
-# Step 1: Combine overlapping events - events derived from all profiles.
-# Step 2: Combine possible syllable sequences and filter on excess syllable count.
-# Step 3: Remove events whose bandwidth is too small or large.
-# Step 4: Remove events that have excessive noise in their side-bands.
+    # The following generic post-processing steps are determined by config settings.
+    # Step 1: Combine overlapping events - events derived from all profiles.
+    # Step 2: Combine possible syllable sequences and filter on excess syllable count.
+    # Step 3: Remove events whose bandwidth is too small or large.
+    # Step 4: Remove events that have excessive noise in their side-bands.
 
     # 1: Combine overlapping events
     CombineOverlappingEvents: true
@@ -53,7 +53,7 @@ PostProcessing:
     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
     #Duration:
         ExpectedDuration: 0.14
-        DurationStandardDeviation: 0.01        
+        DurationStandardDeviation: 0.01
 
     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
  #   Bandwidth:

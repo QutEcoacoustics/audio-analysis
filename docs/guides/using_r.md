@@ -1,3 +1,8 @@
+---
+title: Scripting with PowerShell
+uid: guides-scripting-r
+---
+
 # Scripting with R
 
 For those more comfortable with R over a terminal, here is an example of an R

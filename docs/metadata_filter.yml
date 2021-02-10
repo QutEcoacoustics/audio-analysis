@@ -17,3 +17,6 @@ ApiRules:
   - exclude:
       uidRegex: .*
       type: Type
+  - exclude:
+      uidRegex: ^System\..*
+      type: Namespace

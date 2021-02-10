@@ -52,7 +52,8 @@
           "images/README.md",
           "README.md",
           "pdf/**",
-          "_ignore"
+          "_ignore",
+          "technical/apidoc/*"
         ]
       }
     ],
@@ -72,17 +73,7 @@
         ]
       }
     ],
-    "overwrite": [
-      {
-        "files": [
-          "technical/apidoc/**.md"
-        ],
-        "exclude": [
-          "obj/**",
-          "_site/**"
-        ]
-      }
-    ],
+    "overwrite": "technical/apidoc/*",
     "xrefService": [
       "https://xref.docs.microsoft.com/query?uid={uid}"
     ],
@@ -140,7 +131,8 @@
           "**/bin/**",
           "**/obj/**",
           "**/toc.yml",
-          "**/toc.md"
+          "**/toc.md",
+          "technical/apidoc/*"
         ]
       },
       {
@@ -162,7 +154,8 @@
         ],
         "exclude": [
           "images/README.md",
-          "README.md"
+          "README.md",
+          "technical/apidoc/*"
         ]
       }
 
@@ -179,17 +172,7 @@
         ]
       }
     ],
-    "overwrite": [
-      {
-        "files": [
-          "technical/apidoc/**.md"
-        ],
-        "exclude": [
-          "**/bin/**",
-          "**/obj/**"
-        ]
-      }
-    ],
+    "overwrite": "technical/apidoc/*",
     "wkhtmltopdf": {
       "additionalArguments": "--enable-local-file-access  --footer-center [page] --footer-font-size 10 --no-stop-slow-scripts"
     },

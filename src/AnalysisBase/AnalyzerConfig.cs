@@ -32,12 +32,17 @@ namespace AnalysisBase
         /// </summary>
         /// <remarks>
         /// ResampleRate must be 2× the desired Nyquist.
+        ///
         /// Default value = 22050.
+        ///
         /// Once upon a time we used 17640.
+        ///
         /// Units=samples.
+        ///
         /// Users of this value should always fallback to a default appropriate for the analysis. Currently that default
         /// must be non-null, but we're considering allowing it to be null to support variable sample rate analysis.
         /// </remarks>
+        /// <value>The resample rate measured in _samples_.</value>
         public int? ResampleRate { get; set; }
 
         public SaveBehavior SaveIntermediateWavFiles { get; set; } = SaveBehavior.Never;

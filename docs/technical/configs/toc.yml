@@ -1,0 +1,4 @@
+- name: CommonParameters
+  href: xref:AnalysisPrograms.Recognizers.Base.CommonParameters
+- name: AnalyzerConfig
+  href: xref:AnalysisBase.AnalyzerConfig
