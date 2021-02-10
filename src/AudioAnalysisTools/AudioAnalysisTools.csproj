@@ -23,7 +23,7 @@
     <PackageReference Include="Equ" Version="2.2.0" />
     <PackageReference Include="FastMember" Version="1.5.0" />
     <PackageReference Include="morelinq" Version="3.3.2" />
-    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0058" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta13.5.3" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3-alpha.0.35" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.261">
       <PrivateAssets>all</PrivateAssets>
