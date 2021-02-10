@@ -6,6 +6,8 @@ You can use this tool locally to see what your documentation looks like.
 
 To install:
 
+Ensure you have [Chocolatey installed](https://chocolatey.org/install). Then:
+
 ```powershell
 choco install docfx -y
 ```
@@ -15,7 +17,9 @@ To generate the docs:
 ```powershell
 ../build/generate_docs.ps1
 ```
-Notes: 
+
+Notes:
+
 - If there are any errors or warnings they need to be fixed before your changes are committed.
 - You **must rebuild** after changes to see the updated preview
 

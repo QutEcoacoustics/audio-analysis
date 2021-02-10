@@ -1,14 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyTitle>Acoustics.Tools</AssemblyTitle>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj" />
     <ProjectReference Include="..\AcousticWorkbench\AcousticWorkbench.csproj" />

@@ -17,6 +17,8 @@ Documentation (_in progress_) can be found at <https://ap.qut.ecoacoustics.info/
 - See the **[Contributing guidelines](./CONTRIBUTING.md)** if you want to
   - Compile the code yourself
   - Make a contribution
+- Our documentation can be found at <https://ap.qut.ecoacoustics.info/>
+    - The source files are in the `docs` folder and instructions for editing them are in [`docs/README.md`](./docs/)
 - [Let us know](https://github.com/QutEcoacoustics/audio-analysis/wiki/Projects-and-people-using-AP.exe) if you're using AP.exe 
 
 ## Description

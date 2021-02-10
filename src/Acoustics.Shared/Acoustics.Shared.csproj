@@ -1,6 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyTitle>Acoustics.Shared</AssemblyTitle>
+    <OutputType>Library</OutputType>
     <!-- TODO CORE: For log4net -->
     <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>

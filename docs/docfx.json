@@ -3,21 +3,26 @@
     {
       "src": [
         {
-          "src": "..",
+          "src": "../src",
           "files": [
-            "src/**.csproj"
+            "AnalysisPrograms\\AnalysisPrograms.csproj",
+            "**/*.csproj"
           ],
           "exclude": [
-            "src/**.fsproj",
             "**/*.fsproj",
-            "*.fsproj",
-            "test/**"
+            "AED/*",
+            "**/*.fsproj",
+            "*.fsproj"
           ]
         }
       ],
       "dest": "technical/api",
       "disableGitFeatures": false,
-      "disableDefaultFilter": false
+      "disableDefaultFilter": false,
+      "filter": "metadata_filter.yml",
+      "properties": {
+        "TargetFramework": "net5.0"
+      }
     }
   ],
   "build": {
@@ -55,8 +60,7 @@
       {
         "files": [
           "images/**",
-          "netlify.toml",
-
+          "netlify.toml"
         ],
         "exclude": [
           "images/README.md"

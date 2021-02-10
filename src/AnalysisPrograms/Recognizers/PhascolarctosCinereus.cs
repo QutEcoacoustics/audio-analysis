@@ -131,7 +131,9 @@ namespace AnalysisPrograms.Recognizers
         }
         */
 
-        /// <inheritdoc cref="KoalaConfig"/> />
+        /// <summary>
+        /// The configuration for the Koala V2 recognizer.
+        /// </summary>
         public class KoalaConfig : GenericRecognizerConfig, INamedProfiles<object>
         {
             public bool CombinePossibleSyllableSequence { get; set; } = false;

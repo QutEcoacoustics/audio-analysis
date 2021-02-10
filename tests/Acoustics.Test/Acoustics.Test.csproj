@@ -10,12 +10,7 @@
     <!-- No consumers for our test docs, so don't generate them. -->
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-  </PropertyGroup>
+
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\AP.CopyFiles.targets" />
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="1.3.0">

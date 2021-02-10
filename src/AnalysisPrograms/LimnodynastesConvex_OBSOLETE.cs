@@ -206,7 +206,7 @@ namespace AnalysisPrograms
         #region Methods
 
         ///  <summary>
-        /// 
+        ///
         ///  </summary>
         /// <param name="segmentOfSourceFile"></param>
         /// <param name="configDict"></param>

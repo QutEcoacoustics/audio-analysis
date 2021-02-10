@@ -36,16 +36,12 @@ namespace AnalysisPrograms.Recognizers
 
         //private readonly bool combineOverlappedEvents = false;
 
-        /// <inheritdoc />
         public override string Author => "Ecosounds";
 
-        /// <inheritdoc />
         public override string SpeciesName => "GenericRecognizer";
 
-        /// <inheritdoc />
         public override string Description => "[ALPHA] Finds acoustic events with generic component detection algorithms";
 
-        /// <inheritdoc />
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {
             RuntimeHelpers.RunClassConstructor(typeof(GenericRecognizerConfig).TypeHandle);
@@ -412,7 +408,10 @@ namespace AnalysisPrograms.Recognizers
             };
         }
 
-        /// <inheritdoc cref="GenericRecognizerConfig"/> />
+        /// <summary>
+        /// A generic recognizer is a user-defined combinations of component
+        /// algorithms.
+        /// </summary>
         public class GenericRecognizerConfig : RecognizerConfig, INamedProfiles<object>
         {
             /// <inheritdoc />
