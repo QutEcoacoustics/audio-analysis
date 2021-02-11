@@ -33,3 +33,10 @@ DecibelThresholds:
     - 9.0
     - 12.0
 ```
+
+<figure>
+
+![Common Parameters](~/images/generic_recognizer/Fig2EventParameters.png)
+
+<figcaption>Common parameters for all acoustic events, using an oscillation event as example.</figcaption>
+</figure>

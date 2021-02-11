@@ -6,3 +6,5 @@
   href: ../theory/toc.yml
 - name: Guides
   href: ../guides/toc.yml
+- name: Technical
+  href: ../technical.yml

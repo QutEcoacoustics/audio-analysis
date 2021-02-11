@@ -29,3 +29,21 @@ call. If the target call is in a low frequency band (e.g. < 2kHz), then lower th
 twice the maximum frequency of interest. This will reduce processing time and produce better focused spectrograms.
 If you down-sample, you will lose high frequency content. If you up-sample, there will be undefined "noise" in
 spectrograms above the original Nyquist.
+
+## Saving results
+
+Each of the parameters controls whether extra diagnostic files are saved while doing an analysis.
+
+> [!IMPORTANT]
+> If you are doing a lot of analysis **you'll want to disable** this extra diagnostic output. It will produce files
+> that are in total larger than the input audio data—you'll fill your harddrive quick.
+
+- `SaveSonogramImages` will save a spectrogram for analysis segments (typically one-minute)
+- `SaveIntermediateWavFiles` will save the converted WAVE file used to analyze each segment
+
+Both parameters accept three values:
+
+- `Never`: disables the output.
+- `WhenEventsDetected`: only outputs the spectrogram/WAVE file when an event is found in the current segment.
+  This choice is the most useful for debugging a new recognizer.
+- `Always`: always save the diagnostic files. Don't use this option if you're going to analyze a lot of files

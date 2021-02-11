@@ -51,36 +51,29 @@ PostProcessing:
         ExpectedPeriod: 0.4
 
     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
-    #Duration:
+    Duration:
         ExpectedDuration: 0.14
         DurationStandardDeviation: 0.01
 
     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
- #   Bandwidth:
+    Bandwidth:
         ExpectedBandwidth: 280
         BandwidthStandardDeviation: 40
 
-    # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
+    # 5: Filter the events for excess activity in their sidebands,
+    # i.e. upper and lower buffer zones
     SidebandActivity:
         LowerHertzBuffer: 150
         UpperHertzBuffer: 400
         MaxAverageSidebandDecibels: 3.0
 
 # Options to save results files
-# 1: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-# "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-#SaveSonogramImages: True
+# 1: Available options for saving spectrograms (case-sensitive): [Never | Always | WhenEventsDetected]
+# "Always" can be useful when debugging but "WhenEventsDetected" is a good default.
+#SaveSonogramImages: Always
 SaveSonogramImages: WhenEventsDetected
 
-# 2: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# 2: Available options for saving data files (case-sensitive):  [Never | Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
-SaveIntermediateCsvFiles: false
-
-# 3: DisplayCsvImage is obsolete - ensure it remains set to: false
-DisplayCsvImage: false
-## End section for AnalyzeLongRecording
-
-# Other config files to reference
-HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
 
 ...

@@ -1,4 +1,17 @@
+- name: GenericRecognizerConfig
+  href: xref:AnalysisPrograms.Recognizers.GenericRecognizer.GenericRecognizerConfig
+
 - name: CommonParameters
   href: xref:AnalysisPrograms.Recognizers.Base.CommonParameters
+
+- name: OscillationParameters
+  href: xref:AnalysisPrograms.Recognizers.Base.OscillationParameters
+
+- name: HarmonicParameters
+  href: xref:AnalysisPrograms.Recognizers.Base.HarmonicParameters
+
+- name: HarmonicParameters
+  href: xref:AnalysisPrograms.Recognizers.Base.HarmonicParameters
+
 - name: AnalyzerConfig
   href: xref:AnalysisBase.AnalyzerConfig

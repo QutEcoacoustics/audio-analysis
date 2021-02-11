@@ -13,28 +13,38 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <summary>
         /// Gets or sets the time duration (in seconds) of a Discrete Cosine Transform.
         /// </summary>
+        /// <value>The duration of the window in seconds.</value>
         public double DctDuration { get; set; } = 1.0;
 
         /// <summary>
         /// Gets or sets the minimum acceptable value of a DCT coefficient.
         /// </summary>
+        /// <remarks>
+        /// Lowering `DctThreshold` increases the likelihood that random noise
+        /// will be accepted as a true oscillation; increasing `DctThreshold`
+        /// increases the likelihood that a target oscillation is rejected.
+        /// </remarks>
+        /// <value>A value representing a minimum amplitude threshold in the range `[0, 1]`.</value>
         public double DctThreshold { get; set; } = 0.5;
 
         /// <summary>
         /// Gets or sets the minimum OSCILLATIONS PER SECOND
-        /// Ignore oscillation rates below the min &amp; above the max threshold.
+        /// Ignore oscillation rates below the min amplitude above the max threshold.
         /// </summary>
+        /// <value>The value in oscillations per second.</value>
         public int MinOscillationFrequency { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum OSCILLATIONS PER SECOND
         /// Ignore oscillation rates below the min &amp; above the max threshold.
         /// </summary>
+        /// <value>The value in oscillations per second.</value>
         public int MaxOscillationFrequency { get; set; }
 
         /// <summary>
         /// Gets or sets the Event threshold - use this to determine FP / FN trade-off for events.
         /// </summary>
+        /// <value>A number between <c>0.0</c> and <c>1.0</c>.</value>
         public double EventThreshold { get; set; } = 0.3;
     }
 }
