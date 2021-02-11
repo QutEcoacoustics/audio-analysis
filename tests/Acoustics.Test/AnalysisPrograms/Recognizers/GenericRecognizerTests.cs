@@ -222,7 +222,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                         {
                             FrameSize = 512,
                             FrameStep = 512,
-                            WindowFunction = WindowFunctions.HANNING.ToString(),
+                            WindowFunction = WindowFunctions.HANNING,
                             BgNoiseThreshold = 0.0,
                             MinHertz = 340,
                             MaxHertz = 560,

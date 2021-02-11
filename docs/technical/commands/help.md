@@ -1,3 +1,8 @@
+---
+title: Help
+uid: command-help
+---
+
 # The Help command
 
 The easiest and most up to date way of getting help for a command is to use

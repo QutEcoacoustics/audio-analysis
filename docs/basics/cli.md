@@ -74,7 +74,7 @@ long form. The short form (`-x`) is always shown to the left of the long form (`
 either is equivalent. The value for the option should follow the option name,
 separated by a space. Use double quotes to group values together.
 
- We use long form options in this manual for clarity. See output from the [`help`](xref:help)
+ We use long form options in this manual for clarity. See output from the [`help`](xref:command-help)
  command for all options.
 
 ## Global options

@@ -10,7 +10,7 @@ namespace Acoustics.Shared.ConfigFile
     public static class ConfigFileExtensions
     {
         [ContractAnnotation("value:null => halt")]
-        public static void ConfigNotNull(this object value, string name, FileInfo file, string message = "must be set in the config file")
+        public static void NotNull(this object value, FileInfo file, [System.Runtime.CompilerServices.CallerMemberName]string name = null, string message = "must be set in the config file")
         {
             if (value == null)
             {

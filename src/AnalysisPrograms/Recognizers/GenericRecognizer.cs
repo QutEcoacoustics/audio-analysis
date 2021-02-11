@@ -61,8 +61,8 @@ namespace AnalysisPrograms.Recognizers
             {
                 if (profile is CommonParameters c)
                 {
-                    c.MinHertz.ConfigNotNull(nameof(c.MinHertz), file);
-                    c.MaxHertz.ConfigNotNull(nameof(c.MaxHertz), file);
+                    c.MinHertz.NotNull(file);
+                    c.MaxHertz.NotNull(file);
                 }
 
                 string algorithmName;
@@ -402,7 +402,7 @@ namespace AnalysisPrograms.Recognizers
                 WindowSize = windowSize,
                 WindowStep = windowStep,
                 WindowOverlap = (windowSize - windowStep) / (double)windowSize,
-                WindowFunction = (string)common.WindowFunction,
+                WindowFunction = common.WindowFunction?.ToString(),
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = common.BgNoiseThreshold ?? 0.0,
             };

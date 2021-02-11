@@ -293,62 +293,88 @@ They have good defaults set and you should not need to change them.
 <figcaption>Segmenting and resampling</figcaption>
 </figure>
 
+### Adding profiles
 
+For each acoustic event you want to detect you need to add a profile. Each profile uses one of the generic recognizer algorithms.
 
-### Step 3. Spectrogram preparation
+#### Common Parameters
 
-As noted above, the parameters for detection steps 3 and 4 are grouped into _profiles_ and multiple _profiles_ are
-nested under the keyword `Profiles`. The example below declares just one profile under the keyword `Profiles`.
-Its name is `BoobookSyllable` which is declared as type `ForwardTrackParameters` (a chirp). Indented below the profile declaration are its first six parameters.
+[!code-yaml[profile](./Ecosounds.NinoxBoobook.yml#L11-L15 "Profiles")]
 
-```yml
-Profiles:  
-    BoobookSyllable: !ForwardTrackParameters
-        SpeciesName: NinoxBoobook
-        FrameSize: 512
-        FrameStep: 512
-        WindowFunction: HANNING
-        BgNoiseThreshold: 0.0
-```
+The key parts here are the:
 
-> The first two parameters, _SpeciesName_ and _ComponentName_, are optional. They assign descriptive names to the target species and syllable.
+- profile name (`BoobookSyllable`)
+- the algorithm type (`!ForwardTrackParameters` which will detect a _chirp_)
+- and an optional species name (`NinoxBoobook`)
 
-> The next four parameters determine how a spectrogram is derived from each recording segment. *FrameSize* and *FrameStep* determine the time/frequency resolution of the spectrogram. Typical values are 512 and 0 samples respectively. There is a trade-off between time resolution and frequency resolution; finding the best compromise is really a matter of trial and error. If your target syllable is of long duration with little temporal variation (e.g. a whistle) then *FrameSize* can be increased to 1024 or even 2048. (NOTE: The value of *FrameSize* must be a power of 2.) To capture more temporal variation in your target syllables, decrease *FrameSize* and/or decrease *FrameStep*. A typical *FrameStep* might be half the *FrameSize* but does *not* need to be a power of 2.
+Both the profile name and the species names can be any name you like. The names are stored in the results so you know
+what algorithm generated an event.
 
-> The default value for *WindowFunction* is `HANNING`. There should never be a need to change this but you might like to try a `HAMMING` window if you are not satisfied with the appearance of your spectrograms.
+We could have a profile name of `banana` and species name of `i like golf`—but neither of these names are useful
+because they are not descriptive.
 
-> The "Bg" in *BgNoiseThreshold* means *background*. This parameter determines the degree of severity of noise removal from the spectrogram. The units are decibels. Zero sets the least severe noise removal. It is the safest default value and probably does not need to be changed. Increasing the value to say 3-4 decibels increases the likelihood that you will lose some important components of your target calls. For more on the noise removal algorithm used by _AP_ see [Towsey, Michael W. (2013) Noise removal from wave-forms and spectrograms derived from natural recordings of the environment.](https://eprints.qut.edu.au/61399/). 
+All algorithms have some [common parameters](xref:AnalysisPrograms.Recognizers.Base.CommonParameters). These include
 
-### Step 4. Call syllable detection
+- Spectrogram settings
+- Noise removal settings
+- and basic limits for the allowed length and bandwidth of an event
 
-A complete definition of the `BoobookSyllable` profile includes ten parameters, five for detection step 3 and five for step 4. The step 4 parameters direct the actual search for target syllables in the spectrogram.
+Each algorithm has its own spectrogram settings so parameters like window size can be varied for _each_ type of acoustic
+event you want to detect.
 
-```yml
-Profiles:  
-    BoobookSyllable: !ForwardTrackParameters
-        ComponentName: RidgeTrack 
-        SpeciesName: NinoxBoobook
-        FrameSize: 512
-        FrameStep: 512
-        BgNoiseThreshold: 0.0
-       
-        # min and max of the freq band to search
-        MinHertz: 400          
-        MaxHertz: 1100
-        MinDuration: 0.17
-        MaxDuration: 1.2
+#### [Common Parameters](xref:AnalysisPrograms.Recognizers.Base.CommonParameters): Spectrogram preparation
 
-        # Scan the frequency band at these thresholds
-        DecibelThresholds:
-            - 6.0
-            - 9.0
-            - 12.0
-```
+By convention (i.e. because we like the order), we list the spectrogram parameters first (after the species name) in
+each algorithm entry:
 
-> _MinHertz_ and _MaxHertz_ define the frequency band in which a search is to be made for the target event. Note that these parameters define the bounds of the search band _not_ the bounds of the event itself. _MinDuration_ and _MaxDuration_ set the minimum and maximum time duration (in seconds) of the target event. At the present time these are hard bounds. 
+[!code-yaml[spectrogram](./Ecosounds.NinoxBoobook.yml#L11-L19 "Spectrogram parameters")]
+
+- `FrameSize` is the size of the FFT window used to make the spectrogram. Use this to control the resolution tradeoff
+  between the time and frequency domains. Must be a power of 2, a good default is `512` and `1024` is also common.
+- `FrameStep` controls the overlap of each window
+- The `WindowFunction` can be one of the values from <xref:TowseyLibrary.WindowFunctions>. `Hanning` is the default.
+- `BgNoiseThreshold` stands for _background noise threshold_ and controls the amount of noise removal.
+    - The units are in decibels
+    - `0` is the least severe and is a good default.
+    - Increasing the value to `3`–`4` decibels increases the likelihood that you will lose some important components of your target calls
+
+For a discussion on these parameters, refer to the <xref:theory-spectrograms> document.
+
+#### [Common Parameters](xref:AnalysisPrograms.Recognizers.Base.CommonParameters): Call syllable limits
+
+A complete definition of the `BoobookSyllable` follows.
+
+[!code-yaml[full_profile](./Ecosounds.NinoxBoobook.yml#L11-L30 "A complete profile")]
+
+The extra parameters direct the actual search for target syllables in the spectrogram.
+
+`MinHertz` and `MaxHertz` define the frequency band in which a search is to be made for the target event. Note that
+these parameters define the bounds of the search band _not_ the bounds of the event itself.
+
+`MinDuration` and `MaxDuration` set the minimum and maximum time duration (in seconds) of the target event.
+
+Each of these limits are are hard bounds.
+
+### Algorithm types
+
+If your target syllable is not a chirp, you'll want to use a different algorithm.
+
+For brevity, we've broken up the descriptions of each algorithm to their own pages.
+Some of these algorithms have extra parameters, some do not, but all do have the
+[common parameters](xref:AnalysisPrograms.Recognizers.Base.CommonParameters) we've previously discussed.
+
+| I want to find a | I'll use this algorithm                                      |
+|------------------|--------------------------------------------------------------|
+| Whistle          | 🚧 !HorizontalTrackParameters 🚧 |
+| Chirp            | [!ForwardTrackParameters](xref:AnalysisPrograms.Recognizers.Base.ForwardTrackParameters)       |
+| Whip             | 🚧!UpwardsTrackParameters 🚧     |
+| Click            | 🚧 !VerticalTrackParameters 🚧 |
+| Oscillation      | [!OscillationParameters](xref:AnalysisPrograms.Recognizers.Base.OscillationParameters)         |
+| Harmonic         | [!HarmonicParameters](xref:AnalysisPrograms.Recognizers.Base.HarmonicParameters)               |
+
 
 **Figure. Common parameters for all acoustic events, using an oscillation event as example.**
-![Common parameters](./Images/Fig2EventParameters.png)
+![Common parameters](~/images/generic_recognizer/Fig2EventParameters.png)
 
 The above parameters are common to all target events. _Oscillations_ and _harmonics_, being more complex events, have additional parameters as described below. 
 
@@ -522,9 +548,11 @@ DisplayCsvImage: False
 > The final parameter (_DisplayCsvImage_) is obsolete - ensure it remains set to False
 
 The last parameter in the config file makes a reference to a second config file:
+
 ```yml
 HighResolutionIndicesConfig: "../File.Name.HiResIndicesForRecognisers.yml"
 ```
+
 This parameter is irrelevant to call recognizers and can be ignored, but it must be retained in the config file.
 
 > All seven "generic" acoustic events are characterized by common properties, such as their minimum and maximum temporal duration, bandwidth, decibel intensity. In fact, every acoustic event is bounded by an _implicit_ rectangle or marquee whose height represents the bandwidth of the event and whose width represents the duration of the event. Even a _chirp_ or _whip_ which consists only of a single sloping *spectral track*, is enclosed by a rectangle, two of whose vertices sit at the start and end of the track.
@@ -534,7 +562,7 @@ This parameter is irrelevant to call recognizers and can be ignored, but it must
 Tuning parameter values can be frustrating and time-consuming if a logical sequence is not followed. The idea is to tune parameters in the sequence in which they appear in the config file, keeping all "downstream" parameters as "open" or "unrestrictive" as possible. Here we summarize a tuning strategy in five steps.
 
 **Step 1.**
-Turn off all post-processing steps. That is, set all post-processing booleans to false OR comment out all post-processing keywords in the config file. 
+Turn off all post-processing steps. That is, set all post-processing booleans to false OR comment out all post-processing keywords in the config file.
 
 **Step 2.**
     Initially set all profile parameters so as to catch the maximum possible number of target calls/syllables.
