@@ -10,8 +10,8 @@
 - name: HarmonicParameters
   href: xref:AnalysisPrograms.Recognizers.Base.HarmonicParameters
 
-- name: HarmonicParameters
-  href: xref:AnalysisPrograms.Recognizers.Base.HarmonicParameters
+- name: PostProcessingConfig
+  href: xref:AudioAnalysisTools.Events.Types.EventPostProcessing.PostProcessingConfig
 
 - name: AnalyzerConfig
   href: xref:AnalysisBase.AnalyzerConfig
