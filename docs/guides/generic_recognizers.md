@@ -376,7 +376,7 @@ Some of these algorithms have extra parameters, some do not, but all do have the
 
 | I want to find a | I'll use this algorithm                                                                  |
 |------------------|------------------------------------------------------------------------------------------|
-| Shriek           | [!BlobParameters](xref:AnalysisPrograms.Recognizers.Base.BlobParameters) 🚧             |
+| Shriek           | [!BlobParameters](xref:AnalysisPrograms.Recognizers.Base.BlobParameters)                 |
 | Whistle          | 🚧 !HorizontalTrackParameters 🚧                                                        |
 | Chirp            | [!ForwardTrackParameters](xref:AnalysisPrograms.Recognizers.Base.ForwardTrackParameters) |
 | Whip             | 🚧!UpwardsTrackParameters 🚧                                                            |

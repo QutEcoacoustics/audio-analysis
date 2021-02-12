@@ -12,10 +12,10 @@ Ensure you have [Chocolatey installed](https://chocolatey.org/install). Then:
 choco install docfx -y
 ```
 
-To generate the docs:
+To generate the docs (from audio-analysis repo root):
 
 ```powershell
-../build/generate_docs.ps1
+./build/generate_docs.ps1
 ```
 
 Notes:
@@ -23,32 +23,40 @@ Notes:
 - If there are any errors or warnings they need to be fixed before your changes are committed.
 - You **must rebuild** after changes to see the updated preview
 
-To preview (from audio-analysis repo root), run the _serve_ command in a separate terminal:
+To preview (from **audio-analysis repo root directory**), in PowerShell:
 
-```powershell
-cd _site
-docfx serve
-```
+1. Run the big build script first:
+    ```powershell
+    ./build/generate_docs.ps1
+    ```
+1. Run the quick build command after each change:
+    ```powershell
+    docfx build ./docs/docfx.json
+    ```
+1.  Run the _serve_ command in a _separate terminal_:
 
-Then visit the url in your browser, typically <http://localhost:8080>.
+    ```powershell
+    docfx serve ./_site
+    ```
+1. Then visit the url in your browser, typically <http://localhost:8080>.
 
 ## Layout
 
 The documentation is laid out into several areas:
 
-- **basics**: include introductory topics, like downloading, installing, and general bit of information
+- **basics**: include introductory topics, like downloading, installing, and general bits of information
 - **theory**: is reserved for pages discussing theory like:
     - how audio algorithms work
     - how noise removal works
     - what the indices are
     - how indices are calculated
     - which event detection algorithms we have
-- **guides**: short form workflows
+- **guides**: short form workflows which can be adapted to a user's usecase
     - if I have audio and I want a spectrogram I do ...
     - if I have audio and I want a FCS I do ...
     - if I have indices and I want FCS I do...
     - if I have segmented FCS/indices and I want them joined i do...
-- **tutorials**: Reserved for detailed lessons
+- **tutorials**: Reserved for detailed lessons, with specific working examples
 - **FAQ**: as you expect, duplicated in basics
 - **Articles**: news/blog posts etc
 - **Documentation**: is the _technical_ folder and hides anything that is too technical for general users
