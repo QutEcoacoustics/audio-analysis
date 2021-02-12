@@ -39,7 +39,7 @@ A comparison of these recognizer types is shown in the following table and expla
 </figure>
 
 Hand-crafted, *rule-based* templates can be built using just one or a few examples of the target call. But like any
-ule-based *AI* system, they are *brittle*, that is, they break easily if the target call falls even slightly outside
+rule-based *AI* system, they are *brittle*, that is, they break easily if the target call falls even slightly outside
 the bounds of the rules.
 
 A supervised machine-learning model, for example an SVM or Random Forest, is far more resilient to slight changes in the
@@ -91,7 +91,6 @@ various sounds produced by aquatic animals. Calls typically have temporal and sp
 consist of a temporal sequence of two or more *syllables* (with "gaps" in between) or a set of simultaneous *harmonics*
 or *formants*. (The distinction between harmonics and formants does not concern us here.)
 
-A **DIY Call Recognizer** attempts to recognize calls in a noise-reduced [spectrogram](xref:theory-spectrograms).
 
 ## 3. Acoustic events
 
@@ -131,7 +130,7 @@ For more detail on event types see [_acoustic events_](xref:theory-acoustic-even
 
 ## 4. Detecting acoustic events
 
-A **DIY Call Recognizer** detects or recognizes target calls in an audio recording using a sequence of steps:
+A **DIY Call Recognizer** attempts to recognize calls in a noise-reduced [spectrogram](xref:theory-spectrograms) using a sequence of steps:
 
 1. Preprocessing—steps to prepare the recording for subsequent analysis.
     1. Input audio is broken up into 1-minute chunks
@@ -176,7 +175,7 @@ Changing these parameters allows for the construction of a generic recognizer. T
 parameters than can be changed and their typical values. However, this guide will not produce a functional recognizer;
 each recognizer has to be "tuned" to the target syllables for species to be recognized. Only you can do that.
 
-There are many of parameters available. To make config files easier to read we order these parameters roughly in the
+There are many parameters available. To make config files easier to read we order these parameters roughly in the
 order that they are applied. This aligns with the [basic recognition](#4-detecting-acoustic-events) steps from above.
 
 1. Parameters for preprocessing
@@ -195,7 +194,7 @@ Each algorithm is designed to detect a syllable. Thus to make a generic recogniz
 profile in the `Profiles` list. A config file may target more than one syllable or acoustic event, in that case there
 would be profile for each target syllable or acoustic event.
 
-The `Profiles` list has profile item, and each profile has parameters. So we have a three level hierarchy:
+The `Profiles` list has one or more profile items, and each profile has several parameters. So we have a three level hierarchy:
 
 1. the _profile list_ headed by the key-word `Profiles`.
 2. Each _profile_ in the list
@@ -230,7 +229,7 @@ Profiles:
 This artificial example illustrates three profiles (i.e. syllables or acoustic events) under the key word `Profiles`.
 
 We can see one of the profile has been given the name `BoobookSyllable3` and has the type `ForwardTrackParameters`.
-This means for the `BoobookSyllable3` we want _AP_ to use the _forward track_ algorithm to look for a _chirp_ or a _whistle_.
+This means for the `BoobookSyllable3` we want _AP_ to use the _forward track_ algorithm to look for a _chirp_.
 
 Each profile in this example has four parameters. All three profiles have the same values for `MinHertz` and `MaxHertz` 
 but different values for their time duration. Each profile is processed separately by _AP_.
@@ -242,8 +241,8 @@ In the above example the line `BoobookSyllable1: !ForwardTrackParameters` is to 
 > the name of the target syllable is "BoobookSyllable1" and its type is "ForwardTrackParameters"
 
 There are currently seven algorithm types, each designed to detect different types of acoustic events.
-The names of the acoustic events previously defined describe what they events sound like, whereas,
-the names of the algorithms used to find these events are describe how the algorithms work.
+The names of the acoustic events describe what they sound like, whereas,
+the names of the algorithms (used to find those events) describe how the algorithms work.
 
  This table lists the "generic" events, the algorithm used to detect the, and the name of the parameters needed.
 
@@ -258,7 +257,7 @@ the names of the algorithms used to find these events are describe how the algor
 | Harmonic       | `Harmonic`        | `!HarmonicParameters`        |
 
 Each of these detection algorithms has some common parameters. All "generic" events are characterized by
-common properties, such as their minimum and maximum temporal duration, bandwidth, decibel intensity. In fact, every
+common properties, such as their minimum and maximum temporal duration, their minimum and maximum frequencies, and their decibel intensity. In fact, every
 acoustic event is bounded by an _implicit_ rectangle or marquee whose height represents the bandwidth of the event and
 whose width represents the duration of the event. Even a _chirp_ or _whip_ which consists only of a single sloping
 *spectral track*, is enclosed by a rectangle, two of whose vertices sit at the start and end of the track.
@@ -314,7 +313,7 @@ The key parts here are the:
 Both the profile name and the species names can be any name you like. The names are stored in the results so you know
 what algorithm generated an event.
 
-We could have a profile name of `banana` and species name of `i like golf`—but neither of these names are useful
+We could have a profile name of `banana` and species name of `i_like_golf`—but neither of these names are useful
 because they are not descriptive.
 
 All algorithms have some [common parameters](xref:AnalysisPrograms.Recognizers.Base.CommonParameters). These include
@@ -386,7 +385,7 @@ Some of these algorithms have extra parameters, some do not, but all do have the
 
 ### [PostProcessing](xref:AudioAnalysisTools.Events.Types.EventPostProcessing.PostProcessingConfig)
 
-The post processing stage in run after event detection (the `Profiles`).
+The post processing stage is run after event detection (the `Profiles`).
 Note that these post-processing steps are performed on all acoustic events collectively, i.e. all those "discovered"
 by all the *profiles* in the list of profiles.
 
@@ -572,7 +571,7 @@ We described above the various steps required to tune the parameter values in a 
   That is, repeat steps 3, 4, 5 and 6 adding in a new example each time as they become available. It is also useful
   at this stage to accumulate a set of recordings that do *not* contain the target call. See Section 10 for more
   suggestions on building datasets.
-8: At some point you are ready to use your recognizer on recordings obtained from the operational environment.
+8. At some point you are ready to use your recognizer on recordings obtained from the operational environment.
 
 ## 9. Running a generic recognizer
 
@@ -622,7 +621,7 @@ Eventually, these two labelled data sets can be used for
 - validating the efficacy of your recognizer
 - or for machine learning purposes.
 
-_Egret_ is software designed to asses large datasets for recognizer performance, in an **automated** fashion.
+_Egret_ is software designed to assess large datasets for recognizer performance, in an **automated** fashion.
 _Egret_ can greatly speed up the development of a recognizer because it is easier to repeatedly test small changes to 
 your recognizer.
 
