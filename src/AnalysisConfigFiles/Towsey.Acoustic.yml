@@ -10,12 +10,12 @@
 #The AnalysisName property is no longer required. Analysis type is now identified by config file name.
 #AnalysisName: Towsey.Acoustic
 
-#SegmentDuration: units=seconds;
+# SegmentDuration: units=seconds;
 # Long duration recordings are cut into short segments for more efficient processing. Default segment length = 60 seconds.
 # WARNING: You should not change this property!!
 SegmentDuration: 60
 
-#SegmentOverlap: units=seconds;
+# SegmentOverlap: units=seconds;
 # WARNING: You should not change this property!!
 SegmentOverlap: 0
 
@@ -121,12 +121,12 @@ LdSpectrogramConfig:
     #    When filterCoeff =-1.0, small values are maximally de-emphasized, i.e. y=x^2.
     #    Generally usage suggests that a value of -0.25 is suitable. i.e. a slight de-emphasis.
     ColourFilter: -0.25
-    
+
     # The third index in the color map is always mapped to blue. The eye is less sensitive to blue and it can be difficult to see in dark background.
     # Therefore we enhance the blue by making it brighter, but only when the red and green values are low.
     # This could be done better but can be a helpful! The intention is to create a more visible light blue color.
     # The default value for BlueEnhanceParameter = 0.0 i.e. do no enhancement.
-    # Suggested value is 0.4 when want to enhance visualisation of the "blue" index. 
+    # Suggested value is 0.4 when want to enhance visualisation of the "blue" index.
     BlueEnhanceParameter: 0.4
 
     # minutes x-axis scale

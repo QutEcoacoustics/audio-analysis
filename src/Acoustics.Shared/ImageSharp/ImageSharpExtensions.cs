@@ -281,7 +281,18 @@ namespace SixLabors.ImageSharp
             }
         }
 
-        /// <inheritdoc cref="FillWithBlend(IImageProcessingContext, IBrush, IPath[])"/>
+        /// <summary>
+        /// Fills a rectangle with color that blends with the background.
+        /// If the given <paramref name="brush"/> contains an alpha component,
+        /// that component will be used as the <c>BlendPercentage</c> value.
+        /// </summary>
+        /// <remarks>
+        /// Apparently blending pixels with transparency is not supported for Rgb24 images.
+        /// See the FillDoesNotBlendByDefault.Test smoke test.
+        /// BUG: Blending does not occur with fill https://github.com/SixLabors/ImageSharp.Drawing/issues/38.
+        /// </remarks>
+        /// <param name="context">The drawing context.</param>
+        /// <param name="brush">The brush to fill with.</param>
         /// <param name="region">A rectangular region to fill.</param>
         public static void FillWithBlend(this IImageProcessingContext context, IBrush brush, RectangleF region)
         {
@@ -378,7 +389,7 @@ namespace SixLabors.ImageSharp
         /// </summary>
         /// <remarks>
         /// Historically this method drew a subset of glyphs if the text was located to the left
-        /// of the image (i.e. with a negative x coordinate). 
+        /// of the image (i.e. with a negative x coordinate).
         /// </remarks>
         /// <param name="context"></param>
         /// <param name="text"></param>

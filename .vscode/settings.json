@@ -1,14 +1,27 @@
 {
     "cSpell.words": [
-        "Arial",
-        "Ecoacoustics",
-        "Hanning",
-        "Roboto",
-        "Tahoma",
-        "Towsey",
-        "Truskinger",
-        "nyquist",
-        "pwsh",
-        "rects"
-    ]
+      "Arial",
+      "Browsable",
+      "Ecoacoustics",
+      "Hanning",
+      "Roboto",
+      "Tahoma",
+      "Towsey",
+      "Truskinger",
+      "choco",
+      "convolutional",
+      "docfx",
+      "formants",
+      "nyquist",
+      "pwsh",
+      "rects",
+      "resample",
+      "resampling",
+      "wingbeats"
+    ],
+    "triggerTaskOnSave.tasks": {
+      "docs-save-build": [
+        "docs/**"
+      ]
+    }
 }

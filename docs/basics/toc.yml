@@ -1,7 +1,13 @@
 - name: Introduction
   href: introduction.md
+
 - name: Installing
   href: installing.md
+  items:
+    - name: Manual install
+      href: advanced/manual_install.md
+    - name: Adding to PATH
+      href: advanced/path.md
 
 - name: Command Line Interface
   href: cli.md
@@ -22,7 +28,6 @@
   href: versioning.md
 - name: Logs
   href: logs.md
-- name: Adding to PATH
-  href: path.md
+
 - name: Reporting bugs
   href: bug_report.md

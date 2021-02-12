@@ -51,7 +51,7 @@ namespace Acoustics.Shared.ImageSharp
                 //BlendPercentage = 1,
                 //ColorBlendingMode = PixelColorBlendingMode.Normal,
                 //AntialiasSubpixelDepth = 0,
-                 
+
             },
             ShapeOptions = new ShapeOptions()
             {

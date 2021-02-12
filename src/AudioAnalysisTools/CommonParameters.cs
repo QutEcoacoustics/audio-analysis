@@ -18,22 +18,24 @@ namespace AnalysisPrograms.Recognizers.Base
         public string SpeciesName { get; set; }
 
         /// <summary>
-        /// Gets or sets the frame or Window size, i.e. number of signal samples. Must be power of 2. Typically 512.
+        /// Gets or sets the frame or Window size, i.e. number of signal samples. Must be power of 2. Typically <c>512</c>.
         /// </summary>
+        /// <value>The size of the window (frame) in samples.</value>.
         public int? FrameSize { get; set; }
 
         /// <summary>
         /// Gets or sets the frame or Window step i.e. before start of next frame.
-        /// The overlap can be any number of samples but less than the frame length/size.
+        /// The overlap can be any number of samples but less than <see cref="FrameSize"/>.
         /// </summary>
+        /// <value>The size of the window step in samples.</value>.
         public int? FrameStep { get; set; }
 
         /// <summary>
-        /// Gets or sets the windowing funciton used in conjunction with the FFT when making spectrogram.
+        /// Gets or sets the windowing function used in conjunction with the FFT when making spectrogram.
         /// This can have quite an impact in some cases so it is worth giving user the option.
-        /// The default is a HAMMIN window.
+        /// The default is a <see cref="WindowFunctions.HANNING"/> window.
         /// </summary>
-        public string WindowFunction { get; set; } = WindowFunctions.HAMMING.ToString();
+        public WindowFunctions? WindowFunction { get; set; } = WindowFunctions.HANNING;
 
         /// <summary>
         /// Gets or sets the threshold in decibels which determines signal over

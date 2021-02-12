@@ -10,5 +10,7 @@
   href: ../../CODE_OF_CONDUCT.md
 - name: Commands
   href: commands/toc.yml
-# - name: API
-#   href: api/toc.yml
+- name: Config files
+  href: configs/toc.yml
+- name: API
+  href: api/toc.yml

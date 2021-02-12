@@ -1,3 +1,9 @@
+---
+title: Introduction to AnalysisPrograms.exe
+uid: basics-introduction
+---
+
+
 # Introduction to AnalysisPrograms.exe
 
 AnalysisPrograms.exe (AP.exe) is a software package that analyses recordings

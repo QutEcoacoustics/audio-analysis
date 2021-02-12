@@ -1,0 +1,22 @@
+# format: https://dotnet.github.io/docfx/tutorial/howto_filter_out_unwanted_apis_attributes.html
+# take care when changing this filter; docfx currently crashes from a stack overflow if docs for our full API are generated
+ApiRules:
+  - exclude:
+      hasAttribute:
+        uid: System.ComponentModel.EditorBrowsableAttribute
+        ctorArguments:
+          - System.ComponentModel.EditorBrowsableState.Never
+  - include:
+      uidRegex: ^.*Config.*$
+      type: Class
+  - include:
+      uidRegex: ^AnalysisPrograms\.Recognizers\.GenericRecognizer\.GenericRecognizerConfig
+  # - include:
+  #     uidRegex: ^.*Config.*$
+  #     type: Type
+  - exclude:
+      uidRegex: .*
+      type: Type
+  - exclude:
+      uidRegex: ^System\..*
+      type: Namespace

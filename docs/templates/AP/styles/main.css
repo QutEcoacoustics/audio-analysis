@@ -14,3 +14,12 @@
 .index-toc .nav li{
     display: revert;
 }
+
+figure {
+    padding-bottom: 1em;
+}
+
+figure>figcaption {
+    font-weight: bold;
+    text-align: center;
+}

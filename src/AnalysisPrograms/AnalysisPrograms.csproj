@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <StartupObject>AnalysisPrograms.MainEntry</StartupObject>
@@ -21,6 +21,17 @@
   <Import Project="..\AP.RequireLfsAssets.targets" />
   <ItemGroup>
     <Compile Include="..\AssemblyMetadata.Generated.cs" Link="Properties\AssemblyMetadata.Generated.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="5.0.0" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.0.0" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta13.5.3" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3-alpha.0.35" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11.4" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.261">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj" />
@@ -56,15 +67,5 @@
     <Compile Remove="SPR_OBSOLETE.cs" />
     <Compile Remove="XiesAnalysis.cs" />
     <Compile Remove="Recognizers\LitoriaBicolorOLD.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.0.0" />
-    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0058" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3-alpha.0.7" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.261">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 </Project>

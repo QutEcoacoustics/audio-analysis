@@ -1,3 +1,8 @@
+---
+title: Scripting with PowerShell
+uid: guides-scripting-r
+---
+
 # Scripting with R
 
 For those more comfortable with R over a terminal, here is an example of an R
@@ -57,6 +62,7 @@ for(file in files) {
 ## Script explained
 
 ### Set the directory containing the files
+
 Assign using the left arrow operator `<- `the folder where the audio files
 are located to the variable `directory `, like this:
 

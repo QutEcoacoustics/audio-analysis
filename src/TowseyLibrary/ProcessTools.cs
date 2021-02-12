@@ -15,17 +15,17 @@ namespace TowseyLibrary
 
     /*
      * Example usage:
-     * 
+     *
      * var pr = new ProcessRunner(){
      *      ProgramToRun = new FileInfo("C:\MyProgram.exe"),
      *      WorkingDirectory = new DirectoryInfo("C:\temp\workingdir"),
      *      Arguments = "program arguments"
      * };
-     * 
+     *
      ****** OR *******
      * var pr = new ProcessRunner(new DirectoryInfo("C:\temp\workingdir"), new FileInfo("C:\MyProgram.exe"), "program arguments");
-     * 
-     * 
+     *
+     *
      ****** then ******
      *
      * pr.Start();
@@ -112,7 +112,7 @@ namespace TowseyLibrary
         private Process Worker { get; set; }
 
         /// <summary>
-        /// Run the program. The output will be available from 
+        /// Run the program. The output will be available from
         /// OutputData and ErrorData once this method completes.
         /// </summary>
         public void Start()

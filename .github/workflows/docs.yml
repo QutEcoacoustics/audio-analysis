@@ -34,19 +34,17 @@ jobs:
     # fetch more tag info so git_version.ps1 works properly
     - name: Ensure tags are fetched
       # Retrieve annotated tags.
-      run: git fetch --tags --force 
+      run: git fetch --tags --force
 
-    # disabled due to bug in docfx that leads to a stack overflow
-    # also disabled in generate_docs.ps1
     # setup and build solution
-    # - name: Setup .NET
-    #   uses: actions/setup-dotnet@v1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
 
-    # - name: Restore dependencies
-    #   run: dotnet restore
+    - name: Restore dependencies
+      run: dotnet restore
 
-    # - name: Build
-    #   run: dotnet build --no-restore
+    - name: Build
+      run: dotnet build --no-restore
 
     - name: Generate docs
       shell: pwsh

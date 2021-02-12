@@ -24,7 +24,7 @@
 - Dates and durations:
     1. **ONLY** format dates in an ISO8601 format
         - a modified ISO8601 format with all punctuation removed is acceptable
-          for file/folder names. Example format string: yyyyMMddTHHmmssZ
+          for file/folder names. Example format string: `yyyyMMddTHHmmssZ`
     1. **ALWAYS** format dates with UTC offset information if available
     1. **PREFER** formatting dates in the UTC timezone
     1. **AVOID** exposing `TimeSpan`s to user facing fields (use seconds instead)
@@ -35,8 +35,6 @@
   Our project has a historically bad relationship with unit testing and we want to try
   and improve on this.  
   [![codecov](https://codecov.io/gh/QutEcoacoustics/audio-analysis/branch/master/graph/badge.svg)](https://codecov.io/gh/QutEcoacoustics/audio-analysis)
-
-
 
 ## Required Software
 

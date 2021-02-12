@@ -3,5 +3,9 @@
 
 - name: Scripting AP.exe
   href: scripting.md
+
 - name: Scripting AP.exe with R
   href: using_r.md
+
+- name: DIY Call Recognizer
+  href: generic_recognizers.md

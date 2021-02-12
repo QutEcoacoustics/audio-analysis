@@ -3,21 +3,26 @@
     {
       "src": [
         {
-          "src": "..",
+          "src": "../src",
           "files": [
-            "src/**.csproj"
+            "AnalysisPrograms\\AnalysisPrograms.csproj",
+            "**/*.csproj"
           ],
           "exclude": [
-            "src/**.fsproj",
             "**/*.fsproj",
-            "*.fsproj",
-            "test/**"
+            "AED/*",
+            "**/*.fsproj",
+            "*.fsproj"
           ]
         }
       ],
       "dest": "technical/api",
       "disableGitFeatures": false,
-      "disableDefaultFilter": false
+      "disableDefaultFilter": false,
+      "filter": "metadata_filter.yml",
+      "properties": {
+        "TargetFramework": "net5.0"
+      }
     }
   ],
   "build": {
@@ -47,7 +52,8 @@
           "images/README.md",
           "README.md",
           "pdf/**",
-          "_ignore"
+          "_ignore",
+          "technical/apidoc/*"
         ]
       }
     ],
@@ -55,8 +61,7 @@
       {
         "files": [
           "images/**",
-          "netlify.toml",
-
+          "netlify.toml"
         ],
         "exclude": [
           "images/README.md"
@@ -68,17 +73,7 @@
         ]
       }
     ],
-    "overwrite": [
-      {
-        "files": [
-          "technical/apidoc/**.md"
-        ],
-        "exclude": [
-          "obj/**",
-          "_site/**"
-        ]
-      }
-    ],
+    "overwrite": "technical/apidoc/*",
     "xrefService": [
       "https://xref.docs.microsoft.com/query?uid={uid}"
     ],
@@ -136,7 +131,8 @@
           "**/bin/**",
           "**/obj/**",
           "**/toc.yml",
-          "**/toc.md"
+          "**/toc.md",
+          "technical/apidoc/*"
         ]
       },
       {
@@ -158,7 +154,8 @@
         ],
         "exclude": [
           "images/README.md",
-          "README.md"
+          "README.md",
+          "technical/apidoc/*"
         ]
       }
 
@@ -175,17 +172,7 @@
         ]
       }
     ],
-    "overwrite": [
-      {
-        "files": [
-          "technical/apidoc/**.md"
-        ],
-        "exclude": [
-          "**/bin/**",
-          "**/obj/**"
-        ]
-      }
-    ],
+    "overwrite": "technical/apidoc/*",
     "wkhtmltopdf": {
       "additionalArguments": "--enable-local-file-access  --footer-center [page] --footer-font-size 10 --no-stop-slow-scripts"
     },

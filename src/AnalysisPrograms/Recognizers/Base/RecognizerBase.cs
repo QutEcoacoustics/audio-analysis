@@ -37,7 +37,7 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 this.Loaded += config =>
                     {
-                        var file = ConfigFile.Resolve(this.HighResolutionIndicesConfig);
+                        var file = ConfigFile.Resolve(this.HighResolutionIndicesConfig ?? "Towsey.Acoustic.HiResIndicesForRecognisers.yml");
                         var indicesConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(file);
                         this.HighResolutionIndices = indicesConfig;
                     };

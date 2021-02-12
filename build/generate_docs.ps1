@@ -25,9 +25,8 @@ try {
     Set-Location docs
 
     log "[Disabled] Prepare API metadata for docs"
-    # metadata generation disabled due to a StackOverflowException that occurs
-    # if we try to build the docs after a metadata generation has been done
-    #exec { docfx metadata }
+
+    exec { docfx metadata }
 
     log "Building pdf docs" "Build PDF"
     exec { docfx pdf  --log verbose }
