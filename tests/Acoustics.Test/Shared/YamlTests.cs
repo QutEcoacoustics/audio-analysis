@@ -8,11 +8,13 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace Acoustics.Test.Shared
 {
+    using System;
     using System.IO;
 
     using Acoustics.Shared;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using YamlDotNet.Core;
 
     [TestClass]
     public class YamlTests
@@ -94,7 +96,7 @@ SaveSonogramData: false
 # Frame step. units=samples
 # NOTE: The value for FrameStep is used only when calculating a standard spectrogram within the ZOOMING spectrogram function.
 #       FrameStep is NOT used when calculating Summary and Spectral indices.
-#       However the FrameStep entry must NOT be deleted from this file. Keep the value for when it is required. 
+#       However the FrameStep entry must NOT be deleted from this file. Keep the value for when it is required.
 #       The value 441 should NOT be changed because it has been calculated specifically for current ZOOMING spectrogram set-up.
 # TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
 FrameStep: 441
@@ -183,6 +185,36 @@ EventThreshold: 0.2
             Assert.AreEqual(123456, testObject.PrivateSetter.Value);
         }
 
+        [TestMethod]
+        public void CanDeserializeNullableEnums()
+        {
+            // related to https://github.com/aaubry/YamlDotNet/issues/544
+            var testCase = @"
+A: WAVEFORM
+B: ~
+C: Spectrogram
+";
+
+            // bug in yamldotnet should fail unless our patch is added
+            // if not fail, then patch no longer needed
+            var exception = Assert.ThrowsException<YamlException>(
+                () =>
+                {
+                    using var stream = new StringReader(testCase);
+                    var @default = new YamlDotNet.Serialization.Deserializer();
+                    @default.Deserialize<YamlEnumTestClass>(stream);
+                });
+            Assert.IsInstanceOfType(exception.InnerException, typeof(FormatException));
+            StringAssert.Contains( "Input string was not in a correct format.", exception.InnerException.Message);
+
+            using var stream = new StringReader(testCase);
+            var actual = Yaml.Deserialize<YamlEnumTestClass>(stream);
+
+            Assert.AreEqual(SpectrogramType.WaveForm, actual.A);
+            Assert.AreEqual(null, actual.B);
+            Assert.AreEqual(SpectrogramType.Spectrogram, actual.C);
+        }
+
         [TestCleanup]
         public void TestCleanup()
         {
@@ -194,6 +226,15 @@ EventThreshold: 0.2
         {
             this.testDocument = TempFileHelper.NewTempFile();
             File.WriteAllText(this.testDocument.FullName, WrapperDocument);
+        }
+
+        public class YamlEnumTestClass
+        {
+                public SpectrogramType A { get; set; }
+
+                public SpectrogramType? B { get; set; }
+
+                public SpectrogramType? C { get; set; }
         }
 
         public class YamlTestDataClass

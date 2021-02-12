@@ -15,7 +15,9 @@ namespace Acoustics.Shared
     using System.Linq;
     using JetBrains.Annotations;
     using YamlDotNet.Core;
+    using YamlDotNet.Core.Events;
     using YamlDotNet.Serialization;
+    using YamlDotNet.Serialization.NodeDeserializers;
 
     public static class Yaml
     {
@@ -33,6 +35,7 @@ namespace Acoustics.Shared
         internal static IDeserializer Deserializer => new DeserializerBuilder()
             .IgnoreUnmatchedProperties()
             .WithTagMappings(TagMappings)
+            .WithTypeConverter(new YamlNullableEnumTypeConverter())
             .Build();
 
         public static T Deserialize<T>(FileInfo file)
@@ -97,6 +100,69 @@ namespace Acoustics.Shared
         {
             return mappings
                 .Aggregate(builder, (b, kvp) => b.WithTagMapping(kvp.Key, kvp.Value));
+        }
+
+        private class YamlNullableEnumTypeConverter : IYamlTypeConverter
+        {
+            // deals with nullable-enum parsing bug
+            // https://github.com/aaubry/YamlDotNet/issues/544#issuecomment-761711947
+            public bool Accepts(Type type)
+            {
+                return Nullable.GetUnderlyingType(type)?.IsEnum ?? false;
+            }
+
+            public object ReadYaml(IParser parser, Type type)
+            {
+                type = Nullable.GetUnderlyingType(type) ?? throw new ArgumentException("Expected nullable enum type for ReadYaml");
+
+                if (parser.Accept<NodeEvent>(out var @event))
+                {
+                    if (NodeIsNull(@event))
+                    {
+                        parser.SkipThisAndNestedEvents();
+                        return null;
+                    }
+                }
+
+                var scalar = parser.Consume<Scalar>();
+                try
+                {
+                    return Enum.Parse(type, scalar.Value, ignoreCase: true);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Invalid value: \"{scalar.Value}\" for {type.Name}", ex);
+                }
+            }
+
+            public void WriteYaml(IEmitter emitter, object value, Type type)
+            {
+                type = Nullable.GetUnderlyingType(type) ?? throw new ArgumentException("Expected nullable enum type for WriteYaml");
+
+                if (value != null)
+                {
+                    var toWrite = Enum.GetName(type, value) ?? throw new InvalidOperationException($"Invalid value {value} for enum: {type}");
+                    emitter.Emit(new Scalar(null, null, toWrite, ScalarStyle.Any, true, false));
+                }
+            }
+
+            private static bool NodeIsNull(NodeEvent nodeEvent)
+            {
+                // http://yaml.org/type/null.html
+
+                if (nodeEvent.Tag == "tag:yaml.org,2002:null")
+                {
+                    return true;
+                }
+
+                if (nodeEvent is Scalar scalar && scalar.Style == ScalarStyle.Plain)
+                {
+                    var value = scalar.Value;
+                    return value is "" or "~" or "null" or "Null" or "NULL";
+                }
+
+                return false;
+            }
         }
     }
 }
