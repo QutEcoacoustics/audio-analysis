@@ -39,7 +39,7 @@ try {
     $xref_content = @"
     {"references":[{"uid":"invariant_ap_manual_ref","name":"Download AP PDF","href":"$pdf_name","fullName":"PDF Download for AP.exe docs version ${Env:AP_Version}"}]}
 "@
-    Set-Content -Encoding utf8NoBOM -Path "pdf_xrefmap.yml" -Value $xref_content
+    $xref_content | Set-Content -Encoding utf8NoBOM -Path "pdf_xrefmap.yml" -Force
 
 
     log "Building docs" "Build docs"

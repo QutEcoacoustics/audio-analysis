@@ -55,7 +55,7 @@ jobs:
       shell: pwsh
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      run: ./build/publish_docs.ps1 --prod:('${{ github.event_name }}' -eq 'push')
+      run: ./build/publish_docs.ps1 -prod:('${{ github.event_name }}' -eq 'push')
 
     - name: Publish deploy URL to a Github Status
       uses: Sibz/github-status-action@v1
