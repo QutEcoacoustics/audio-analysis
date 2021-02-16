@@ -7,4 +7,12 @@
 - name: Guides
   href: ../guides/toc.yml
 - name: Technical
-  href: ../technical/toc.yml
+  items:
+    - name: Changelog
+      href: ../../CHANGELOG.md
+    - name: Contributing
+      href: ../../CONTRIBUTING.md
+    - name: Commands
+      href: ../technical/commands/toc.yml
+    - name: Config files
+      href: ../technical/configs/toc.yml

@@ -43,7 +43,7 @@ try {
 
 
     log "Building docs" "Build docs"
-    exec { docfx build --log verbose }
+    exec { docfx build --log verbose --force }
 
     log "✅ Doc generation success"
 }

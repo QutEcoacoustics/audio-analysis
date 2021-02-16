@@ -31,7 +31,7 @@ try {
     Write-Output "Deploying to netlify"
 
     $prod_arg = if ($prod) { "--prod" } else { "" }
-    Write-Output "prod moode is $prod"
+    Write-Output "prod mode is $prod"
 
     # NETLIFY_AUTH_TOKEN used by this command
     exec { netlify deploy --dir=. --message="Docs deploy for https://github.com/QutEcoacoustics/audio-analysis/commit/$commit_hash" $prod_arg --site="078c0d59-a45a-4458-bd92-2d7c05f44bb6" --json } | Write-Output -OutVariable "deploy_result"
