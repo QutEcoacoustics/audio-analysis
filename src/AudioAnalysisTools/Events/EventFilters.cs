@@ -7,12 +7,16 @@ namespace AudioAnalysisTools.Events
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
+    using log4net;
     using TowseyLibrary;
 
     public static class EventFilters
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         //NOTES on SYNTAX:
         //"Select" is a transform - fails if it encounters anything that is not of type SpectralEvent.
         //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
@@ -166,9 +170,9 @@ namespace AudioAnalysisTools.Events
                 // Get the temporal footprint of the component events.
                 (bool[] temporalFootprint, double timeScale) = GetTemporalFootprint(ev);
 
-                // calculate the periodicity in seconds
+                // calculate the actual periods in seconds
                 int syllableCount = 1;
-                var periodSeconds = new List<double>();
+                var actualPeriodSeconds = new List<double>();
                 int previousEventStart = 0;
                 for (int f = 1; f < temporalFootprint.Length; f++)
                 {
@@ -176,14 +180,18 @@ namespace AudioAnalysisTools.Events
                     {
                         // calculate the event interval in seconds.
                         syllableCount++;
-                        periodSeconds.Add((f - previousEventStart + 1) * timeScale);
+                        actualPeriodSeconds.Add((f - previousEventStart + 1) * timeScale);
                         previousEventStart = f;
                     }
                 }
 
-                // reject composite events whose total syllable count exceeds the user defined max.
+                string strArray = DataTools.Array2String(actualPeriodSeconds.ToArray());
+                Log.Debug($" Actual periods: {strArray}");
+
+                    // reject composite events whose total syllable count exceeds the user defined max.
                 if (syllableCount > maxSyllableCount)
                 {
+                    Log.Debug($" EventRejected: Actual syllable count > max: {syllableCount} > {maxSyllableCount}");
                     continue;
                 }
 
@@ -196,31 +204,24 @@ namespace AudioAnalysisTools.Events
                 }
                 else
                 {
-                    if (syllableCount == 2)
-                    {
-                        // there were only two events, with one interval
-                        // accept this as valid outcome, iff the interval falls within the expected interval.
-                        var actualInterval = periodSeconds[0];
+                    // If there are only two events, with one interval, THEN ...
+                    var actualAvPeriod = actualPeriodSeconds[0];
 
-                        if (actualInterval >= minExpectedPeriod && actualInterval <= maxExpectedPeriod)
-                        {
-                            filteredEvents.Add(ev);
-                        }
+                    // ... BUT if there are more than two events, get the average interval
+                    if (syllableCount > 2)
+                    {
+                        actualAvPeriod = actualPeriodSeconds.Average();
+                    }
+
+                    // Require that the actual average period or interval should fall between required min and max period.
+                    if (actualAvPeriod >= minExpectedPeriod && actualAvPeriod <= maxExpectedPeriod)
+                    {
+                        Log.Debug($" EventAccepted: Actual average syllable interval = {actualAvPeriod}");
+                        filteredEvents.Add(ev);
                     }
                     else
                     {
-                        // there were more than two events. Require overlap between actual and expected ranges.
-                        NormalDist.AverageAndSD(periodSeconds.ToArray(), out double averagePeriod, out double sdPeriod);
-
-                        // get the difference between the expected and absolute periods.
-                        var periodDifference = Math.Abs(averagePeriod - expectedPeriod);
-
-                        //This difference should be less than the combined SDs.
-                        var combinedSds = (sdPeriod + expectedSd) * 2;
-                        if (periodDifference <= combinedSds)
-                        {
-                            filteredEvents.Add(ev);
-                        }
+                        Log.Debug($" EventRejected: Actual average syllable interval = {actualAvPeriod}");
                     }
                 }
             }

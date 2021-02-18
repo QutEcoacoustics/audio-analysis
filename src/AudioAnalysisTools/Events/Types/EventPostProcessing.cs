@@ -57,9 +57,15 @@ namespace AudioAnalysisTools.Events.Types
                 {
                     // filter on number of syllables and their periodicity.
                     var maxComponentCount = sequenceConfig.SyllableMaxCount;
-                    var period = sequenceConfig.ExpectedPeriod;
+                    var periodAv = sequenceConfig.ExpectedPeriod;
                     var periodSd = sequenceConfig.PeriodStandardDeviation;
-                    newEvents = EventFilters.FilterEventsOnSyllableCountAndPeriodicity(newEvents, maxComponentCount, period, periodSd);
+                    var minPeriod = periodAv - (3 * periodSd);
+                    var maxPeriod = periodAv + (3 * periodSd);
+                    Log.Debug($"FILTER SYLLABLE SEQUENCE");
+                    Log.Debug($" Syllables: max={maxComponentCount}");
+                    Log.Debug($" Period: av={periodAv}s, sd={periodSd:F3} min={minPeriod:F3}s, max={maxPeriod:F3}s");
+
+                    newEvents = EventFilters.FilterEventsOnSyllableCountAndPeriodicity(newEvents, maxComponentCount, periodAv, periodSd);
                     Log.Debug($"Event count after filtering on periodicity = {newEvents.Count}");
                 }
             }

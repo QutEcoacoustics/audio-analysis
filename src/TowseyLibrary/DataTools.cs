@@ -1620,6 +1620,17 @@ namespace TowseyLibrary
             return sb.ToString();
         }
 
+        public static string Array2String(double[] array)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < array.Length; i++)
+            {
+                sb.Append(array[i].ToString("F3") + ", ");
+            }
+
+            return sb.ToString();
+        }
+
         public static string Array2String(string[] array)
         {
             StringBuilder sb = new StringBuilder();
