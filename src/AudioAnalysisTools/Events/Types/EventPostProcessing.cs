@@ -14,6 +14,7 @@ namespace AudioAnalysisTools.Events.Types
 
     public static class EventPostProcessing
     {
+        private const float SigmaThreshold = 3.0F;
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public static List<EventCommon> PostProcessingOfSpectralEvents(
@@ -45,12 +46,14 @@ namespace AudioAnalysisTools.Events.Types
 
             if (sequenceConfig.NotNull() && sequenceConfig.CombinePossibleSyllableSequence)
             {
+                Log.Debug($"COMBINE PROXIMAL EVENTS");
+
                 // Must first convert events to spectral events.
                 var spectralEvents1 = newEvents.Cast<SpectralEvent>().ToList();
                 var startDiff = sequenceConfig.SyllableStartDifference;
                 var hertzDiff = sequenceConfig.SyllableHertzGap;
                 newEvents = CompositeEvent.CombineProximalEvents(spectralEvents1, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
-                Log.Debug($"Event count after combining proximal events = {newEvents.Count}");
+                Log.Debug($" Event count after combining proximal events = {newEvents.Count}");
 
                 // Now filter on properties of the sequences which are treated as Composite events.
                 if (sequenceConfig.FilterSyllableSequence)
@@ -59,54 +62,66 @@ namespace AudioAnalysisTools.Events.Types
                     var maxComponentCount = sequenceConfig.SyllableMaxCount;
                     var periodAv = sequenceConfig.ExpectedPeriod;
                     var periodSd = sequenceConfig.PeriodStandardDeviation;
-                    var minPeriod = periodAv - (3 * periodSd);
-                    var maxPeriod = periodAv + (3 * periodSd);
-                    Log.Debug($"FILTER SYLLABLE SEQUENCE");
+                    var minPeriod = periodAv - (SigmaThreshold * periodSd);
+                    var maxPeriod = periodAv + (SigmaThreshold * periodSd);
+                    Log.Debug($"FILTER ON SYLLABLE SEQUENCE");
                     Log.Debug($" Syllables: max={maxComponentCount}");
                     Log.Debug($" Period: av={periodAv}s, sd={periodSd:F3} min={minPeriod:F3}s, max={maxPeriod:F3}s");
 
                     newEvents = EventFilters.FilterEventsOnSyllableCountAndPeriodicity(newEvents, maxComponentCount, periodAv, periodSd);
-                    Log.Debug($"Event count after filtering on periodicity = {newEvents.Count}");
+                    Log.Debug($" Event count after filtering on periodicity = {newEvents.Count}");
                 }
             }
 
             // 3: Filter the events for time duration (seconds)
-            if (postprocessingConfig.Duration != null)
+            if ((postprocessingConfig.Duration != null) && (newEvents.Count > 0))
             {
+                Log.Debug($"FILTER ON EVENT DURATION");
                 var expectedEventDuration = postprocessingConfig.Duration.ExpectedDuration;
                 var sdEventDuration = postprocessingConfig.Duration.DurationStandardDeviation;
-                newEvents = EventFilters.FilterOnDuration(newEvents, expectedEventDuration, sdEventDuration, sigmaThreshold: 3.0);
-                Log.Debug($"Event count after filtering on duration = {newEvents.Count}");
+                var minDuration = expectedEventDuration - (SigmaThreshold * sdEventDuration);
+                var maxDuration = expectedEventDuration + (SigmaThreshold * sdEventDuration);
+                Log.Debug($" Duration: expected={expectedEventDuration}s, sd={sdEventDuration} min={minDuration}s, max={maxDuration}s");
+                newEvents = EventFilters.FilterOnDuration(newEvents, expectedEventDuration, sdEventDuration, SigmaThreshold);
+                Log.Debug($" Event count after filtering on duration = {newEvents.Count}");
             }
 
             // 4: Filter the events for bandwidth in Hertz
-            if (postprocessingConfig.Bandwidth != null)
+            if ((postprocessingConfig.Bandwidth != null) && (newEvents.Count > 0))
             {
+                Log.Debug($"FILTER ON EVENT BANDWIDTH");
                 var expectedEventBandwidth = postprocessingConfig.Bandwidth.ExpectedBandwidth;
                 var sdBandwidth = postprocessingConfig.Bandwidth.BandwidthStandardDeviation;
-                newEvents = EventFilters.FilterOnBandwidth(newEvents, expectedEventBandwidth, sdBandwidth, sigmaThreshold: 3.0);
-                Log.Debug($"Event count after filtering on bandwidth = {newEvents.Count}");
+                var minBandwidth = expectedEventBandwidth - (SigmaThreshold * sdBandwidth);
+                var maxBandwidth = expectedEventBandwidth + (SigmaThreshold * sdBandwidth);
+                Log.Debug($" Bandwidth: expected={expectedEventBandwidth}Hz, sd={sdBandwidth} min={minBandwidth}Hz, max={maxBandwidth}Hz");
+                newEvents = EventFilters.FilterOnBandwidth(newEvents, expectedEventBandwidth, sdBandwidth, SigmaThreshold);
+                Log.Debug($" Event count after filtering on bandwidth = {newEvents.Count}");
             }
 
             // 5: Filter events on the amount of acoustic activity in their upper and lower sidebands - their buffer zone.
             //    The idea is that an unambiguous event should have some acoustic space above and below.
             //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
             var sidebandActivity = postprocessingConfig.SidebandActivity;
-            if (sidebandActivity != null)
+            if ((sidebandActivity != null) && (newEvents.Count > 0))
             {
+                Log.Debug($"FILTER ON SIDEBAND ACTIVITY");
+                Log.Debug($" Max permitted sideband background = {sidebandActivity.MaxAverageDecibels:F0} dB");
+                Log.Debug($" Max permitted sideband activity = {sidebandActivity.MaxActivityDecibels:F0} dB");
                 var spectralEvents2 = newEvents.Cast<SpectralEvent>().ToList();
                 newEvents = EventFilters.FilterEventsOnSidebandActivity(
                     spectralEvents2,
                     spectrogram,
                     sidebandActivity.LowerHertzBuffer,
                     sidebandActivity.UpperHertzBuffer,
-                    sidebandActivity.MaxAverageSidebandDecibels,
+                    sidebandActivity.MaxAverageDecibels,
+                    sidebandActivity.MaxActivityDecibels,
                     segmentStartOffset);
-                Log.Debug($"Event count after filtering on acoustic activity in sidebands = {newEvents.Count}");
+                Log.Debug($" Event count after filtering on sideband activity = {newEvents.Count}");
             }
 
             // Write out the events to log.
-            Log.Debug($"Final event count = {newEvents.Count}.");
+            Log.Debug($"FINAL event count = {newEvents.Count}.");
             if (newEvents.Count > 0)
             {
                 int counter = 0;
@@ -202,11 +217,18 @@ namespace AudioAnalysisTools.Events.Types
             public int LowerHertzBuffer { get; set; }
 
             /// <summary>
-            /// Gets or sets a value indicating the maximum value of the average decibels of acoustic activity
+            /// Gets or sets a value indicating the maximum value of the average decibels of background acoustic activity
             ///        in the upper and lower sidebands of an event. The average is over all spectrogram cells in each sideband.
             /// This value is used only if LowerHertzBuffer > 0 OR UpperHertzBuffer > 0.
             /// </summary>
-            public double MaxAverageSidebandDecibels { get; set; }
+            public double MaxAverageDecibels { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating the maximum decibel value in a sideband frequency bin or timeframe.
+            /// The decibel value is an average over all spectrogram cells in any frame or bin.
+            /// This value is used only if LowerHertzBuffer > 0 OR UpperHertzBuffer > 0.
+            /// </summary>
+            public double MaxActivityDecibels { get; set; }
         }
 
         /// <summary>

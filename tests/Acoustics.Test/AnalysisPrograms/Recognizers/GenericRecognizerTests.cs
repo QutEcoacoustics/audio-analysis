@@ -126,7 +126,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                     {
                         UpperHertzBuffer = 0,
                         LowerHertzBuffer = 0,
-                        MaxAverageSidebandDecibels = 0,
+                        MaxAverageDecibels = 0,
                     },
                 },
             };
@@ -190,7 +190,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                     {
                         UpperHertzBuffer = 0,
                         LowerHertzBuffer = 0,
-                        MaxAverageSidebandDecibels = 0,
+                        MaxAverageDecibels = 0,
                     },
                 },
             };
@@ -252,7 +252,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                     {
                         UpperHertzBuffer = 0,
                         LowerHertzBuffer = 0,
-                        MaxAverageSidebandDecibels = 0,
+                        MaxAverageDecibels = 0,
                     },
                 },
             };
@@ -998,7 +998,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                     {
                         UpperHertzBuffer = 0,
                         LowerHertzBuffer = 0,
-                        MaxAverageSidebandDecibels = 0,
+                        MaxAverageDecibels = 0,
                     },
                 },
             };
@@ -1088,7 +1088,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                     {
                         UpperHertzBuffer = 0,
                         LowerHertzBuffer = 0,
-                        MaxAverageSidebandDecibels = 0,
+                        MaxAverageDecibels = 0,
                     },
                 },
             };

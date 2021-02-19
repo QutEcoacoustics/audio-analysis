@@ -62,18 +62,37 @@ namespace AudioAnalysisTools.Events
             var minBandwidth = average - (sd * sigmaThreshold);
             if (minBandwidth < 0.0)
             {
-                throw new Exception("Invalid bandwidth passed to method EventExtentions.FilterOnBandwidth().");
+                throw new Exception("Invalid bandwidth passed to method EventExtentions.FilterOnBandwidth(). Min bandwidth < 0 Hertz.");
             }
 
             var maxBandwidth = average + (sd * sigmaThreshold);
-            var outputEvents = events.Where(ev => ((SpectralEvent)ev).BandWidthHertz >= minBandwidth && ((SpectralEvent)ev).BandWidthHertz <= maxBandwidth).ToList();
+            var outputEvents = FilterOnBandwidth(events, minBandwidth, maxBandwidth);
             return outputEvents;
         }
 
         public static List<EventCommon> FilterOnBandwidth(List<EventCommon> events, double minBandwidth, double maxBandwidth)
         {
-            var outputEvents = events.Where(ev => ((SpectralEvent)ev).BandWidthHertz >= minBandwidth && ((SpectralEvent)ev).BandWidthHertz <= maxBandwidth).ToList();
-            return outputEvents;
+            // The following line does it all BUT it does not allow for feedback to the user.
+            //var outputEvents = events.Where(ev => ((SpectralEvent)ev).BandWidthHertz >= minBandwidth && ((SpectralEvent)ev).BandWidthHertz <= maxBandwidth).ToList();
+
+            var filteredEvents = new List<EventCommon>();
+
+            foreach (var ev in events)
+            {
+                var bandwidth = ((SpectralEvent)ev).BandWidthHertz;
+                if ((bandwidth > minBandwidth) && (bandwidth < maxBandwidth))
+                {
+                    Log.Debug($" Event accepted: Actual bandwidth = {bandwidth}");
+                    filteredEvents.Add(ev);
+                }
+                else
+                {
+                    Log.Debug($" Event rejected: Actual bandwidth = {bandwidth}");
+                    continue;
+                }
+            }
+
+            return filteredEvents;
         }
 
         /// <summary>
@@ -95,15 +114,6 @@ namespace AudioAnalysisTools.Events
         }
 
         /// <summary>
-        /// Remove events from a list of events whose time duration is either too short or too long.
-        /// </summary>
-        public static List<EventCommon> FilterOnDuration(List<EventCommon> events, double minimumDurationSeconds, double maximumDurationSeconds)
-        {
-            var outputEvents = events.Where(ev => ((SpectralEvent)ev).EventDurationSeconds >= minimumDurationSeconds && ((SpectralEvent)ev).EventDurationSeconds <= maximumDurationSeconds).ToList();
-            return outputEvents;
-        }
-
-        /// <summary>
         /// Filters lists of spectral events based on their duration.
         /// Note: The typical sigma threshold would be 2 to 3 sds.
         /// </summary>
@@ -114,15 +124,43 @@ namespace AudioAnalysisTools.Events
         /// <returns>The filtered list of events.</returns>
         public static List<EventCommon> FilterOnDuration(List<EventCommon> events, double average, double sd, double sigmaThreshold)
         {
-            var minDuration = average - (sd * sigmaThreshold);
-            if (minDuration < 0.0)
+            var minimumDurationSeconds = average - (sd * sigmaThreshold);
+            if (minimumDurationSeconds < 0.0)
             {
-                throw new Exception("Invalid seconds duration passed to method EventExtentions.FilterOnDuration().");
+                throw new Exception("Invalid seconds duration passed to method EventExtentions.FilterOnDuration(). Minimum event duration < 0 seconds");
             }
 
-            var maxDuration = average + (sd * sigmaThreshold);
-            var outputEvents = events.Where(ev => ((SpectralEvent)ev).EventDurationSeconds >= minDuration && ((SpectralEvent)ev).EventDurationSeconds <= maxDuration).ToList();
+            var maximumDurationSeconds = average + (sd * sigmaThreshold);
+            var outputEvents = FilterOnDuration(events, minimumDurationSeconds, maximumDurationSeconds);
             return outputEvents;
+        }
+
+        /// <summary>
+        /// Remove events from a list of events whose time duration is either too short or too long.
+        /// </summary>
+        public static List<EventCommon> FilterOnDuration(List<EventCommon> events, double minimumDurationSeconds, double maximumDurationSeconds)
+        {
+            // The following line does it all BUT it does not allow for feedback to the user.
+            //var filteredEvents = events.Where(ev => ((SpectralEvent)ev).EventDurationSeconds >= minimumDurationSeconds && ((SpectralEvent)ev).EventDurationSeconds <= maximumDurationSeconds).ToList();
+
+            var filteredEvents = new List<EventCommon>();
+
+            foreach (var ev in events)
+            {
+                var duration = ((SpectralEvent)ev).EventDurationSeconds;
+                if ((duration > minimumDurationSeconds) && (duration < maximumDurationSeconds))
+                {
+                    Log.Debug($" Event accepted: Actual duration = {duration:F3}s");
+                    filteredEvents.Add(ev);
+                }
+                else
+                {
+                    Log.Debug($" Event rejected: Actual duration = {duration:F3}s");
+                    continue;
+                }
+            }
+
+            return filteredEvents;
         }
 
         /// <summary>
@@ -153,8 +191,9 @@ namespace AudioAnalysisTools.Events
         /// </summary>
         public static List<EventCommon> FilterEventsOnSyllableCountAndPeriodicity(List<EventCommon> events, int maxSyllableCount, double expectedPeriod, double expectedSd)
         {
-            var minExpectedPeriod = expectedPeriod - (3 * expectedSd);
-            var maxExpectedPeriod = expectedPeriod + (3 * expectedSd);
+            var SigmaThreshold = 3.0;
+            var minExpectedPeriod = expectedPeriod - (SigmaThreshold * expectedSd);
+            var maxExpectedPeriod = expectedPeriod + (SigmaThreshold * expectedSd);
 
             var filteredEvents = new List<EventCommon>();
 
@@ -216,12 +255,12 @@ namespace AudioAnalysisTools.Events
                     // Require that the actual average period or interval should fall between required min and max period.
                     if (actualAvPeriod >= minExpectedPeriod && actualAvPeriod <= maxExpectedPeriod)
                     {
-                        Log.Debug($" EventAccepted: Actual average syllable interval = {actualAvPeriod}");
+                        Log.Debug($" EventAccepted: Actual average syllable interval = {actualAvPeriod:F3}");
                         filteredEvents.Add(ev);
                     }
                     else
                     {
-                        Log.Debug($" EventRejected: Actual average syllable interval = {actualAvPeriod}");
+                        Log.Debug($" EventRejected: Actual average syllable interval = {actualAvPeriod:F3}");
                     }
                 }
             }
@@ -233,7 +272,7 @@ namespace AudioAnalysisTools.Events
         {
             if (compositeEvent is CompositeEvent == false)
             {
-                throw new Exception("Invalid event type. Event passed to GetTemporalFotprint() must be of type CompositeEvent.");
+                throw new Exception("Invalid event type. Event passed to GetTemporalFootprint() must be of type CompositeEvent.");
             }
 
             // get the composite events.
@@ -297,6 +336,7 @@ namespace AudioAnalysisTools.Events
         /// <param name="lowerHertzBuffer">The band width of the required lower buffer. 100-200Hz is often appropriate.</param>
         /// <param name="upperHertzBuffer">The band width of the required upper buffer. 300-500Hz is often appropriate.</param>
         /// <param name="thresholdForAverageDecibelsInSidebands">The max allowed value for the average decibels value (over all spectrogram cells) in a sideband of an event.</param>
+        /// <param name="thresholdForMaxSidebandActivity">The max allowed value for the decibels value in a sideband timeframe or freq bin.</param>
         /// <param name="segmentStartOffset">Start time of the current recording segment.</param>
         /// <returns>A list of filtered events.</returns>
         public static List<EventCommon> FilterEventsOnSidebandActivity(
@@ -305,6 +345,7 @@ namespace AudioAnalysisTools.Events
             int lowerHertzBuffer,
             int upperHertzBuffer,
             double thresholdForAverageDecibelsInSidebands,
+            double thresholdForMaxSidebandActivity,
             TimeSpan segmentStartOffset)
         {
             // allow bin gaps below the event.
@@ -313,7 +354,7 @@ namespace AudioAnalysisTools.Events
 
             //The decibel value of any other event in the sidebands of a focal event
             // cannot come within 3 dB of the dB value of the focal event.
-            var decibelBuffer = 3.0;
+            //var decibelBuffer = 3.0;
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
@@ -326,33 +367,44 @@ namespace AudioAnalysisTools.Events
             var filteredEvents = new List<SpectralEvent>();
             foreach (var ev in events)
             {
-                var avEventDecibels = EventExtentions.GetAverageDecibelsInEvent(ev, spectrogramData, converter);
-                var maxSidebandEventDecibels = Math.Max(0.0, avEventDecibels - decibelBuffer);
+                //var avEventDecibels = EventExtentions.GetAverageDecibelsInEvent(ev, spectrogramData, converter);
+                //var maxSidebandEventDecibels = Math.Max(0.0, avEventDecibels - decibelBuffer);
 
-                var retainEvent1 = true;
-                var retainEvent2 = true;
+                var upperSidebandGood = true;
+                var lowerSidebandGood = true;
 
                 if (lowerHertzBuffer > 0)
                 {
                     var lowerSidebandMatrix = GetLowerEventSideband(ev, spectrogramData, lowerHertzBuffer, lowerBinGap, converter);
-                    retainEvent1 = IsSidebandActivityBelowThreshold(
+                    lowerSidebandGood = IsSidebandActivityBelowThreshold(
                         lowerSidebandMatrix,
-                        maxSidebandEventDecibels,
+                        thresholdForMaxSidebandActivity,
                         thresholdForAverageDecibelsInSidebands);
+
+                    if (!lowerSidebandGood)
+                    {
+                        Log.Debug($" EventRejected: Lower sideband has acoustic activity above {thresholdForAverageDecibelsInSidebands} dB");
+                    }
                 }
 
                 if (upperHertzBuffer > 0)
                 {
                     var upperSidebandMatrix = GetUpperEventSideband(ev, spectrogramData, upperHertzBuffer, upperBinGap, converter);
-                    retainEvent2 = IsSidebandActivityBelowThreshold(
+                    upperSidebandGood = IsSidebandActivityBelowThreshold(
                         upperSidebandMatrix,
-                        maxSidebandEventDecibels,
+                        thresholdForMaxSidebandActivity,
                         thresholdForAverageDecibelsInSidebands);
+
+                    if (!upperSidebandGood)
+                    {
+                        Log.Debug($" EventRejected: Upper sideband has acoustic activity above {thresholdForAverageDecibelsInSidebands} dB");
+                    }
                 }
 
-                if (retainEvent1 && retainEvent2)
+                if (upperSidebandGood && lowerSidebandGood)
                 {
                     // The acoustic activity in event sidebands is below the threshold. It is likely to be a discrete event.
+                    Log.Debug($" EventAccepted: Both sidebands have acoustic activity below {thresholdForAverageDecibelsInSidebands} dB.");
                     filteredEvents.Add(ev);
                 }
             }
