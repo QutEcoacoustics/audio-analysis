@@ -29,14 +29,15 @@ namespace AudioAnalysisTools.Events.Types
             // Step 3: Remove events whose bandwidth is too small or large.
             // Step 4: Remove events that have excessive noise in their side-bands.
 
-            Log.Debug($"Total event count BEFORE post-processing = {newEvents.Count}");
+            Log.Debug($"\nTotal EVENT COUNT BEFORE post-processing = {newEvents.Count}");
 
             // 1: Combine overlapping events.
             // This will be necessary where many small events have been found - possibly because the dB threshold is set low.
             if (postprocessingConfig.CombineOverlappingEvents)
             {
+                Log.Debug($"COMBINE EVENTS HAVING TEMPORAl *AND* SPECTRAL OVERLAP");
                 newEvents = CompositeEvent.CombineOverlappingEvents(newEvents.Cast<EventCommon>().ToList());
-                Log.Debug($"Event count after combining overlapped events = {newEvents.Count}");
+                Log.Debug($" Event count after combining overlapped events = {newEvents.Count}");
             }
 
             // 2: Combine proximal events, that is, events that may be a sequence of syllables in the same strophe.
@@ -102,22 +103,32 @@ namespace AudioAnalysisTools.Events.Types
             // 5: Filter events on the amount of acoustic activity in their upper and lower sidebands - their buffer zone.
             //    The idea is that an unambiguous event should have some acoustic space above and below.
             //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
-            var sidebandActivity = postprocessingConfig.SidebandActivity;
+            var sidebandActivity = postprocessingConfig.SidebandAcousticActivity;
             if ((sidebandActivity != null) && (newEvents.Count > 0))
             {
-                Log.Debug($"FILTER ON SIDEBAND ACTIVITY");
-                Log.Debug($" Max permitted sideband background = {sidebandActivity.MaxAverageDecibels:F0} dB");
-                Log.Debug($" Max permitted sideband activity = {sidebandActivity.MaxActivityDecibels:F0} dB");
-                var spectralEvents2 = newEvents.Cast<SpectralEvent>().ToList();
-                newEvents = EventFilters.FilterEventsOnSidebandActivity(
-                    spectralEvents2,
-                    spectrogram,
-                    sidebandActivity.LowerHertzBuffer,
-                    sidebandActivity.UpperHertzBuffer,
-                    sidebandActivity.MaxAverageDecibels,
-                    sidebandActivity.MaxActivityDecibels,
-                    segmentStartOffset);
-                Log.Debug($" Event count after filtering on sideband activity = {newEvents.Count}");
+                if ((sidebandActivity.LowerSidebandWidth > 0) || (sidebandActivity.UpperSidebandWidth > 0))
+                {
+                    Log.Debug($"FILTER ON SIDEBAND ACTIVITY");
+                    Log.Debug($" Lower sideband width= {sidebandActivity.LowerSidebandWidth} Hz; Upper sideband width= {sidebandActivity.UpperSidebandWidth} Hz");
+                    Log.Debug($" Max permitted sideband background = {sidebandActivity.MaxBackgroundDecibels:F0} dB");
+                    Log.Debug($" Max permitted sideband activity = {sidebandActivity.MaxActivityDecibels:F0} dB");
+                    var spectralEvents2 = newEvents.Cast<SpectralEvent>().ToList();
+                    newEvents = EventFilters.FilterEventsOnSidebandActivity(
+                        spectralEvents2,
+                        spectrogram,
+                        sidebandActivity.LowerSidebandWidth,
+                        sidebandActivity.UpperSidebandWidth,
+                        sidebandActivity.FilterEventsOnSidebandBackground,
+                        sidebandActivity.MaxBackgroundDecibels,
+                        sidebandActivity.FilterEventsOnSidebandActivity,
+                        sidebandActivity.MaxActivityDecibels,
+                        segmentStartOffset);
+                    Log.Debug($" Event count after filtering on sideband activity = {newEvents.Count}");
+                }
+                else
+                {
+                    Log.Debug($"DO NOT FILTER ON SIDEBAND ACTIVITY: both sidebands assigned zero width.");
+                }
             }
 
             // Write out the events to log.
@@ -152,9 +163,9 @@ namespace AudioAnalysisTools.Events.Types
             public SyllableSequenceConfig SyllableSequence { get; set; }
 
             /// <summary>
-            /// Gets or sets the parameters required to filter events on the acoustic acticity in their sidebands.
+            /// Gets or sets the parameters required to filter events on the acoustic activity in their sidebands.
             /// </summary>
-            public SidebandConfig SidebandActivity { get; set; }
+            public SidebandConfig SidebandAcousticActivity { get; set; }
 
             /// <summary>
             /// Gets or sets the parameters required to filter events on their duration.
@@ -208,20 +219,30 @@ namespace AudioAnalysisTools.Events.Types
             /// Gets or sets a value indicating Whether or not to filter events based on acoustic conctent of upper buffer zone.
             /// If value = 0, the upper sideband is ignored.
             /// </summary>
-            public int UpperHertzBuffer { get; set; }
+            public int UpperSidebandWidth { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating Whether or not to filter events based on the acoustic content of their lower buffer zone.
             /// If value = 0, the lower sideband is ignored.
             /// </summary>
-            public int LowerHertzBuffer { get; set; }
+            public int LowerSidebandWidth { get; set; }
 
             /// <summary>
-            /// Gets or sets a value indicating the maximum value of the average decibels of background acoustic activity
-            ///        in the upper and lower sidebands of an event. The average is over all spectrogram cells in each sideband.
+            /// Gets or sets a value indicating Whether or not to filter events based on background noise in the sidebands.
+            /// </summary>
+            public bool FilterEventsOnSidebandBackground { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating the maximum permissible value of background acoustic activity in the upper and lower sidebands of an event.
+            /// The background is claculated as the average decibel value over all spectrogram cells in each sideband.
             /// This value is used only if LowerHertzBuffer > 0 OR UpperHertzBuffer > 0.
             /// </summary>
-            public double MaxAverageDecibels { get; set; }
+            public double MaxBackgroundDecibels { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating Whether or not to filter events based on the presence of acoustic "events" in the sidebands.
+            /// </summary>
+            public bool FilterEventsOnSidebandActivity { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating the maximum decibel value in a sideband frequency bin or timeframe.

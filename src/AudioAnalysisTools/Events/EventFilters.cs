@@ -344,17 +344,15 @@ namespace AudioAnalysisTools.Events
             BaseSonogram spectrogram,
             int lowerHertzBuffer,
             int upperHertzBuffer,
+            bool filterEventsOnSidebandBackground,
             double thresholdForAverageDecibelsInSidebands,
+            bool filterEventsOnSidebandActivity,
             double thresholdForMaxSidebandActivity,
             TimeSpan segmentStartOffset)
         {
             // allow bin gaps below the event.
             int lowerBinGap = 2;
             int upperBinGap = 2;
-
-            //The decibel value of any other event in the sidebands of a focal event
-            // cannot come within 3 dB of the dB value of the focal event.
-            //var decibelBuffer = 3.0;
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
@@ -367,21 +365,19 @@ namespace AudioAnalysisTools.Events
             var filteredEvents = new List<SpectralEvent>();
             foreach (var ev in events)
             {
-                //var avEventDecibels = EventExtentions.GetAverageDecibelsInEvent(ev, spectrogramData, converter);
-                //var maxSidebandEventDecibels = Math.Max(0.0, avEventDecibels - decibelBuffer);
+                var upperSidebandAccepted = true;
+                var lowerSidebandAccepted = true;
 
-                var upperSidebandGood = true;
-                var lowerSidebandGood = true;
-
+                // Both sidebands are subjected to two tests: the background test and the activity test.
                 if (lowerHertzBuffer > 0)
                 {
                     var lowerSidebandMatrix = GetLowerEventSideband(ev, spectrogramData, lowerHertzBuffer, lowerBinGap, converter);
-                    lowerSidebandGood = IsSidebandActivityBelowThreshold(
+                    lowerSidebandAccepted = IsSidebandActivityBelowThreshold(
                         lowerSidebandMatrix,
                         thresholdForMaxSidebandActivity,
                         thresholdForAverageDecibelsInSidebands);
 
-                    if (!lowerSidebandGood)
+                    if (!lowerSidebandAccepted)
                     {
                         Log.Debug($" EventRejected: Lower sideband has acoustic activity above {thresholdForAverageDecibelsInSidebands} dB");
                     }
@@ -390,18 +386,18 @@ namespace AudioAnalysisTools.Events
                 if (upperHertzBuffer > 0)
                 {
                     var upperSidebandMatrix = GetUpperEventSideband(ev, spectrogramData, upperHertzBuffer, upperBinGap, converter);
-                    upperSidebandGood = IsSidebandActivityBelowThreshold(
+                    upperSidebandAccepted = IsSidebandActivityBelowThreshold(
                         upperSidebandMatrix,
                         thresholdForMaxSidebandActivity,
                         thresholdForAverageDecibelsInSidebands);
 
-                    if (!upperSidebandGood)
+                    if (!upperSidebandAccepted)
                     {
                         Log.Debug($" EventRejected: Upper sideband has acoustic activity above {thresholdForAverageDecibelsInSidebands} dB");
                     }
                 }
 
-                if (upperSidebandGood && lowerSidebandGood)
+                if (upperSidebandAccepted && lowerSidebandAccepted)
                 {
                     // The acoustic activity in event sidebands is below the threshold. It is likely to be a discrete event.
                     Log.Debug($" EventAccepted: Both sidebands have acoustic activity below {thresholdForAverageDecibelsInSidebands} dB.");

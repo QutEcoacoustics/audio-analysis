@@ -122,11 +122,11 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
                     // filter on acousstic activity in sidebands.
                     // zero indicates no filtering.
-                    SidebandActivity = new SidebandConfig()
+                    SidebandAcousticActivity = new SidebandConfig()
                     {
-                        UpperHertzBuffer = 0,
-                        LowerHertzBuffer = 0,
-                        MaxAverageDecibels = 0,
+                        UpperSidebandWidth = 0,
+                        LowerSidebandWidth = 0,
+                        MaxBackgroundDecibels = 0,
                     },
                 },
             };
@@ -186,11 +186,11 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
                     // filter on acousstic activity in sidebands.
                     // zero indicates no filtering.
-                    SidebandActivity = new SidebandConfig()
+                    SidebandAcousticActivity = new SidebandConfig()
                     {
-                        UpperHertzBuffer = 0,
-                        LowerHertzBuffer = 0,
-                        MaxAverageDecibels = 0,
+                        UpperSidebandWidth = 0,
+                        LowerSidebandWidth = 0,
+                        MaxBackgroundDecibels = 0,
                     },
                 },
             };
@@ -248,11 +248,11 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
                     // filter on acousstic activity in sidebands.
                     // zero indicates no filtering.
-                    SidebandActivity = new SidebandConfig()
+                    SidebandAcousticActivity = new SidebandConfig()
                     {
-                        UpperHertzBuffer = 0,
-                        LowerHertzBuffer = 0,
-                        MaxAverageDecibels = 0,
+                        UpperSidebandWidth = 0,
+                        LowerSidebandWidth = 0,
+                        MaxBackgroundDecibels = 0,
                     },
                 },
             };
@@ -994,11 +994,11 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
                     // filter on acousstic activity in sidebands.
                     // zero indicates no filtering.
-                    SidebandActivity = new SidebandConfig()
+                    SidebandAcousticActivity = new SidebandConfig()
                     {
-                        UpperHertzBuffer = 0,
-                        LowerHertzBuffer = 0,
-                        MaxAverageDecibels = 0,
+                        UpperSidebandWidth = 0,
+                        LowerSidebandWidth = 0,
+                        MaxBackgroundDecibels = 0,
                     },
                 },
             };
@@ -1084,11 +1084,11 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
                     // filter on acousstic activity in sidebands.
                     // zero indicates no filtering.
-                    SidebandActivity = new SidebandConfig()
+                    SidebandAcousticActivity = new SidebandConfig()
                     {
-                        UpperHertzBuffer = 0,
-                        LowerHertzBuffer = 0,
-                        MaxAverageDecibels = 0,
+                        UpperSidebandWidth = 0,
+                        LowerSidebandWidth = 0,
+                        MaxBackgroundDecibels = 0,
                     },
                 },
             };
