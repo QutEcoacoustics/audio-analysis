@@ -317,7 +317,14 @@ function Get-Asset($asset_url) {
                 throw "Failed extracting $downloaded_zip using unzip"
             }
         }
+        elseif (Get-Command unzip -CommandType Application -ErrorAction SilentlyContinue) {
+            tar --extract --xz --file $downloaded_zip --directory $Destination
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed extracting $downloaded_zip using tar"
+            }
+        }
         else {
+            # the archive module has given us lots of problems - we try to avoid it if possible
             Import-Module "Microsoft.PowerShell.Archive" -Force
             Microsoft.PowerShell.Archive\Expand-Archive -LiteralPath $downloaded_zip -DestinationPath $Destination -Force
 
@@ -531,7 +538,18 @@ $actions =  [ordered]@{
         } )
     }
     "Symlink alias for AP" = @{
-        "Install" = ({"Symlink $alias_path to $ap_path"}, { if($null -eq $alias_path) { return $null } New-Item -Type SymbolicLink -Force -Path $alias_path -Target $ap_path | Out-Null ; return  $true } )
+        "Install" = ({"Symlink $alias_path to $ap_path"}, {
+            if($null -eq $alias_path) { return $null }
+
+            try {
+                New-Item -Type SymbolicLink -Force -Path $alias_path -Target $ap_path | Out-Null ;
+            }
+            catch {
+                Write-Warning "Failed to symlink AP. Are you running with administrator privileges?"
+                $_ | Out-String | Write-Debug
+            }
+            return  $true
+        } )
         "Check" = ("$alias_path exists and points to $ap_path",  {
             return (Test-Path $alias_path) `
               -and ((Get-Item $alias_path).LinkType -eq 'SymbolicLink') `
@@ -548,6 +566,18 @@ $actions =  [ordered]@{
             }
         } )
     }
+}
+
+$success_symbol = "✅"
+$skip_symbol = "➖"
+$fail_symbol = "❌"
+
+if ($IsWindows -and !$env:WT_SESSION) {
+    # we're on windows and not in Windows Terminal (but rather conhost.exe)
+    # conhost does not support emoji so change success indicators
+    $success_symbol = "+"
+    $skip_symbol = "~"
+    $fail_symbol = "!"
 }
 
 function Invoke-APInstallTask($current, $key) {
@@ -574,15 +604,15 @@ function Invoke-APInstallTask($current, $key) {
 
     switch ($result) {
         { $err } {
-             Write-Error "${indent}❌ [error] AP's installation has a problem: $message`n Error:$($err | Out-String)"
+             Write-Error "${indent}$fail_symbol [error] AP's installation has a problem: $message`n Error:$($err | Out-String)"
              exit 1
         }
         $false {
-             Write-Error "${indent}❌ [error] AP's installation has a problem: $message failed"
+             Write-Error "${indent}$fail_symbol [error] AP's installation has a problem: $message failed"
              exit 1
         }
-        $null { Write-Information "${indent}➖ [skipped] $message" }
-        $true { Write-Information "${indent}✅ [success] $message" }
+        $null { Write-Information "${indent}$skip_symbol [skipped] $message" }
+        $true { Write-Information "${indent}$success_symbol [success] $message" }
         default {
             throw "unexpected result: $result"
         }
@@ -634,15 +664,15 @@ function Write-Metadata() {
 switch -wildcard ($PsCmdlet.ParameterSetName) {
     "Install-*" {
         Invoke-APInstallTasks $actions "Install"
-        Write-Information "✅ Installed AP $installed_version"
+        Write-Information "$success_symbol Installed AP $installed_version"
      }
     "Check" {
         Invoke-APInstallTasks $actions "Check"
-        Write-Information "✅ Check complete for AP version $installed_version"
+        Write-Information "$success_symbol Check complete for AP version $installed_version"
     }
     "Uninstall" {
         Invoke-APInstallTasks $actions "Uninstall"
-        Write-Information "✅ Uninstalled AP"
+        Write-Information "$success_symbol Uninstalled AP"
     }
     default {
         Write-Output "No action selected, no action taken, exiting"
