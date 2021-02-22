@@ -16,7 +16,7 @@
     <PackageReference Include="ConsoleTools" Version="0.5.4" />
     <PackageReference Include="CsvHelper" Version="24.0.1" />
     <PackageReference Include="FastMember" Version="1.5.0" />
-    <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
     <PackageReference Include="log4net" Version="2.0.12" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.2.12-alpha">
