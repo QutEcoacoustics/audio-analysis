@@ -33,6 +33,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         //  as in the TestRecognizer() method below.
 
         [TestMethod]
+        [Ignore("Recogniser removed temporarily")]
         public void TestRecognizer()
         {
             var config = Recognizer.ParseConfig(ConfigFile);

@@ -227,19 +227,19 @@ namespace Acoustics.Shared
         }
 
         public static Interval<T> AsInterval<T>(this (T Minimum, T Maximum) pair, Topology topology = Topology.Default)
-            where T : struct, IComparable<T>
+            where T : struct, IComparable<T>, IFormattable
         {
             return new Interval<T>(pair.Minimum, pair.Maximum, topology);
         }
 
         public static Interval<T> AsIntervalTo<T>(this T minimum, T maximum, Topology topology = Topology.Default)
-            where T : struct, IComparable<T>
+            where T : struct, IComparable<T>, IFormattable
         {
             return new Interval<T>(minimum, maximum, topology);
         }
 
         public static Interval<T> AsIntervalFromZero<T>(this T maximum, Topology topology = Topology.Default)
-            where T : struct, IComparable<T>
+            where T : struct, IComparable<T>, IFormattable
         {
             return new Interval<T>(default, maximum, topology);
         }

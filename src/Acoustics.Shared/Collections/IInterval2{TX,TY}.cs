@@ -9,8 +9,8 @@ namespace Acoustics.Shared.ImageSharp
     using System.Collections.Generic;
 
     public interface IInterval2<TX, TY>
-        where TX : struct, IComparable<TX>
-        where TY : struct, IComparable<TY>
+        where TX : struct, IComparable<TX>, IFormattable
+        where TY : struct, IComparable<TY>, IFormattable
     {
         Interval<TX> X { get; }
 

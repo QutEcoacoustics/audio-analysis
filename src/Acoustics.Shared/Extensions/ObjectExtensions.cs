@@ -29,5 +29,10 @@ namespace System
         {
             return new List<T> { item };
         }
+
+        public static IEnumerable<T> Wrap<T>(this T item)
+        {
+            yield return item;
+        }
     }
 }
