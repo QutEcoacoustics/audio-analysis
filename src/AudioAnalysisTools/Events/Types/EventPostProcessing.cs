@@ -110,8 +110,7 @@ namespace AudioAnalysisTools.Events.Types
                 {
                     Log.Debug($"FILTER ON SIDEBAND ACTIVITY");
                     Log.Debug($" Lower sideband width= {sidebandActivity.LowerSidebandWidth} Hz; Upper sideband width= {sidebandActivity.UpperSidebandWidth} Hz");
-                    Log.Debug($" Max permitted sideband background = {sidebandActivity.MaxBackgroundDecibels:F0} dB");
-                    Log.Debug($" Max permitted sideband activity = {sidebandActivity.MaxActivityDecibels:F0} dB");
+                    Log.Debug($" Max permitted sideband background = {sidebandActivity.MaxBackgroundDecibels:F0} dB and max permitted sideband activity = {sidebandActivity.MaxActivityDecibels:F0} dB");
                     var spectralEvents2 = newEvents.Cast<SpectralEvent>().ToList();
                     newEvents = EventFilters.FilterEventsOnSidebandActivity(
                         spectralEvents2,

@@ -335,7 +335,9 @@ namespace AudioAnalysisTools.Events
         /// <param name="spectrogram">A matrix of the spectrogram in which event occurs.</param>
         /// <param name="lowerHertzBuffer">The band width of the required lower buffer. 100-200Hz is often appropriate.</param>
         /// <param name="upperHertzBuffer">The band width of the required upper buffer. 300-500Hz is often appropriate.</param>
-        /// <param name="thresholdForAverageDecibelsInSidebands">The max allowed value for the average decibels value (over all spectrogram cells) in a sideband of an event.</param>
+        /// <param name="filterEventsOnSidebandBackground">A boolean that determines if event is to be filtered on sideband background.</param>
+        /// <param name="thresholdForBackgroundDecibels">The max allowed value for the average decibels value (over all spectrogram cells) in an event's sideband.</param>
+        /// <param name="filterEventsOnSidebandActivity">A boolean that determines if event is to be filtered on its sideband activity.</param>
         /// <param name="thresholdForMaxSidebandActivity">The max allowed value for the decibels value in a sideband timeframe or freq bin.</param>
         /// <param name="segmentStartOffset">Start time of the current recording segment.</param>
         /// <returns>A list of filtered events.</returns>
@@ -345,7 +347,7 @@ namespace AudioAnalysisTools.Events
             int lowerHertzBuffer,
             int upperHertzBuffer,
             bool filterEventsOnSidebandBackground,
-            double thresholdForAverageDecibelsInSidebands,
+            double thresholdForBackgroundDecibels,
             bool filterEventsOnSidebandActivity,
             double thresholdForMaxSidebandActivity,
             TimeSpan segmentStartOffset)
@@ -368,40 +370,51 @@ namespace AudioAnalysisTools.Events
                 var upperSidebandAccepted = true;
                 var lowerSidebandAccepted = true;
 
-                // Both sidebands are subjected to two tests: the background test and the activity test.
+                // The lower sideband is subjected to two tests: the background test and the activity test.
                 if (lowerHertzBuffer > 0)
                 {
                     var lowerSidebandMatrix = GetLowerEventSideband(ev, spectrogramData, lowerHertzBuffer, lowerBinGap, converter);
                     lowerSidebandAccepted = IsSidebandActivityBelowThreshold(
                         lowerSidebandMatrix,
-                        thresholdForMaxSidebandActivity,
-                        thresholdForAverageDecibelsInSidebands);
+                        "Lower",
+                        filterEventsOnSidebandBackground,
+                        thresholdForBackgroundDecibels,
+                        filterEventsOnSidebandActivity,
+                        thresholdForMaxSidebandActivity);
 
                     if (!lowerSidebandAccepted)
                     {
-                        Log.Debug($" EventRejected: Lower sideband has acoustic activity above {thresholdForAverageDecibelsInSidebands} dB");
+                        Log.Debug($"  Lower sideband rejected: acoustic activity above thresholds");
                     }
                 }
 
+                // The upper sideband is subjected to the same two tests: the background test and the activity test.
                 if (upperHertzBuffer > 0)
                 {
                     var upperSidebandMatrix = GetUpperEventSideband(ev, spectrogramData, upperHertzBuffer, upperBinGap, converter);
                     upperSidebandAccepted = IsSidebandActivityBelowThreshold(
                         upperSidebandMatrix,
-                        thresholdForMaxSidebandActivity,
-                        thresholdForAverageDecibelsInSidebands);
+                        "Upper",
+                        filterEventsOnSidebandBackground,
+                        thresholdForBackgroundDecibels,
+                        filterEventsOnSidebandActivity,
+                        thresholdForMaxSidebandActivity);
 
                     if (!upperSidebandAccepted)
                     {
-                        Log.Debug($" EventRejected: Upper sideband has acoustic activity above {thresholdForAverageDecibelsInSidebands} dB");
+                        Log.Debug($"  Upper sideband rejected: acoustic activity above thresholds");
                     }
                 }
 
                 if (upperSidebandAccepted && lowerSidebandAccepted)
                 {
                     // The acoustic activity in event sidebands is below the threshold. It is likely to be a discrete event.
-                    Log.Debug($" EventAccepted: Both sidebands have acoustic activity below {thresholdForAverageDecibelsInSidebands} dB.");
+                    Log.Debug($" Event accepted: Both sidebands have acoustic activity below thresholds.");
                     filteredEvents.Add(ev);
+                }
+                else
+                {
+                    Log.Debug($" Event rejected: one or both sidebands have acoustic content in excess of thresholds.");
                 }
             }
 
@@ -409,30 +422,78 @@ namespace AudioAnalysisTools.Events
             return eventsCommon;
         }
 
+        /// <summary>
+        /// This method determines the acoustic activity in a portion of a spectrogram.
+        /// The passed matrix represents the sideband of an acoustic event.
+        /// The sideband is subject to two tests:.
+        /// Test 1: Tests whether the average or background decibel value in the sideband is below the user supplied threshold?
+        /// Test 2: This test covers the possibility that there is much acoustic activity concentrated in one or two freq bins or time frames.
+        ///         Therefore, also require that there be at most one sideband bin or frame containing acoustic activity greater than the supplied decibel threshold.
+        /// </summary>
+        /// <param name="sidebandMatrix">A matrix that represents a portion of spectrogram which is actually the sideband of an acoustic event.</param>
+        /// <param name="filterEventsOnSidebandBackground">A boolean that determines if the background test is done.</param>
+        /// <param name="thresholdForBackgroundDecibels">Decibel threshold for the background test.</param>
+        /// <param name="filterEventsOnSidebandActivity">A boolean that determines if the activity test is done.</param>
+        /// <param name="thresholdForActivityDecibels">Decibel threshold for the activity test.</param>
+        /// <returns>A boolean determining whether the sideband is accepoted or rejected.</returns>
         public static bool IsSidebandActivityBelowThreshold(
             double[,] sidebandMatrix,
-            double maxSidebandEventDecibels,
-            double thresholdForAverageDecibelsInSidebands)
+            string side,
+            bool filterEventsOnSidebandBackground,
+            double thresholdForBackgroundDecibels,
+            bool filterEventsOnSidebandActivity,
+            double thresholdForActivityDecibels)
         {
+            //calculate the row averages and column averages. These are averages of decibel values.
             var averageRowDecibels = MatrixTools.GetRowAverages(sidebandMatrix);
             var averageColDecibels = MatrixTools.GetColumnAverages(sidebandMatrix);
+
             var averageMatrixDecibels = averageColDecibels.Average();
 
-            // Is the average acoustic activity in the sideband below the user set threshold?
-            //bool avBgBelowThreshold = averageMatrixDecibels < analysisThreshold;
-            bool avBgBelowThreshold = averageMatrixDecibels < thresholdForAverageDecibelsInSidebands;
-            if (!avBgBelowThreshold)
+            //perform the background acoustic test if filterEventsOnSidebandBackground = true.
+            if (filterEventsOnSidebandBackground)
             {
-                return false;
+                // Is the background acoustic activity in the sideband below the user set threshold?
+                if (averageMatrixDecibels <= thresholdForBackgroundDecibels)
+                {
+                    Log.Debug($"   {side}Sideband accepted on test 1: Background={averageMatrixDecibels:F1}dB <= {thresholdForBackgroundDecibels}dB config threshold.");
+                }
+                else
+                {
+                    Log.Debug($"   {side}Sideband rejected on test 1: Background={averageMatrixDecibels:F1}dB > {thresholdForBackgroundDecibels}dB config threshold.");
+                    return false;
+                }
+            }
+            else
+            {
+                Log.Debug($"   {side}Sideband accepted without test 1 for level of background noise.");
             }
 
+            // The sideband is accepted based on Test 1. Now do test 2.
             // Also need to cover possibility that there is much acoustic activity concentrated in one freq bin or time frame.
-            // Therefore, also require that there be at most one sideband bin and one sideband frame containing acoustic activity
-            // that is greater than the average in the event.
-            int noisyRowCount = averageRowDecibels.Count(x => x > maxSidebandEventDecibels);
-            int noisyColCount = averageColDecibels.Count(x => x > maxSidebandEventDecibels);
-            bool doRetain = noisyRowCount <= 1 && noisyColCount <= 1;
-            return doRetain;
+            if (!filterEventsOnSidebandActivity)
+            {
+                Log.Debug($"   {side}Sideband accepted without test 2 for concentrated acoustic activity.");
+                return true;
+            }
+
+            // Do test 2 for presense of acoustic acitivity localised in a few frames or bins.
+            // Test requires that there be at most one sideband bin or frame that contains acoustic activity greater than the user set threshold.
+            int noisyRowCount = averageRowDecibels.Count(x => x > thresholdForActivityDecibels);
+            int noisyColCount = averageColDecibels.Count(x => x > thresholdForActivityDecibels);
+            int activeFrameBinCount = noisyRowCount + noisyColCount;
+            bool sidebandAccepted = noisyRowCount <= 1 && noisyColCount <= 1;
+
+            if (sidebandAccepted)
+            {
+                Log.Debug($"   {side}Sideband accepted on test 2: Number of active frames|bins={activeFrameBinCount} < 2 (where config activity threshold={thresholdForActivityDecibels}dB).");
+            }
+            else
+            {
+                Log.Debug($"   {side}Sideband rejected on test 2: Number of active frames|bins={activeFrameBinCount} > 1 (where config activity threshold={thresholdForActivityDecibels}dB).");
+            }
+
+            return sidebandAccepted;
         }
 
         /// <summary>
