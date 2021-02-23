@@ -393,7 +393,7 @@ Add a post processing section to you config file by adding the `PostProcessing` 
 
 [!code-yaml[post_processing](./Ecosounds.NinoxBoobook.yml#L34-L34 "Post Processing")]
 
-Post processing is optional. You may just want to combine or filter component events in your own code.
+Post processing is optional. You may just want to combine or filter component events using code you have written yourself.
 
 #### Combining overlapping syllables into calls
 
@@ -414,8 +414,7 @@ overlapping, then make use of the `SyllableSequence` parameter.
 
 [!code-yaml[post_processing_combining_syllables](./Ecosounds.NinoxBoobook.yml?start=34&end=51&highlight=10- "Post Processing: Combining syllables")]
 
-Set `CombinePossibleSyllableSequence` true where you want to combine possible syllable sequences. A typical example is
-a sequence of chirps in a honeyeater call.
+Combining syllable sequences is enabled by setting `CombinePossibleSyllableSequence` true. A typical example is a sequence of chirps in a honeyeater call.
 
 `SyllableStartDifference` and `SyllableHertzGap` set the allowed tolerances when combining events into sequences
 
@@ -431,52 +430,48 @@ constraints defined by `SyllableMaxCount` and `ExpectedPeriod`.
 
 See the <xref:AudioAnalysisTools.Events.Types.EventPostProcessing.SyllableSequenceConfig> document for more information.
 
-#### Event bounds filtering
-
-Filtering removes events whose duration lies outside an expected range.
+### Remove events whose duration or bandwidth lies outside an expected range.
 
 [!code-yaml[post_processing_filtering](./Ecosounds.NinoxBoobook.yml?start=34&end=62&highlight=20- "Post Processing: filtering")]
 
 Use the parameter `Duration` to filter out events that are too long or short.
 This filter removes events whose duration lies outside three standard deviations (SDs) of an expected value.
 
+- `FilterOnDuration` should be set true if you want to filter events on their duration, otherwise false.
 - `ExpectedDuration` defines the _expected_ or _average_ duration (in seconds) for the target events
 - `DurationStandardDeviation` defines _one_ SD of the assumed distribution. Assuming the duration is normally distributed, three SDs sets hard upper and lower duration bounds that includes 99.7% of instances. The filtering algorithm calculates these hard bounds and removes acoustic events that fall outside the bounds.
+
 
 Use the parameter `Bandwidth` to filter out events whose bandwidth is too small or large.
 This filter removes events whose bandwidth lies outside three standard deviations (SDs) of an expected value.
 
+- `FilterOnBandwidth` should be set true if you want to filter events on their bandwidth, otherwise false.
 - `ExpectedBandwidth` defines the _expected_ or _average_ bandwidth (in Hertz) for the target events
 - `BandwidthStandardDeviation` defines one SD of the assumed distribution. Assuming the bandwidth is normally
   distributed, three SDs sets hard upper and lower bandwidth bounds that includes 99.7% of instances. The filtering
   algorithm calculates these hard bounds and removes acoustic events that fall outside the bounds.
 
-### Remove events that have excessive noise in their side-bands
+### Remove events that have excessive noise or acoustic activity in their side-bands
 
 [!code-yaml[post_processing_sideband](./Ecosounds.NinoxBoobook.yml?start=34&end=69&highlight=30- "Post Processing: sideband noise removal")]
 
-The intuition of this filter is that an unambiguous event should have an "acoustic-free zone" above and below it.
-This filter removes an event that has "excessive" acoustic activity spilling into its sidebands (i.e. upper and lower
-"buffer" zones). These events are likely to be _broadband_ events unrelated to the target event. Since this is a common
-occurrence, this filter is useful.
+The intuition of this filter is that an unambiguous event (representing a call syllable) should have an "acoustic-free zone" above and below it.
+This filter removes an event that has "excessive" acoustic activity spilling into its sidebands. Such events are likely to be _broadband_ events unrelated to the target event. Since this is a common occurrence, a sideband filter is useful.
 
-Use the parameter `SidebandActivity` to enable side band filtering.
+Use the parameter `SidebandAcousticActivity` to enable side band filtering.
 
-`LowerHertzBuffer` and `UpperHertzBuffer` set the width of the sidebands required below and above the target event.
-(These can be also be understood as buffer zones, hence the names assigned to the parameters.)
-
-There are two tests for determining if the sideband activity is excessive:
-
-1. The average decibel value in each sideband should be below the threshold value given by `MaxAverageSidebandDecibels`.
-  The average is taken over all spectrogram cells included in a sideband.
-2. There should be no more than one sideband frequency bin and one sideband timeframe whose average acoustic activity
-  lies within 3 dB of the average acoustic activity in the event. (The averages are over all relevant spectrogram cells.)
-  This covers the possibility that there is an acoustic event concentrated in a few frequency bins or timeframes within
-  a sideband. The 3 dB threshold is a small arbitrary value which seems to work well. It cannot be changed by the user.
+`LowerSidebandWidth` and `UpperSidebandWidth` set the width of the required sideband "zones" below and above the target event.
 
 > [!TIP]
-> If you do not wish to apply these sideband filters, set `LowerHertzBuffer` and `UpperHertzBuffer` equal to zero.
->Both sideband tests are applied where the buffer zones are non-zero.
+> If you do not wish to apply these filters to a sideband, set `LowerHertzBuffer` or `UpperHertzBuffer` equal to zero.
+> Filtering is performed only on a sideband if its width is non-zero.
+
+There are two tests for determining if the acoustic activity in a sideband is excessive and the user has the option of applying each test or not:
+
+1. The background or average decibel value in each sideband should be below a threshold value given by `MaxBackgroundDecibels`.
+  The average is taken over all spectrogram cells included in a sideband, excluding those adjacent to the event. This test is performed only if the parameter `FilterEventsOnSidebandBackground` is set true.
+2. There should be no more than one sideband frequency bin or one sideband timeframe whose average acoustic activity exceeds a threshold value given by `MaxActivityDecibels`. The averages are over all relevant spectrogram cells, excluding those adjacant to the event. This test is performed only if the parameter `FilterEventsOnSidebandActivity` is set true. This test covers the possibility that there is an acoustic event concentrated in a few frequency bins or timeframes within a sideband.
+
 
 ### Parameters for saving results
 
@@ -512,8 +507,7 @@ Tuning parameter values can be frustrating and time-consuming if a logical seque
 tune parameters in the sequence in which they appear in the config file, keeping all "downstream" parameters as "open"
 or "unrestrictive" as possible. Here we summarize a tuning strategy in five steps.
 
-1. Turn off all post-processing steps. That is, set all post-processing booleans to false OR comment out all
-   post-processing keywords in the config file.
+1. Turn off all post-processing steps. That is, set all post-processing booleans to false (OR comment out all post-processing keywords in the config file).
 2. Initially set all profile parameters so as to catch the maximum possible number of target calls/syllables.
     1. Set the array of decibel thresholds to cover the expected range of call amplitudes from minimum to maximum decibels.
     2. Set the minimum and maximum duration values to catch every target call by a wide margin. At this stage, do not
@@ -530,13 +524,13 @@ At this point you should have "captured" all the target calls/syllables (i.e. th
 4. Event combining: You are now ready to set parameters that determine the *post-processing* of events.
    The first post-processing steps combine events that are likely to be *syllables* that are part of the same *call*.
 5. Event Filtering: Now add in the event filters in the same seqeunce that they appear in the config file.
-  This sequence cannot currently be changed because it is determined by the underlying code. There are event filters
-  for duration, bandwidth, periodicity of component syllables within a call and finally acoustic activity in the
-  sidebands of an event.
+  This sequence cannot currently be changed because it is determined by the underlying code. There are event filters for duration, bandwidth, periodicity of component syllables within a call and finally acoustic activity in the sidebands of an event.
     1. Set the `duration` parameters for filtering events on their time duration.
     2. Set the `bandwidth` parameters for filtering events on their bandwidth.
     3. Set the parameters for filtering based on `periodicity` of component syllables within a call.
     4. Set the parameters for filtering based on the _acoustic activity in their side bands_.
+
+    > [!NOTE] You are unlikely to want to use all filters. Some may be irrelevant to your target call.
 
 At the end of this process, you are likely to have a mixture of true-positives, false-positives and false-negatives.
 The goal is to set the parameter values so that the combined FP+FN total is minimized. You should adjust parameter

@@ -75,7 +75,7 @@ namespace AudioAnalysisTools.Events.Types
             }
 
             // 3: Filter the events for time duration (seconds)
-            if ((postprocessingConfig.Duration != null) && (newEvents.Count > 0))
+            if ((postprocessingConfig.Duration != null) && postprocessingConfig.Duration.FilterOnDuration && (newEvents.Count > 0))
             {
                 Log.Debug($"FILTER ON EVENT DURATION");
                 var expectedEventDuration = postprocessingConfig.Duration.ExpectedDuration;
@@ -88,7 +88,7 @@ namespace AudioAnalysisTools.Events.Types
             }
 
             // 4: Filter the events for bandwidth in Hertz
-            if ((postprocessingConfig.Bandwidth != null) && (newEvents.Count > 0))
+            if ((postprocessingConfig.Bandwidth != null) && postprocessingConfig.Bandwidth.FilterOnBandwidth && (newEvents.Count > 0))
             {
                 Log.Debug($"FILTER ON EVENT BANDWIDTH");
                 var expectedEventBandwidth = postprocessingConfig.Bandwidth.ExpectedBandwidth;
@@ -183,6 +183,11 @@ namespace AudioAnalysisTools.Events.Types
         public class DurationConfig
         {
             /// <summary>
+            /// Gets or sets a value indicating Whether or not to filter events on their duration.
+            /// </summary>
+            public bool FilterOnDuration { get; set; }
+
+            /// <summary>
             /// Gets or sets a value indicating the Expected duration of an event.
             /// </summary>
             public double ExpectedDuration { get; set; }
@@ -198,6 +203,11 @@ namespace AudioAnalysisTools.Events.Types
         /// </summary>
         public class BandwidthConfig
         {
+            /// <summary>
+            /// Gets or sets a value indicating Whether or not to filter events on their band-width.
+            /// </summary>
+            public bool FilterOnBandwidth { get; set; }
+
             /// <summary>
             /// Gets or sets a value indicating the Expected bandwidth of an event.
             /// </summary>
