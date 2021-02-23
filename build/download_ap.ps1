@@ -317,7 +317,7 @@ function Get-Asset($asset_url) {
                 throw "Failed extracting $downloaded_zip using unzip"
             }
         }
-        elseif (Get-Command unzip -CommandType Application -ErrorAction SilentlyContinue) {
+        elseif (Get-Command tar -CommandType Application -ErrorAction SilentlyContinue) {
             tar --extract --xz --file $downloaded_zip --directory $Destination
             if ($LASTEXITCODE -ne 0) {
                 throw "Failed extracting $downloaded_zip using tar"
