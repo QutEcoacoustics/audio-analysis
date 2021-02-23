@@ -431,7 +431,10 @@ $actions =  [ordered]@{
             if($IsWindows) { return $null }  chmod +x $ap_path
             if ($LASTEXITCODE -ne 0) { return $false } else { return $true }
         } )
-        "Check" =  ("AP executable should have execute permission", { $(test -x $ap_path ; 0 -eq $LASTEXITCODE) } )
+        "Check" =  ("AP executable should have execute permission", {
+            if($IsWindows) { return $null } 
+            $(test -x $ap_path ; 0 -eq $LASTEXITCODE)
+        } )
         "Uninstall" = $null
     }
     "Check AP runs" = @{
