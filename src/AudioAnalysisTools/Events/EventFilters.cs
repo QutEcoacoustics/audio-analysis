@@ -77,17 +77,19 @@ namespace AudioAnalysisTools.Events
 
             var filteredEvents = new List<EventCommon>();
 
+            var count = 0;
             foreach (var ev in events)
             {
+                count++;
                 var bandwidth = ((SpectralEvent)ev).BandWidthHertz;
                 if ((bandwidth > minBandwidth) && (bandwidth < maxBandwidth))
                 {
-                    Log.Debug($" Event accepted: Actual bandwidth = {bandwidth}");
+                    Log.Debug($" Event{count} accepted: Actual bandwidth = {bandwidth}");
                     filteredEvents.Add(ev);
                 }
                 else
                 {
-                    Log.Debug($" Event rejected: Actual bandwidth = {bandwidth}");
+                    Log.Debug($" Event{count} rejected: Actual bandwidth = {bandwidth}");
                     continue;
                 }
             }
@@ -110,6 +112,24 @@ namespace AudioAnalysisTools.Events
         public static List<SpectralEvent> FilterLongEvents(List<SpectralEvent> events, double maximumDurationSeconds)
         {
             var outputEvents = events.Where(ev => ev.EventDurationSeconds <= maximumDurationSeconds).ToList();
+            return outputEvents;
+        }
+
+        /// <summary>
+        /// Filters lists of spectral events based on their DecibelDetectionThreshold.
+        /// </summary>
+        /// <param name="events">The list of events.</param>
+        /// <param name="threshold">The Decibel Detection Threshold.</param>
+        /// <returns>The filtered list of events.</returns>
+        public static List<EventCommon> FilterOnDecibelDetectionThreshold(List<EventCommon> events, double threshold)
+        {
+            if (threshold <= 0.0)
+            {
+                throw new Exception("Invalid Decibel Detection Threshold passed to method EventExtentions.FilterOnDecibelDetectionThreshold(). Minimum threshold <= 0 seconds");
+            }
+
+            // The following line does it all BUT it does not allow for feedback to the user.
+            var outputEvents = events.Where(ev => (ev.DecibelDetectionThreshold == threshold)).ToList();
             return outputEvents;
         }
 
@@ -145,17 +165,19 @@ namespace AudioAnalysisTools.Events
 
             var filteredEvents = new List<EventCommon>();
 
+            var count = 0;
             foreach (var ev in events)
             {
+                count++;
                 var duration = ((SpectralEvent)ev).EventDurationSeconds;
                 if ((duration > minimumDurationSeconds) && (duration < maximumDurationSeconds))
                 {
-                    Log.Debug($" Event accepted: Actual duration = {duration:F3}s");
+                    Log.Debug($" Event{count} accepted: Actual duration = {duration:F3}s");
                     filteredEvents.Add(ev);
                 }
                 else
                 {
-                    Log.Debug($" Event rejected: Actual duration = {duration:F3}s");
+                    Log.Debug($" Event{count} rejected: Actual duration = {duration:F3}s");
                     continue;
                 }
             }
@@ -197,12 +219,16 @@ namespace AudioAnalysisTools.Events
 
             var filteredEvents = new List<EventCommon>();
 
+            int count = 0;
             foreach (var ev in events)
             {
+                count++;
+
                 // ignore non-composite events
                 if (ev is CompositeEvent == false)
                 {
                     filteredEvents.Add(ev);
+                    Log.Debug($" Event{count} accepted one syllable.");
                     continue;
                 }
 
@@ -225,12 +251,12 @@ namespace AudioAnalysisTools.Events
                 }
 
                 string strArray = DataTools.Array2String(actualPeriodSeconds.ToArray());
-                Log.Debug($" Actual periods: {strArray}");
+                Log.Debug($" Event{count} actual periods: {strArray}");
 
                     // reject composite events whose total syllable count exceeds the user defined max.
                 if (syllableCount > maxSyllableCount)
                 {
-                    Log.Debug($" EventRejected: Actual syllable count > max: {syllableCount} > {maxSyllableCount}");
+                    Log.Debug($" Event{count} rejected: Actual syllable count > max: {syllableCount} > {maxSyllableCount}");
                     continue;
                 }
 
@@ -240,6 +266,7 @@ namespace AudioAnalysisTools.Events
                     // there was only one event - the multiple events all overlapped as one event
                     // accept this as valid outcome. There is no interval on which to filter.
                     filteredEvents.Add(ev);
+                    Log.Debug($" Event{count} accepted - only one syllable");
                 }
                 else
                 {
@@ -255,12 +282,12 @@ namespace AudioAnalysisTools.Events
                     // Require that the actual average period or interval should fall between required min and max period.
                     if (actualAvPeriod >= minExpectedPeriod && actualAvPeriod <= maxExpectedPeriod)
                     {
-                        Log.Debug($" EventAccepted: Actual average syllable interval = {actualAvPeriod:F3}");
+                        Log.Debug($" Event{count} accepted: Actual average syllable interval = {actualAvPeriod:F3}");
                         filteredEvents.Add(ev);
                     }
                     else
                     {
-                        Log.Debug($" EventRejected: Actual average syllable interval = {actualAvPeriod:F3}");
+                        Log.Debug($" Event{count} rejected: Actual average syllable interval = {actualAvPeriod:F3}");
                     }
                 }
             }

@@ -17,25 +17,37 @@ namespace AudioAnalysisTools.Events.Types
         private const float SigmaThreshold = 3.0F;
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+        /// <summary>
+        /// This method post-processes a set of acoustic events that have been detected by all profiles at the passed decibel threshold.
+        /// </summary>
+        /// <param name="newEvents">A list of events before post-processing.</param>
+        /// <param name="postprocessingConfig">The config file to be used for post-processing.</param>
+        /// <param name="decibelThreshold">Decibel threshold used to detect the passed events.</param>
+        /// <param name="spectrogram">A spectrogram of the events.</param>
+        /// <param name="segmentStartOffset">Time  in seconds since beginning of the recording.</param>
+        /// <returns>A list of events after post-processing.</returns>
         public static List<EventCommon> PostProcessingOfSpectralEvents(
             List<EventCommon> newEvents,
             PostProcessingConfig postprocessingConfig,
+            double decibelThreshold,
             BaseSonogram spectrogram,
             TimeSpan segmentStartOffset)
         {
             // The following generic post-processing steps are determined by config settings.
-            // Step 1: Combine overlapping events - events derived from all profiles.
+            // Step 1: Combine overlapping events - events derived from profiles.
             // Step 2: Combine possible syllable sequences and filter on excess syllable count.
-            // Step 3: Remove events whose bandwidth is too small or large.
-            // Step 4: Remove events that have excessive noise in their side-bands.
+            // Step 3: Remove events whose duration is too small or large.
+            // Step 4: Remove events whose bandwidth is too small or large.
+            // Step 5: Remove events that have excessive noise in their side-bands.
 
-            Log.Debug($"\nTotal EVENT COUNT BEFORE post-processing = {newEvents.Count}");
+            Log.Debug($"\nBEFORE post-processing.");
+            Log.Debug($"TOTAL EVENTS detected by profiles at {decibelThreshold:F0} dB threshold = {newEvents.Count}");
 
             // 1: Combine overlapping events.
             // This will be necessary where many small events have been found - possibly because the dB threshold is set low.
-            if (postprocessingConfig.CombineOverlappingEvents)
+            if (postprocessingConfig.CombineOverlappingEvents && (newEvents.Count > 0))
             {
-                Log.Debug($"COMBINE EVENTS HAVING TEMPORAl *AND* SPECTRAL OVERLAP");
+                Log.Debug($"COMBINE EVENTS HAVING TEMPORAL *AND* SPECTRAL OVERLAP");
                 newEvents = CompositeEvent.CombineOverlappingEvents(newEvents.Cast<EventCommon>().ToList());
                 Log.Debug($" Event count after combining overlapped events = {newEvents.Count}");
             }
@@ -45,7 +57,7 @@ namespace AudioAnalysisTools.Events.Types
             //    Such combinations will increase bandwidth of the event and this property can be used later to weed out unlikely events.
             var sequenceConfig = postprocessingConfig.SyllableSequence;
 
-            if (sequenceConfig.NotNull() && sequenceConfig.CombinePossibleSyllableSequence)
+            if (sequenceConfig.NotNull() && sequenceConfig.CombinePossibleSyllableSequence && (newEvents.Count > 0))
             {
                 Log.Debug($"COMBINE PROXIMAL EVENTS");
 
@@ -66,8 +78,7 @@ namespace AudioAnalysisTools.Events.Types
                     var minPeriod = periodAv - (SigmaThreshold * periodSd);
                     var maxPeriod = periodAv + (SigmaThreshold * periodSd);
                     Log.Debug($"FILTER ON SYLLABLE SEQUENCE");
-                    Log.Debug($" Syllables: max={maxComponentCount}");
-                    Log.Debug($" Period: av={periodAv}s, sd={periodSd:F3} min={minPeriod:F3}s, max={maxPeriod:F3}s");
+                    Log.Debug($" Expected Syllable Sequence: max={maxComponentCount},  Period: av={periodAv}s, sd={periodSd:F3} min={minPeriod:F3}s, max={maxPeriod:F3}s");
 
                     newEvents = EventFilters.FilterEventsOnSyllableCountAndPeriodicity(newEvents, maxComponentCount, periodAv, periodSd);
                     Log.Debug($" Event count after filtering on periodicity = {newEvents.Count}");
@@ -82,7 +93,7 @@ namespace AudioAnalysisTools.Events.Types
                 var sdEventDuration = postprocessingConfig.Duration.DurationStandardDeviation;
                 var minDuration = expectedEventDuration - (SigmaThreshold * sdEventDuration);
                 var maxDuration = expectedEventDuration + (SigmaThreshold * sdEventDuration);
-                Log.Debug($" Duration: expected={expectedEventDuration}s, sd={sdEventDuration} min={minDuration}s, max={maxDuration}s");
+                Log.Debug($" Duration: expected={expectedEventDuration}s, sd={sdEventDuration} min={minDuration:F3}s, max={maxDuration:F3}s");
                 newEvents = EventFilters.FilterOnDuration(newEvents, expectedEventDuration, sdEventDuration, SigmaThreshold);
                 Log.Debug($" Event count after filtering on duration = {newEvents.Count}");
             }
@@ -127,19 +138,6 @@ namespace AudioAnalysisTools.Events.Types
                 else
                 {
                     Log.Debug($"DO NOT FILTER ON SIDEBAND ACTIVITY: both sidebands assigned zero width.");
-                }
-            }
-
-            // Write out the events to log.
-            Log.Debug($"FINAL event count = {newEvents.Count}.");
-            if (newEvents.Count > 0)
-            {
-                int counter = 0;
-                foreach (var ev in newEvents)
-                {
-                    counter++;
-                    var spEvent = (SpectralEvent)ev;
-                    Log.Debug($"  Event[{counter}]: Start={spEvent.EventStartSeconds:f1}; Duration={spEvent.EventDurationSeconds:f2}; Bandwidth={spEvent.BandWidthHertz} Hz");
                 }
             }
 

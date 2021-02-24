@@ -28,6 +28,12 @@ namespace AudioAnalysisTools.Events
         public string Profile { get; set; }
 
         /// <summary>
+        /// Gets or sets the Decibel threshold at which the event was detected.
+        /// This is used during post-processing to group events according to the threshold of their detection..
+        /// </summary>
+        public double DecibelDetectionThreshold { get; set; }
+
+        /// <summary>
         /// Gets the component name for this event.
         /// The component name should indicate what type of event this.
         /// E.g. a click, a whistle, a stacked harmonic, ...

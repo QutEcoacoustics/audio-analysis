@@ -135,12 +135,55 @@ namespace AnalysisPrograms.Recognizers
             var results = RunProfiles(audioRecording, configuration, segmentStartOffset);
 
             // ############################### POST-PROCESSING OF GENERIC EVENTS ###############################
+
             var postprocessingConfig = configuration.PostProcessing;
-            results.NewEvents = EventPostProcessing.PostProcessingOfSpectralEvents(
-                results.NewEvents,
-                postprocessingConfig,
-                results.Sonogram,
-                segmentStartOffset);
+            var postEvents = new List<EventCommon>();
+
+            // count number of events detected at each decibel threshold.
+            for (int i = 1; i <= 24; i++)
+            {
+                var dbEvents = EventFilters.FilterOnDecibelDetectionThreshold(results.NewEvents, (double)i);
+
+                if (dbEvents.Count > 0)
+                {
+                    //Log.Debug($"Profiles detected {dbEvents.Count} events at threshold {i} dB.");
+                    var ppEvents = EventPostProcessing.PostProcessingOfSpectralEvents(
+                        dbEvents,
+                        postprocessingConfig,
+                        (double)i,
+                        results.Sonogram,
+                        segmentStartOffset);
+
+                    postEvents.AddRange(ppEvents);
+                }
+            }
+
+            // Running profiles with multiple dB thresholds produces nested (Russian doll) events.
+            // Remove all but the outermost event.
+            // Add a spacer for easier reading of the debug output.
+            Log.Debug($" ");
+            Log.Debug($"Event count BEFORE removing enclosed events = {postEvents.Count}.");
+            results.NewEvents = CompositeEvent.RemoveEnclosedEvents(postEvents);
+            Log.Debug($"Event count AFTER  removing enclosed events = {postEvents.Count}.");
+
+            // Write out the events to log.
+            //Log.Debug($"FINAL event count = {postEvents.Count}.");
+            if (postEvents.Count > 0)
+            {
+                int counter = 0;
+                foreach (var ev in postEvents)
+                {
+                    counter++;
+                    var spEvent = (SpectralEvent)ev;
+                    Log.Debug($"  Event[{counter}]: Start={spEvent.EventStartSeconds:f1}; Duration={spEvent.EventDurationSeconds:f2}; Bandwidth={spEvent.BandWidthHertz} Hz");
+                }
+            }
+
+            //results.NewEvents = EventPostProcessing.PostProcessingOfSpectralEvents(
+            //    results.NewEvents,
+            //    postprocessingConfig,
+            //    results.Sonogram,
+            //    segmentStartOffset);
             return results;
         }
 
@@ -185,10 +228,6 @@ namespace AnalysisPrograms.Recognizers
                         profileResults.Plots.AddRange(thresholdResults.Plots);
                         profileResults.Sonogram = thresholdResults.Sonogram;
                     }
-
-                    // Running profiles with multiple dB thresholds produces nested (Russian doll) events.
-                    // Remove all but the outermost event.
-                    profileResults.NewEvents = CompositeEvent.RemoveEnclosedEvents(profileResults.NewEvents);
 
                     // Add additional info to the remaining acoustic events
                     profileResults.NewEvents.ForEach(ae =>
@@ -356,6 +395,13 @@ namespace AnalysisPrograms.Recognizers
                 Plots = new List<Plot>(),
                 Sonogram = null,
             };
+
+            //add info about decibel threshold into the event.
+            //This info is used later during post-processing of events.
+            foreach (var ev in spectralEvents)
+            {
+                ev.DecibelDetectionThreshold = decibelThreshold.Value;
+            }
 
             allResults.NewEvents.AddRange(spectralEvents);
             allResults.Plots.AddRange(plots);

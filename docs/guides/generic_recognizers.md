@@ -383,21 +383,23 @@ Some of these algorithms have extra parameters, some do not, but all do have the
 | Oscillation      | [!OscillationParameters](xref:AnalysisPrograms.Recognizers.Base.OscillationParameters)   |
 | Harmonic         | [!HarmonicParameters](xref:AnalysisPrograms.Recognizers.Base.HarmonicParameters)         |
 
+
+
 ### [PostProcessing](xref:AudioAnalysisTools.Events.Types.EventPostProcessing.PostProcessingConfig)
 
-The post processing stage is run after event detection (the `Profiles`).
-Note that these post-processing steps are performed on all acoustic events collectively, i.e. all those "discovered"
-by all the *profiles* in the list of profiles.
-
-Add a post processing section to you config file by adding the `PostProcessing` parameter and indenting the sub-parameters.
+Post-processing of events is performed after event detection. However it is important to understand that post-processing is performed once for each of the DecibelThresholds. As an example: suppose you have three decibel thresholds (6, 9 and 12 dB is a typical set of values) in each of two profiles. All the events detected at threshold 6 dB (by both profiles) will be collected together and subjected to the post processing steps. Typically some or all of the events may fail to be accepted as "true" events based on your post-processing parameters. Then all the events detected at 9 dB will be collected and independently subjected to post-processing. Then, likewise, all events detected at the 12 dB threshold will be post-processed. In other words, one round of post-processing is performed for each decibel threshold. This sequence of multiple post-processing steps gives rise to one or more temporally nested events. Think of them as Russion doll events! The final post-processing step is to remove all but the longest duration event in any nested set of events.
 
 [!code-yaml[post_processing](./Ecosounds.NinoxBoobook.yml#L34-L34 "Post Processing")]
 
-Post processing is optional. You may just want to combine or filter component events using code you have written yourself.
+Post processing is optional - you may decide to combine or filter the "raw" events using code you have written yourself. To add a post-processing section to your config file, insert the `PostProcessing` parameter and indent the sub-parameters. There are five post-processing possibilities each of which you may choose to use or not. Note that the post-processing steps are performed in this order which cannot be changed by the user:
+  - Combine events having temporal _and_ spectral overlap.
+  - Combine possible sequences of events that constitute a "call".
+  - Remove (filter) events whose duration is outside an acceptable range.
+  - Remove (filter) events whose bandwidth is outside an acceptable range.
+  - Remove (filter) events having excessive acoustic activity in their sidebands.  
 
-#### Combining overlapping syllables into calls
 
-Combining syllables is the first of two *post-processing* steps.
+### Combine events having temporal _and_ spectral overlap
 
 [!code-yaml[post_processing_combining](./Ecosounds.NinoxBoobook.yml#L34-L42 "Post Processing: Combining")]
 
@@ -407,7 +409,8 @@ set this true for two reasons:
 - the target call is composed of two or more overlapping syllables that you want to join as one event.
 - whistle events often require this step to unite whistle fragments detections into one event.
 
-#### Combining syllables into calls
+
+### Combine possible sequences of events that constitute a "call"
 
 Unlike overlapping events, if you want to combine a group of events (like syllables) that are near each other but not
 overlapping, then make use of the `SyllableSequence` parameter.
@@ -430,7 +433,7 @@ constraints defined by `SyllableMaxCount` and `ExpectedPeriod`.
 
 See the <xref:AudioAnalysisTools.Events.Types.EventPostProcessing.SyllableSequenceConfig> document for more information.
 
-### Remove events whose duration or bandwidth lies outside an expected range.
+### Remove events whose duration is outside an acceptable range
 
 [!code-yaml[post_processing_filtering](./Ecosounds.NinoxBoobook.yml?start=34&end=62&highlight=20- "Post Processing: filtering")]
 
@@ -442,6 +445,7 @@ This filter removes events whose duration lies outside three standard deviations
 - `DurationStandardDeviation` defines _one_ SD of the assumed distribution. Assuming the duration is normally distributed, three SDs sets hard upper and lower duration bounds that includes 99.7% of instances. The filtering algorithm calculates these hard bounds and removes acoustic events that fall outside the bounds.
 
 
+### Remove events whose bandwidth is outside an acceptable range
 Use the parameter `Bandwidth` to filter out events whose bandwidth is too small or large.
 This filter removes events whose bandwidth lies outside three standard deviations (SDs) of an expected value.
 
