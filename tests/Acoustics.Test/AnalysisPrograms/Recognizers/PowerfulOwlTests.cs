@@ -51,7 +51,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
-            Assert.AreEqual(5, events.Count);
+            Assert.AreEqual(6, events.Count);
             Assert.IsNull(scoreTrack);
             Assert.AreEqual(5, plots.Count);
             Assert.AreEqual(2580, sonogram.FrameCount);
@@ -59,14 +59,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             Assert.IsInstanceOfType(events[1], typeof(ChirpEvent));
 
             //Note: due to combining and filtering of events etc, they are not in temporal order
-            var secondEvent = (CompositeEvent)events[4];
+            var secondEvent = (CompositeEvent)events[5];
 
             Assert.AreEqual(26.842267573, secondEvent.EventStartSeconds, 1E-06);
-            Assert.AreEqual(27.945215419, secondEvent.EventEndSeconds, 1E-06);
+            Assert.AreEqual(27.898775510204082, secondEvent.EventEndSeconds, 1E-06);
             Assert.AreEqual(357, secondEvent.LowFrequencyHertz);
             Assert.AreEqual(483, secondEvent.HighFrequencyHertz);
-            Assert.AreEqual(47.93789051, secondEvent.Score, 1E-06);
-            Assert.AreEqual(0.0797182258673, secondEvent.ScoreNormalized, 1E-06);
+            Assert.AreEqual(47.93789051261686, secondEvent.Score, 1E-06);
+            Assert.AreEqual(0.069847040361109447, secondEvent.ScoreNormalized, 1E-06);
         }
     }
 }

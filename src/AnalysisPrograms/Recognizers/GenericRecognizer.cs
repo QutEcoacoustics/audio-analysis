@@ -140,7 +140,7 @@ namespace AnalysisPrograms.Recognizers
             var postEvents = new List<EventCommon>();
 
             // count number of events detected at each decibel threshold.
-            for (int i = 1; i <= 24; i++)
+            for (int i = 1; i <= 39; i++)
             {
                 var dbEvents = EventFilters.FilterOnDecibelDetectionThreshold(results.NewEvents, (double)i);
 

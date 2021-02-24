@@ -16,14 +16,6 @@ SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
-# Scan spectrogram at these thresholds
-DecibelThresholds:
-    - 12.0
-    - 18.0
-    - 24.0
-    - 30.0
-    - 36.0
-
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recogniser and must have the current name.
 Profiles:
@@ -62,27 +54,32 @@ PostProcessing:
     # 2: Combine possible syllable sequences
     SyllableSequence:
         CombinePossibleSyllableSequence: true
-        SyllableStartDifference: 0.7
+        SyllableStartDifference: 0.8
         SyllableHertzGap: 100
         FilterSyllableSequence: false
         SyllableMaxCount: 6
         ExpectedPeriod: 0.92
 
     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
-    #Duration:
+    Duration:
+        FilterOnDuration: false
         ExpectedDuration: 0.14
         DurationStandardDeviation: 0.01        
 
     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
     Bandwidth:
+        FilterOnBandwidth: true
         ExpectedBandwidth: 120
-        BandwidthStandardDeviation: 30
+        BandwidthStandardDeviation: 15
 
-    # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
-    SidebandActivity:
-        LowerHertzBuffer: 0
-        UpperHertzBuffer: 0
-        MaxAverageSidebandDecibels: 3.0
+    # 5: Filter the events for excess acoustic activity in their sidebands, i.e. upper and lower buffer zones
+    SidebandAcousticActivity:
+        LowerSidebandWidth: 0
+        UpperSidebandWidth: 0
+        FilterEventsOnSidebandBackground: false
+        MaxBackgroundDecibels: 6.0
+        FilterEventsOnSidebandActivity: false
+        MaxActivityDecibels: 9.0
 
 # Various options to save results files
 # 1: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
