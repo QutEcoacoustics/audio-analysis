@@ -61,14 +61,12 @@ PostProcessing:
         ExpectedPeriod: 0.92
 
     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
-    Duration:
-        FilterOnDuration: false
-        ExpectedDuration: 0.14
-        DurationStandardDeviation: 0.01        
+    #Duration:
+    #    ExpectedDuration: 0.14
+    #    DurationStandardDeviation: 0.01        
 
     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
     Bandwidth:
-        FilterOnBandwidth: true
         ExpectedBandwidth: 120
         BandwidthStandardDeviation: 15
 
@@ -76,10 +74,8 @@ PostProcessing:
     SidebandAcousticActivity:
         LowerSidebandWidth: 0
         UpperSidebandWidth: 0
-        FilterEventsOnSidebandBackground: false
-        MaxBackgroundDecibels: 6.0
-        FilterEventsOnSidebandActivity: false
-        MaxActivityDecibels: 9.0
+        MaxBackgroundDecibels: null
+        MaxActivityDecibels: null
 
 # Various options to save results files
 # 1: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]

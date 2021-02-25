@@ -15,6 +15,16 @@ AbbreviatedSpeciesName: PteropusSp
 #    Typically the lowest harmonic will lie between 1200 Hz and 3000 Hz and the higher ones evenly spaced.
 #    This is the tricky bit due to variability but may work to use spectrum auto-correlation.
 
+## Specifically for AnalyzeLongRecording
+
+# Resample rate must be 2 X the desired Nyquist
+ResampleRate: 22050
+
+# SegmentDuration: units=seconds;    
+SegmentDuration: 60
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+
 # Common settings
 BgNoiseThreshold: 3.0
 
@@ -54,14 +64,6 @@ Profiles:
   #  <<: *STANDARD
   #  DctDuration: 0.3
 
-# Resample rate must be 2 X the desired Nyquist
-ResampleRate: 22050
-
-## Specifically for AnalyzeLongRecording
-# SegmentDuration: units=seconds;    
-SegmentDuration: 60
-# SegmentOverlap: units=seconds;
-SegmentOverlap: 0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false

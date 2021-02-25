@@ -160,8 +160,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             BgNoiseThreshold = 0.0,
                             MaxHertz = 1050,
                             MinHertz = 700,
-                            BottomHertzBuffer = 0,
-                            TopHertzBuffer = 0,
                             SpeciesName = "DTMF",
                             DctDuration = 1.0,
                             MinOscillationFrequency = 1,
@@ -190,7 +188,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                     {
                         UpperSidebandWidth = 0,
                         LowerSidebandWidth = 0,
-                        MaxBackgroundDecibels = 0,
+                        MaxBackgroundDecibels = 0.0,
                     },
                 },
             };

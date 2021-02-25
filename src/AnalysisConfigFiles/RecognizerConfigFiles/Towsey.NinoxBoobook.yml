@@ -52,19 +52,20 @@ PostProcessing:
 
     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
     #Duration:
-        ExpectedDuration: 0.14
-        DurationStandardDeviation: 0.01        
+    #    ExpectedDuration: 0.14
+    #    DurationStandardDeviation: 0.01        
 
     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
- #   Bandwidth:
-        ExpectedBandwidth: 280
-        BandwidthStandardDeviation: 40
+    #Bandwidth:
+    #    ExpectedBandwidth: 280
+    #    BandwidthStandardDeviation: 40
 
     # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
-    SidebandActivity:
-        LowerHertzBuffer: 150
-        UpperHertzBuffer: 400
-        MaxAverageSidebandDecibels: 3.0
+    #SidebandAcousticActivity:
+        LowerSidebandWidth: 150
+        UpperSidebandWidth: 400
+        MaxBackgroundDecibels: 12
+        MaxActivityDecibels: 12
 
 # Options to save results files
 # 1: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
