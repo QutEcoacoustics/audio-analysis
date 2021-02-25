@@ -86,7 +86,7 @@ namespace AudioAnalysisTools.Events.Types
             }
 
             // 3: Filter the events for time duration (seconds)
-            if ((postprocessingConfig.Duration != null) && postprocessingConfig.Duration.FilterOnDuration && (newEvents.Count > 0))
+            if ((postprocessingConfig.Duration != null) && (newEvents.Count > 0))
             {
                 Log.Debug($"FILTER ON EVENT DURATION");
                 var expectedEventDuration = postprocessingConfig.Duration.ExpectedDuration;
@@ -99,7 +99,7 @@ namespace AudioAnalysisTools.Events.Types
             }
 
             // 4: Filter the events for bandwidth in Hertz
-            if ((postprocessingConfig.Bandwidth != null) && postprocessingConfig.Bandwidth.FilterOnBandwidth && (newEvents.Count > 0))
+            if ((postprocessingConfig.Bandwidth != null) && (newEvents.Count > 0))
             {
                 Log.Debug($"FILTER ON EVENT BANDWIDTH");
                 var expectedEventBandwidth = postprocessingConfig.Bandwidth.ExpectedBandwidth;
@@ -128,9 +128,7 @@ namespace AudioAnalysisTools.Events.Types
                         spectrogram,
                         sidebandActivity.LowerSidebandWidth,
                         sidebandActivity.UpperSidebandWidth,
-                        sidebandActivity.FilterEventsOnSidebandBackground,
                         sidebandActivity.MaxBackgroundDecibels,
-                        sidebandActivity.FilterEventsOnSidebandActivity,
                         sidebandActivity.MaxActivityDecibels,
                         segmentStartOffset);
                     Log.Debug($" Event count after filtering on sideband activity = {newEvents.Count}");
@@ -181,11 +179,6 @@ namespace AudioAnalysisTools.Events.Types
         public class DurationConfig
         {
             /// <summary>
-            /// Gets or sets a value indicating Whether or not to filter events on their duration.
-            /// </summary>
-            public bool FilterOnDuration { get; set; }
-
-            /// <summary>
             /// Gets or sets a value indicating the Expected duration of an event.
             /// </summary>
             public double ExpectedDuration { get; set; }
@@ -201,11 +194,6 @@ namespace AudioAnalysisTools.Events.Types
         /// </summary>
         public class BandwidthConfig
         {
-            /// <summary>
-            /// Gets or sets a value indicating Whether or not to filter events on their band-width.
-            /// </summary>
-            public bool FilterOnBandwidth { get; set; }
-
             /// <summary>
             /// Gets or sets a value indicating the Expected bandwidth of an event.
             /// </summary>
@@ -235,28 +223,18 @@ namespace AudioAnalysisTools.Events.Types
             public int LowerSidebandWidth { get; set; }
 
             /// <summary>
-            /// Gets or sets a value indicating Whether or not to filter events based on background noise in the sidebands.
-            /// </summary>
-            public bool FilterEventsOnSidebandBackground { get; set; }
-
-            /// <summary>
             /// Gets or sets a value indicating the maximum permissible value of background acoustic activity in the upper and lower sidebands of an event.
             /// The background is claculated as the average decibel value over all spectrogram cells in each sideband.
             /// This value is used only if LowerHertzBuffer > 0 OR UpperHertzBuffer > 0.
             /// </summary>
-            public double MaxBackgroundDecibels { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating Whether or not to filter events based on the presence of acoustic "events" in the sidebands.
-            /// </summary>
-            public bool FilterEventsOnSidebandActivity { get; set; }
+            public double? MaxBackgroundDecibels { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating the maximum decibel value in a sideband frequency bin or timeframe.
             /// The decibel value is an average over all spectrogram cells in any frame or bin.
             /// This value is used only if LowerHertzBuffer > 0 OR UpperHertzBuffer > 0.
             /// </summary>
-            public double MaxActivityDecibels { get; set; }
+            public double? MaxActivityDecibels { get; set; }
         }
 
         /// <summary>
@@ -287,7 +265,7 @@ namespace AudioAnalysisTools.Events.Types
             /// </summary>
             public double SyllableHertzGap { get; set; }
 
-            // ################ The next four properties concern the filtering/removal of sequences that do not satisfy expected properties.
+            // ################ The next four properties concern the filtering or removal of sequences that do not satisfy expected properties.
 
             /// <summary>
             /// Gets or sets a value indicating Whether or not to remove/filter sequences having incorrect properties.

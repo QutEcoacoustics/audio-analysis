@@ -305,8 +305,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     .Where(x => x is AcousticEvent)
                     .Select(x => (AcousticEvent)x));
 
-            // HACK: improve filename creation
-            /*var destinationBetaCsv = destination
+            var destinationBetaCsv = destination
                 .FullName
                 .Replace(".csv", ".beta.csv")
                 .ToFileInfo();
@@ -315,8 +314,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 results
                      .Where(x => x is EventCommon)
                     .Select(x => (EventCommon)x));
-            */
-            // HACK: improve filename creation
+
             var destinationJson = destination
                 .FullName
                 .Replace(".csv", ".beta.json")

@@ -72,8 +72,14 @@ namespace AudioAnalysisTools.Events
 
         public static List<EventCommon> FilterOnBandwidth(List<EventCommon> events, double minBandwidth, double maxBandwidth)
         {
-            // The following line does it all BUT it does not allow for feedback to the user.
-            //var outputEvents = events.Where(ev => ((SpectralEvent)ev).BandWidthHertz >= minBandwidth && ((SpectralEvent)ev).BandWidthHertz <= maxBandwidth).ToList();
+            //var filteredEvents = events.Where(ev => ((SpectralEvent)ev).BandWidthHertz >= minBandwidth && ((SpectralEvent)ev).BandWidthHertz <= maxBandwidth).ToList();
+
+            /*
+             *   ABC.where(x => {
+                  Log.debug("ABC")
+                  return x == somevalue;
+               });
+            */
 
             var filteredEvents = new List<EventCommon>();
 
@@ -98,7 +104,7 @@ namespace AudioAnalysisTools.Events
         }
 
         /// <summary>
-        /// Removes short events from a list of events.
+        /// Filters list of events to remove short events.
         /// </summary>
         public static List<SpectralEvent> FilterShortEvents(List<SpectralEvent> events, double minimumDurationSeconds)
         {
@@ -107,7 +113,7 @@ namespace AudioAnalysisTools.Events
         }
 
         /// <summary>
-        /// Removes long events from a list of events.
+        /// Filters list of events to remove long events.
         /// </summary>
         public static List<SpectralEvent> FilterLongEvents(List<SpectralEvent> events, double maximumDurationSeconds)
         {
@@ -116,16 +122,16 @@ namespace AudioAnalysisTools.Events
         }
 
         /// <summary>
-        /// Filters lists of spectral events based on their DecibelDetectionThreshold.
+        /// Filters lists of events based on their DecibelDetectionThreshold.
         /// </summary>
         /// <param name="events">The list of events.</param>
         /// <param name="threshold">The Decibel Detection Threshold.</param>
         /// <returns>The filtered list of events.</returns>
         public static List<EventCommon> FilterOnDecibelDetectionThreshold(List<EventCommon> events, double threshold)
         {
-            if (threshold <= 0.0)
+            if (threshold < 0.0)
             {
-                throw new Exception("Invalid Decibel Detection Threshold passed to method EventExtentions.FilterOnDecibelDetectionThreshold(). Minimum threshold <= 0 seconds");
+                throw new Exception("Invalid Decibel Detection Threshold passed to EventExtentions.FilterOnDecibelDetectionThreshold(). Minimum accepted threshold = 0 dB");
             }
 
             // The following line does it all BUT it does not allow for feedback to the user.
@@ -134,7 +140,7 @@ namespace AudioAnalysisTools.Events
         }
 
         /// <summary>
-        /// Filters lists of spectral events based on their duration.
+        /// Filters lists of events based on their duration.
         /// Note: The typical sigma threshold would be 2 to 3 sds.
         /// </summary>
         /// <param name="events">The list of events.</param>
@@ -250,10 +256,11 @@ namespace AudioAnalysisTools.Events
                     }
                 }
 
-                string strArray = DataTools.Array2String(actualPeriodSeconds.ToArray());
-                Log.Debug($" Event{count} actual periods: {strArray}");
+                //string strArray = DataTools.Array2String(actualPeriodSeconds.ToArray());
+                //Log.Debug($" Event{count} actual periods: {strArray}");
+                Log.Debug($" Event{count} actual periods: {actualPeriodSeconds.Join(",")}");
 
-                    // reject composite events whose total syllable count exceeds the user defined max.
+                // reject composite events whose total syllable count exceeds the user defined max.
                 if (syllableCount > maxSyllableCount)
                 {
                     Log.Debug($" Event{count} rejected: Actual syllable count > max: {syllableCount} > {maxSyllableCount}");
@@ -362,9 +369,7 @@ namespace AudioAnalysisTools.Events
         /// <param name="spectrogram">A matrix of the spectrogram in which event occurs.</param>
         /// <param name="lowerHertzBuffer">The band width of the required lower buffer. 100-200Hz is often appropriate.</param>
         /// <param name="upperHertzBuffer">The band width of the required upper buffer. 300-500Hz is often appropriate.</param>
-        /// <param name="filterEventsOnSidebandBackground">A boolean that determines if event is to be filtered on sideband background.</param>
         /// <param name="thresholdForBackgroundDecibels">The max allowed value for the average decibels value (over all spectrogram cells) in an event's sideband.</param>
-        /// <param name="filterEventsOnSidebandActivity">A boolean that determines if event is to be filtered on its sideband activity.</param>
         /// <param name="thresholdForMaxSidebandActivity">The max allowed value for the decibels value in a sideband timeframe or freq bin.</param>
         /// <param name="segmentStartOffset">Start time of the current recording segment.</param>
         /// <returns>A list of filtered events.</returns>
@@ -373,10 +378,8 @@ namespace AudioAnalysisTools.Events
             BaseSonogram spectrogram,
             int lowerHertzBuffer,
             int upperHertzBuffer,
-            bool filterEventsOnSidebandBackground,
-            double thresholdForBackgroundDecibels,
-            bool filterEventsOnSidebandActivity,
-            double thresholdForMaxSidebandActivity,
+            double? thresholdForBackgroundDecibels,
+            double? thresholdForMaxSidebandActivity,
             TimeSpan segmentStartOffset)
         {
             // allow bin gaps below the event.
@@ -404,9 +407,7 @@ namespace AudioAnalysisTools.Events
                     lowerSidebandAccepted = IsSidebandActivityBelowThreshold(
                         lowerSidebandMatrix,
                         "Lower",
-                        filterEventsOnSidebandBackground,
                         thresholdForBackgroundDecibels,
-                        filterEventsOnSidebandActivity,
                         thresholdForMaxSidebandActivity);
 
                     if (!lowerSidebandAccepted)
@@ -422,9 +423,7 @@ namespace AudioAnalysisTools.Events
                     upperSidebandAccepted = IsSidebandActivityBelowThreshold(
                         upperSidebandMatrix,
                         "Upper",
-                        filterEventsOnSidebandBackground,
                         thresholdForBackgroundDecibels,
-                        filterEventsOnSidebandActivity,
                         thresholdForMaxSidebandActivity);
 
                     if (!upperSidebandAccepted)
@@ -458,18 +457,14 @@ namespace AudioAnalysisTools.Events
         ///         Therefore, also require that there be at most one sideband bin or frame containing acoustic activity greater than the supplied decibel threshold.
         /// </summary>
         /// <param name="sidebandMatrix">A matrix that represents a portion of spectrogram which is actually the sideband of an acoustic event.</param>
-        /// <param name="filterEventsOnSidebandBackground">A boolean that determines if the background test is done.</param>
         /// <param name="thresholdForBackgroundDecibels">Decibel threshold for the background test.</param>
-        /// <param name="filterEventsOnSidebandActivity">A boolean that determines if the activity test is done.</param>
         /// <param name="thresholdForActivityDecibels">Decibel threshold for the activity test.</param>
         /// <returns>A boolean determining whether the sideband is accepoted or rejected.</returns>
         public static bool IsSidebandActivityBelowThreshold(
             double[,] sidebandMatrix,
             string side,
-            bool filterEventsOnSidebandBackground,
-            double thresholdForBackgroundDecibels,
-            bool filterEventsOnSidebandActivity,
-            double thresholdForActivityDecibels)
+            double? thresholdForBackgroundDecibels,
+            double? thresholdForActivityDecibels)
         {
             //calculate the row averages and column averages. These are averages of decibel values.
             var averageRowDecibels = MatrixTools.GetRowAverages(sidebandMatrix);
@@ -478,7 +473,7 @@ namespace AudioAnalysisTools.Events
             var averageMatrixDecibels = averageColDecibels.Average();
 
             //perform the background acoustic test if filterEventsOnSidebandBackground = true.
-            if (filterEventsOnSidebandBackground)
+            if (thresholdForBackgroundDecibels != null)
             {
                 // Is the background acoustic activity in the sideband below the user set threshold?
                 if (averageMatrixDecibels <= thresholdForBackgroundDecibels)
@@ -498,7 +493,7 @@ namespace AudioAnalysisTools.Events
 
             // The sideband is accepted based on Test 1. Now do test 2.
             // Also need to cover possibility that there is much acoustic activity concentrated in one freq bin or time frame.
-            if (!filterEventsOnSidebandActivity)
+            if (thresholdForActivityDecibels == null)
             {
                 Log.Debug($"   {side}Sideband accepted without test 2 for concentrated acoustic activity.");
                 return true;
