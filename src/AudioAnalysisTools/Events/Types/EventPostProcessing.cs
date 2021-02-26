@@ -47,7 +47,7 @@ namespace AudioAnalysisTools.Events.Types
             // This will be necessary where many small events have been found - possibly because the dB threshold is set low.
             if (postprocessingConfig.CombineOverlappingEvents && (newEvents.Count > 0))
             {
-                Log.Debug($"COMBINE EVENTS HAVING TEMPORAL *AND* SPECTRAL OVERLAP");
+                Log.Debug($"COMBINE EVENTS HAVING TEMPORAL&SPECTRAL OVERLAP");
                 newEvents = CompositeEvent.CombineOverlappingEvents(newEvents.Cast<EventCommon>().ToList());
                 Log.Debug($" Event count after combining overlapped events = {newEvents.Count}");
             }
@@ -57,7 +57,7 @@ namespace AudioAnalysisTools.Events.Types
             //    Such combinations will increase bandwidth of the event and this property can be used later to weed out unlikely events.
             var sequenceConfig = postprocessingConfig.SyllableSequence;
 
-            if (sequenceConfig.NotNull() && sequenceConfig.CombinePossibleSyllableSequence && (newEvents.Count > 0))
+            if (sequenceConfig.NotNull() && (newEvents.Count > 0))
             {
                 Log.Debug($"COMBINE PROXIMAL EVENTS");
 
@@ -79,6 +79,12 @@ namespace AudioAnalysisTools.Events.Types
                     var maxPeriod = periodAv + (SigmaThreshold * periodSd);
                     Log.Debug($"FILTER ON SYLLABLE SEQUENCE");
                     Log.Debug($" Expected Syllable Sequence: max={maxComponentCount},  Period: av={periodAv}s, sd={periodSd:F3} min={minPeriod:F3}s, max={maxPeriod:F3}s");
+                    if (minPeriod <= 0.0)
+                    {
+                        Log.Error($"Expected period={periodAv};sd={periodSd:F3} => min={minPeriod:F3}s;max={maxPeriod:F3}",
+                            new Exception("FATAL ERROR: This combination of values is invalid => negative minimum value."));
+                        System.Environment.Exit(1);
+                    }
 
                     newEvents = EventFilters.FilterEventsOnSyllableCountAndPeriodicity(newEvents, maxComponentCount, periodAv, periodSd);
                     Log.Debug($" Event count after filtering on periodicity = {newEvents.Count}");
@@ -117,11 +123,8 @@ namespace AudioAnalysisTools.Events.Types
             var sidebandActivity = postprocessingConfig.SidebandAcousticActivity;
             if ((sidebandActivity != null) && (newEvents.Count > 0))
             {
-                if ((sidebandActivity.LowerSidebandWidth > 0) || (sidebandActivity.UpperSidebandWidth > 0))
+                if ((sidebandActivity.LowerSidebandWidth != null) || (sidebandActivity.UpperSidebandWidth != null))
                 {
-                    Log.Debug($"FILTER ON SIDEBAND ACTIVITY");
-                    Log.Debug($" Lower sideband width= {sidebandActivity.LowerSidebandWidth} Hz; Upper sideband width= {sidebandActivity.UpperSidebandWidth} Hz");
-                    Log.Debug($" Max permitted sideband background = {sidebandActivity.MaxBackgroundDecibels:F0} dB and max permitted sideband activity = {sidebandActivity.MaxActivityDecibels:F0} dB");
                     var spectralEvents2 = newEvents.Cast<SpectralEvent>().ToList();
                     newEvents = EventFilters.FilterEventsOnSidebandActivity(
                         spectralEvents2,
@@ -214,13 +217,13 @@ namespace AudioAnalysisTools.Events.Types
             /// Gets or sets a value indicating Whether or not to filter events based on acoustic conctent of upper buffer zone.
             /// If value = 0, the upper sideband is ignored.
             /// </summary>
-            public int UpperSidebandWidth { get; set; }
+            public int? UpperSidebandWidth { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating Whether or not to filter events based on the acoustic content of their lower buffer zone.
             /// If value = 0, the lower sideband is ignored.
             /// </summary>
-            public int LowerSidebandWidth { get; set; }
+            public int? LowerSidebandWidth { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating the maximum permissible value of background acoustic activity in the upper and lower sidebands of an event.
@@ -244,12 +247,7 @@ namespace AudioAnalysisTools.Events.Types
         /// </summary>
         public class SyllableSequenceConfig
         {
-            // ################ The first three properties concern the combining of syllables into a sequence or stroph.
-
-            /// <summary>
-            /// Gets or sets a value indicating Whether or not to combine events that constitute a sequence of the same strophe.
-            /// </summary>
-            public bool CombinePossibleSyllableSequence { get; set; }
+            // ################ The first two properties concern the combining of syllables into a sequence or stroph.
 
             /// <summary>
             /// Gets or sets a value indicating the maximum allowable start time gap (seconds) between events within the same strophe.

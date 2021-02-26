@@ -256,9 +256,11 @@ namespace AudioAnalysisTools.Events
                     }
                 }
 
-                //string strArray = DataTools.Array2String(actualPeriodSeconds.ToArray());
-                //Log.Debug($" Event{count} actual periods: {strArray}");
-                Log.Debug($" Event{count} actual periods: {actualPeriodSeconds.Join(",")}");
+                string strArray = DataTools.Array2String(actualPeriodSeconds.ToArray());
+                Log.Debug($" Event{count} actual periods: {strArray}");
+
+                // don't use following line because does not format decimal places.
+                //Log.Debug($" Event{count} actual periods: {actualPeriodSeconds.Join(",")}");
 
                 // reject composite events whose total syllable count exceeds the user defined max.
                 if (syllableCount > maxSyllableCount)
@@ -376,12 +378,59 @@ namespace AudioAnalysisTools.Events
         public static List<EventCommon> FilterEventsOnSidebandActivity(
             List<SpectralEvent> events,
             BaseSonogram spectrogram,
-            int lowerHertzBuffer,
-            int upperHertzBuffer,
+            int? lowerHertzBuffer,
+            int? upperHertzBuffer,
             double? thresholdForBackgroundDecibels,
             double? thresholdForMaxSidebandActivity,
             TimeSpan segmentStartOffset)
         {
+            // provide debug info about the parameter settings.
+            Log.Debug($"FILTER ON SIDEBAND ACTIVITY");
+
+            var logString = string.Empty;
+
+            if (lowerHertzBuffer == null)
+            {
+                logString += $" Lower sideband width not set.";
+            }
+            else
+            {
+                logString += $" Lower sideband width= {lowerHertzBuffer} Hz.";
+            }
+
+            if (upperHertzBuffer == null)
+            {
+                logString += $" Upper sideband width not set.";
+            }
+            else
+            {
+                logString += $" Upper sideband width= {upperHertzBuffer} Hz.";
+            }
+
+            Log.Debug(logString);
+
+            logString = string.Empty;
+
+            if (thresholdForBackgroundDecibels == null)
+            {
+                logString += $" Max permitted sideband background not set.";
+            }
+            else
+            {
+                logString += $" Max permitted sideband background = {thresholdForBackgroundDecibels:F0} dB.";
+            }
+
+            if (thresholdForMaxSidebandActivity == null)
+            {
+                logString += $" Max permitted sideband event activity not set.";
+            }
+            else
+            {
+                logString += $" Max permitted sideband event activity = {thresholdForBackgroundDecibels:F0} dB.";
+            }
+
+            Log.Debug(logString);
+
             // allow bin gaps below the event.
             int lowerBinGap = 2;
             int upperBinGap = 2;
@@ -401,9 +450,9 @@ namespace AudioAnalysisTools.Events
                 var lowerSidebandAccepted = true;
 
                 // The lower sideband is subjected to two tests: the background test and the activity test.
-                if (lowerHertzBuffer > 0)
+                if ((lowerHertzBuffer != null) && (lowerHertzBuffer != 0))
                 {
-                    var lowerSidebandMatrix = GetLowerEventSideband(ev, spectrogramData, lowerHertzBuffer, lowerBinGap, converter);
+                    var lowerSidebandMatrix = GetLowerEventSideband(ev, spectrogramData, lowerHertzBuffer.Value, lowerBinGap, converter);
                     lowerSidebandAccepted = IsSidebandActivityBelowThreshold(
                         lowerSidebandMatrix,
                         "Lower",
@@ -417,9 +466,9 @@ namespace AudioAnalysisTools.Events
                 }
 
                 // The upper sideband is subjected to the same two tests: the background test and the activity test.
-                if (upperHertzBuffer > 0)
+                if ((upperHertzBuffer != null) && (lowerHertzBuffer != 0))
                 {
-                    var upperSidebandMatrix = GetUpperEventSideband(ev, spectrogramData, upperHertzBuffer, upperBinGap, converter);
+                    var upperSidebandMatrix = GetUpperEventSideband(ev, spectrogramData, upperHertzBuffer.Value, upperBinGap, converter);
                     upperSidebandAccepted = IsSidebandActivityBelowThreshold(
                         upperSidebandMatrix,
                         "Upper",

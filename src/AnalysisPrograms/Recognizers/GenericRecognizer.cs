@@ -145,7 +145,7 @@ namespace AnalysisPrograms.Recognizers
             {
                 var key = group.Key;
                 List<EventCommon> events = group.ToList<EventCommon>();
-                Log.Debug($"Profiles detected {events.Count} events at threshold {key} dB.");
+                //Log.Debug($"Profiles detected {events.Count} events at threshold {key} dB.");
 
                 var ppEvents = EventPostProcessing.PostProcessingOfSpectralEvents(
                     events,
@@ -159,6 +159,7 @@ namespace AnalysisPrograms.Recognizers
 
             // Running profiles with multiple dB thresholds produces nested (Russian doll) events.
             // Remove all but the outermost event.
+            Log.Debug($"\nFLATTEN RUSSIAN DOLL EVENTS.");
             Log.Debug($"## Event count BEFORE removing enclosed events = {postEvents.Count}.");
             results.NewEvents = CompositeEvent.RemoveEnclosedEvents(postEvents);
             Log.Debug($"## Event count AFTER  removing enclosed events = {postEvents.Count}.");
@@ -204,7 +205,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     speciesName = parameters.SpeciesName;
                     var decibelThresholds = parameters.DecibelThresholds;
-                    var message = $"Number of decibel thresholds = {decibelThresholds.Length}: " + decibelThresholds.Join(", ");
+                    var message = $"Decibel dectection thresholds: " + decibelThresholds.Join(", ");
                     Log.Info(message);
 
                     var spectrogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
@@ -228,7 +229,7 @@ namespace AnalysisPrograms.Recognizers
                         ae.Profile = profileName;
                     });
 
-                    Log.Debug($"Profile {profileName}: event count = {profileResults.NewEvents.Count}");
+                    Log.Debug($"Profile {profileName}: total event count = {profileResults.NewEvents.Count}");
                     combinedResults.NewEvents.AddRange(profileResults.NewEvents);
                     combinedResults.Plots.AddRange(profileResults.Plots);
                     combinedResults.Sonogram = spectrogram;
@@ -254,6 +255,7 @@ namespace AnalysisPrograms.Recognizers
                         ae.FileName = audioRecording.BaseName;
                         ae.Name = speciesName;
                         ae.Profile = profileName;
+                        ae.DecibelDetectionThreshold = ac.IntensityThreshold;
                     });
 
                     // AED does not return plots.
