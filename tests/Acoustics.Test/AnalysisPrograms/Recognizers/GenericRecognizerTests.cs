@@ -971,7 +971,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                         "TestAed",
                         new Aed.AedConfiguration()
                         {
-                            //DecibelThresholds = new double?[] { 0.0 },
                             NoiseReductionType = NoiseReductionType.None,
                             NoiseReductionParameter = 15,
                             SmallAreaThreshold = 150,
