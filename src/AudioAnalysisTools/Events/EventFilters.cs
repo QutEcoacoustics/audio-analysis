@@ -234,7 +234,7 @@ namespace AudioAnalysisTools.Events
                 if (ev is CompositeEvent == false)
                 {
                     filteredEvents.Add(ev);
-                    Log.Debug($" Event{count} accepted one syllable.");
+                    Log.Debug($" Event[{count}] accepted one syllable.");
                     continue;
                 }
 
@@ -256,16 +256,12 @@ namespace AudioAnalysisTools.Events
                     }
                 }
 
-                string strArray = DataTools.Array2String(actualPeriodSeconds.ToArray());
-                Log.Debug($" Event{count} actual periods: {strArray}");
-
-                // don't use following line because does not format decimal places.
-                //Log.Debug($" Event{count} actual periods: {actualPeriodSeconds.Join(",")}");
+                Log.Debug($" Event[{count}] actual periods: {actualPeriodSeconds.JoinFormatted(", ")}");
 
                 // reject composite events whose total syllable count exceeds the user defined max.
                 if (syllableCount > maxSyllableCount)
                 {
-                    Log.Debug($" Event{count} rejected: Actual syllable count > max: {syllableCount} > {maxSyllableCount}");
+                    Log.Debug($" Event[{count}] rejected: Actual syllable count > max: {syllableCount} > {maxSyllableCount}");
                     continue;
                 }
 
@@ -275,7 +271,7 @@ namespace AudioAnalysisTools.Events
                     // there was only one event - the multiple events all overlapped as one event
                     // accept this as valid outcome. There is no interval on which to filter.
                     filteredEvents.Add(ev);
-                    Log.Debug($" Event{count} accepted - only one syllable");
+                    Log.Debug($" Event[{count}] accepted - only one syllable");
                 }
                 else
                 {
@@ -291,12 +287,12 @@ namespace AudioAnalysisTools.Events
                     // Require that the actual average period or interval should fall between required min and max period.
                     if (actualAvPeriod >= minExpectedPeriod && actualAvPeriod <= maxExpectedPeriod)
                     {
-                        Log.Debug($" Event{count} accepted: Actual average syllable interval = {actualAvPeriod:F3}");
+                        Log.Debug($" Event[{count}] accepted: Actual average syllable interval = {actualAvPeriod:F3}");
                         filteredEvents.Add(ev);
                     }
                     else
                     {
-                        Log.Debug($" Event{count} rejected: Actual average syllable interval = {actualAvPeriod:F3}");
+                        Log.Debug($" Event[{count}] rejected: Actual average syllable interval = {actualAvPeriod:F3}");
                     }
                 }
             }

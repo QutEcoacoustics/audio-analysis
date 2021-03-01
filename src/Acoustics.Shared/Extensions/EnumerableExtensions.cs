@@ -316,5 +316,19 @@ namespace System
             // return one delimiter length less because we always add a delimiter on the end
             return result.ToString(0, result.Length - delimiter.Length);
         }
+
+        public static string JoinFormatted<T>(this IEnumerable<T> items, string delimiter = " ")
+        {
+            var result = new StringBuilder();
+            foreach (var item in items)
+            {
+                string number = string.Format("{0:f2}", item);
+                result.Append(number);
+                result.Append(delimiter);
+            }
+
+            // return one delimiter length less because we always add a delimiter on the end
+            return result.ToString(0, result.Length - delimiter.Length);
+        }
     }
 }

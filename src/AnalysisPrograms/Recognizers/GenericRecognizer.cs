@@ -159,10 +159,10 @@ namespace AnalysisPrograms.Recognizers
 
             // Running profiles with multiple dB thresholds produces nested (Russian doll) events.
             // Remove all but the outermost event.
-            Log.Debug($"\nFLATTEN RUSSIAN DOLL EVENTS.");
-            Log.Debug($"## Event count BEFORE removing enclosed events = {postEvents.Count}.");
+            Log.Debug($"\nREMOVE EVENTS ENCLOSED BY LONGER EVENTS.");
+            Log.Debug($"Event count BEFORE removing enclosed events = {postEvents.Count}.");
             results.NewEvents = CompositeEvent.RemoveEnclosedEvents(postEvents);
-            Log.Debug($"## Event count AFTER  removing enclosed events = {postEvents.Count}.");
+            Log.Debug($"Event count AFTER  removing enclosed events = {postEvents.Count}.");
 
             // Write out the events to log.
             if (postEvents.Count > 0)
