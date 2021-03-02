@@ -437,14 +437,14 @@ namespace AnalysisPrograms.Recognizers.Base
             public RecognizerConfig()
             {
                 this.Loaded += config =>
-                {
-                    var file = ConfigFile.Resolve(this.HighResolutionIndicesConfig ?? "Towsey.Acoustic.HiResIndicesForRecognisers.yml");
-                    var indicesConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(file);
-                    this.HighResolutionIndices = indicesConfig;
-                };
+                    {
+                        var file = ConfigFile.Resolve(this.HighResolutionIndicesConfig ?? "Towsey.Acoustic.HiResIndicesForRecognisers.yml");
+                        var indicesConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(file);
+                        this.HighResolutionIndices = indicesConfig;
+                    };
             }
 
-            public string HighResolutionIndicesConfig { get; set; } = "Towsey.Acoustic.HiResIndicesForRecognisers.yml";
+            public string HighResolutionIndicesConfig { get; set; }
 
             public AcousticIndices.AcousticIndicesConfig HighResolutionIndices { get; private set; }
         }

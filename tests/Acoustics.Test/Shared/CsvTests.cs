@@ -482,6 +482,19 @@ namespace Acoustics.Test.Shared
         }
 
         [TestMethod]
+        public void TestIntervalTopologyRoundTrip()
+        {
+            var topology = Topology.Exclusive;
+
+            var file = this.TestOutputDirectory.CombineFile("timespan_roundtrip.csv");
+            Csv.WriteToCsv(file, new[] { new CsvTestClass2() { SomeNumber = 3, SomeTopology = topology } });
+
+            var actual = Csv.ReadFromCsv<CsvTestClass2>(file).ToArray();
+
+            Assert.AreEqual(Topology.Exclusive, actual.First().SomeTopology);
+        }
+
+        [TestMethod]
         public void EnumsAreConvertible()
         {
             var storage = new StringWriter();
