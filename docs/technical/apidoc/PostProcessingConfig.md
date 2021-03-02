@@ -36,25 +36,38 @@ This filter removes events whose bandwidth lies outside three standard deviation
 
 ## Filtering on side band activity
 
-The intuition of this filter is that an unambiguous event should have an "acoustic-free zone" above and below it.
-This filter removes an event that has "excessive" acoustic activity spilling into its sidebands (i.e. upper and lower
-"buffer" zones). These events are likely to be _broadband_ events unrelated to the target event. Since this is a common
-occurrence, this filter is useful.
+The intuition of this filter is that an unambiguous event (representing a call or syllable) should have an "acoustic-free zone" above and below it.
+This filter removes an event that has "excessive" acoustic activity spilling into its sidebands.
+Such events are likely to be _broadband_ events unrelated to the target event.
+Since this is a common occurrence, a sideband filter is useful.
 
-Use the parameter `SidebandActivity` to enable side band filtering.
+Use the keyword `SidebandAcousticActivity` to enable sideband filtering. There are four parameters, the first two set the width of the sidebands and the second two set decibel thresholds for the amount acoustic noise/activity in those sidebands.
 
-`LowerHertzBuffer` and `UpperHertzBuffer` set the width of the sidebands required below and above the target event.
-(These can be also be understood as buffer zones, hence the names assigned to the parameters.)
+1. `LowerSidebandWidth` sets the width of the desired sideband "zone" below the target event.
+2. `UpperSidebandWidth` sets the width of the desired sideband "zone" above the target event.
 
-There are two tests for determining if the sideband activity is excessive:
+There are two tests for determining if the acoustic activity in a sideband is excessive, each having a single parameter:
 
-1. The average decibel value in each sideband should be below the threshold value given by `MaxAverageSidebandDecibels`.
-  The average is taken over all spectrogram cells included in a sideband.
-2. There should be no more than one sideband frequency bin and one sideband timeframe whose average acoustic activity
-  lies within 3 dB of the average acoustic activity in the event. (The averages are over all relevant spectrogram cells.)
-  This covers the possibility that there is an acoustic event concentrated in a few frequency bins or timeframes within
-  a sideband. The 3 dB threshold is a small arbitrary value which seems to work well. It cannot be changed by the user.
+1. `MaxBackgroundDecibels` sets a threshold value for the maximum permitted background or average decibel value in each
+  sideband. The average is taken over all spectrogram cells included in a sideband, excluding those adjacent to the event.
+2. `MaxActivityDecibels` sets a threshold value for the maximum permitted average decibel value in any one frequency bin
+  or timeframe of a sideband. The averages are over all relevant spectrogram cells in a frame or bin, excluding the cell
+  adjacent to the event.
+
+This test covers the possibility that there is an acoustic event concentrated in a few frequency bins or timeframes
+within a sideband. Only one sideband bin or frame is allowed to contain acoustic activity exceeding the threshold.
 
 > [!TIP]
-> If you do not wish to apply these sideband filters, set `LowerHertzBuffer` and `UpperHertzBuffer` equal to zero.
->Both sideband tests are applied where the buffer zones are non-zero.
+> To exclude a sideband or not perform a test, comment out its parameter with a `#`. In the above example config file for
+> _Ninox boobook_, two of the four parameters are commented out.
+>
+> ```yaml
+>  SidebandAcousticActivity:
+>     LowerSidebandWidth: 150
+>     #UpperSidebandWidth: 200
+>     MaxBackgroundDecibels: 12
+>     #MaxActivityDecibels: 12
+> ```
+>
+> In this example, only one test (for background noise) will be performed on only one sideband (the lower).
+> If no sideband tests are performed, all events will be accepted regardless of the acoustic activity in their sidebands.

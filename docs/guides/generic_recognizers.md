@@ -78,28 +78,26 @@ These ideas are summarized in the following table:
 To summarize, the advantages of a hand-crafted DIY call recognizer are:
 
 1. You can do it yourself!
-
 2. You can start with just one or two calls.
-
 3. Allows you to collect a larger dataset (and refine it) for machine learning purposes.
-
 4. Exposes the variability of the target call as you go.
 
 ## 2. Calls, syllables, harmonics
 
 The algorithmic approach of **DIY Call Recognizer** makes particular assumptions about animals calls and how they are structured.
 A *call* is taken to be any sound of animal origin (whether for communication purposes or not) and include
-bird songs/calls, animal vocalizations of any kind, the stridulation of insects, the wingbeats of birds and bats and the various sounds produced by aquatic animals. Calls typically have temporal and spectral structure.
+bird songs/calls, animal vocalizations of any kind, the stridulation of insects, the wingbeats of birds and bats and the
+various sounds produced by aquatic animals. Calls typically have temporal and spectral structure.
 For example they may consist of a temporal sequence of two or more *syllables* (with "gaps" in between) or a set of simultaneous *harmonics*
 or *formants*. (The distinction between harmonics and formants does not concern us here.)
 
-
 ## 3. Acoustic events
 
-An [_acoustic event_](xref:theory-acoustic-events) is defined as a contiguous set of spectrogram cells/pixels whose decibel values exceed some user
+An [_acoustic event_](xref:theory-acoustic-events) is defined as a contiguous set of spectrogram cells/pixels whose
+decibel values exceed some user
 defined threshold. In the ideal case, an acoustic event should encompass a discrete component of acoustic energy within
 a call, syllable or harmonic. It will be separated from other acoustic events by gaps having decibel values *below*
- the user defined threshold.
+the user defined threshold.
 
 **DIY Call Recognizer** contains algorithms to recognize seven different kinds of _generic_ acoustic events based on
 their shape in the spectrogram.
@@ -108,22 +106,16 @@ There are seven types of acoustic events:
 
 1. [Shrieks](xref:theory-acoustic-events#shrieks):
    diffuse events treated as "blobs" of acoustic energy. A typical example is a parrot shriek.
-
 2. [Whistles](xref:theory-acoustic-events#whistles):
   "pure" tones (often imperfect) appearing as horizontal lines on a spectrogram.
-
 3. [Chirps](xref:theory-acoustic-events#chirps):
   whistle like events that increases in frequency over time. Appears like a sloping line in a spectrogram.
-
 4. [Whips](xref:theory-acoustic-events#whips):
   sound like a "whip crack". They appear as steeply ascending or descending *spectral track* in the spectrogram.
-
 5. [Clicks](xref:theory-acoustic-events#clicks):
   appear as a single vertical line in a spectrogram and sounds, like the name suggests, as a very brief click.
-
 6. [Oscillations](xref:theory-acoustic-events#oscillations):
   An oscillation is the same (or nearly the same) syllable (typically whips or clicks) repeated at a fixed periodicity over several to many time-frames.
-
 7. [Harmonics](xref:theory-acoustic-events#harmonics):
   Harmonics are the same/similar shaped *whistle* or *chirp* repeated simultaneously at multiple intervals of frequency. Typically, the frequency intervals are similar as one ascends the stack of harmonics.
 
@@ -143,14 +135,12 @@ A **DIY Call Recognizer** attempts to recognize calls in a noise-reduced [spectr
 1. Preprocessing—steps to prepare the recording for subsequent analysis.
     1. Input audio is broken up into 1-minute chunks
     2. Audio resampling
-
 2. Processing—steps to identify target syllables as _"generic"_ acoustic events
     1. Spectrogram preparation
-    1. Call syllable detection
-
+    2. Call syllable detection
 3. Postprocessing—steps which simplify the output combining related acoustic events and filtering events to remove false-positives
     1. Combining syllable events into calls
-    1. Syllable/call filtering
+    2. Syllable/call filtering
 
 4. Saving Results
 
@@ -182,21 +172,17 @@ Config files contain a list of parameters, each of which is written as a name-va
 ResampleRate: 22050
 ```
 
-Changing these parameters allows for the construction of a generic recognizer. This guide will explain the various parameters than can be changed and their typical values.
-However, this guide will not produce a functional recognizer;
+Changing these parameters allows for the construction of a generic recognizer. This guide will explain the various
+parameters than can be changed and their typical values. However, this guide will not produce a functional recognizer;
 each recognizer has to be "tuned" to the target syllables for species to be recognized. Only you can do that.
 
 There are many parameters available. To make config files easier to read we order these parameters roughly in the
 order that they are applied. This aligns with the [basic recognition](#4-detecting-acoustic-events) steps from above.
 
 1. Parameters for preprocessing
-
 2. Parameters for processing
-
 3. Parameters for postprocessing
-
 4. Parameters for  saving Results
-
 
 ### Profiles
 
@@ -211,12 +197,10 @@ A config file may target more than one syllable or acoustic event, in which case
 The `Profiles` list contains one or more profile items, and each profile has several parameters. So we have a three level hierarchy:
 
 1. The key-word `Profiles` that heads the list.
-
 2. One or more _profile_ declarations.
     - There are two parts to each profile declaration:
         1. A user defined name
         2. And the algorithm type to use with this profile (prefixed with an exclamation mark (`!`))
-
 3. The profile _parameters_ consisting of a list of name:value pairs
 
 Here is an (abbreviated) example:
@@ -247,14 +231,14 @@ This artificial example illustrates three profiles (i.e. syllables or acoustic e
 We can see one of the profiles has been given the name `BoobookSyllable3` and has the type `ForwardTrackParameters`.
 This means for the `BoobookSyllable3` we want _AP_ to use the _forward track_ algorithm to look for a _chirp_.
 
-Each profile in this example has four parameters. All three profiles have the same values for `MinHertz` and `MaxHertz` 
+Each profile in this example has four parameters. All three profiles have the same values for `MinHertz` and `MaxHertz`
 but different values for their time duration. Each profile is processed separately by _AP_.
 
 ### Algorithm types
 
 In the above example, the line `BoobookSyllable1: !ForwardTrackParameters` is to be read as:
 
-> the name of the target syllable is "BoobookSyllable1" and its type is "ForwardTrackParameters"
+> the name of the target syllable is _BoobookSyllable1_ and its type is _ForwardTrackParameters_
 
 There are currently seven algorithm types, each designed to detect a different type of acoustic event.
 The names of the acoustic events describe what they sound like, whereas,
@@ -272,8 +256,11 @@ the names of the algorithms (used to find those events) describe how the algorit
 | Oscillation    | `Oscillation`     | `!OscillationParameters`     |
 | Harmonic       | `Harmonic`        | `!HarmonicParameters`        |
 
-Each of these detection algorithms has some common parameters because all "generic" events are characterized by common properties, such as their minimum and maximum temporal duration, their minimum and maximum frequencies, and their decibel intensity.
-In fact, every acoustic event is bounded by an _implicit_ rectangle or marquee whose height represents the bandwidth of the event and whose width represents the duration of the event.
+Each of these detection algorithms has some common parameters because all "generic" events are characterized by common
+properties, such as their minimum and maximum temporal duration, their minimum and maximum frequencies, and their decibel intensity.
+In fact, every acoustic event is bounded by an _implicit_ rectangle or marquee whose height represents the bandwidth of
+the event and whose width represents the duration of the event.
+
 Even a _chirp_ or _whip_ which consists only of a single sloping
 *spectral track*, is enclosed by a rectangle, two of whose vertices sit at the start and end of the track.
 
@@ -298,11 +285,12 @@ These parameters control:
 
 - the size of the segments into which the audio file is split for analysis
 - the amount of overlap between consecutive segments
-- the sample rate at which the anlysis is performed
+- the sample rate at which the analysis is performed (22050 Hz)
 
 For more information on these parameters see the <xref:AnalysisBase.AnalyzerConfig> page.
 
-Segment size and and overlap have good defaults set and you should not need to change them. The best value for sample rate will be analysis dependent. If this parameter is not defined, the audio segment will be up/down sampled to 22050 by default.
+Segment size and and overlap have good defaults set and you should not need to change them. The best value for sample
+rate will be analysis dependent, but will default to 22050 Hertz if not provided.
 
 <figure>
 
@@ -337,27 +325,25 @@ All algorithms have some [common parameters](xref:AnalysisPrograms.Recognizers.B
 - Noise removal settings
 - Parameters that set basic limits to the allowed duration and bandwidth of an event
 
-Each algorithm has its own spectrogram settings, so parameters such as `WindowSize` can be varied for _each_ type of acoustic event you want to detect.
+Each algorithm has its own spectrogram settings, so parameters such as `WindowSize` can be varied for _each_ type of
+acoustic event you want to detect.
 
-### [Common Parameters](xref:AnalysisPrograms.Recognizers.Base.CommonParameters): Spectrogram preparation
+#### [Common Parameters](xref:AnalysisPrograms.Recognizers.Base.CommonParameters): Spectrogram preparation
 
 By convention, we list the spectrogram parameters first (after the species name) in
 each algorithm entry:
 
 [!code-yaml[spectrogram](./Ecosounds.NinoxBoobook.yml#L11-L19 "Spectrogram parameters")]
 
-
 - `FrameSize` sets the size of the FFT window.
-
 - `FrameStep` sets the number of samples between frame starts.
-
 - `WindowFunction` sets the FFT window function.
-
 - `BgNoiseThreshold` sets the degree of background noise removal.
 
-Since these parameters are so important for the success of call detection, you are strongly advised to refer to the <xref:theory-spectrograms> document for more information about setting their values.
+Since these parameters are so important for the success of call detection, you are strongly advised to refer to the
+<xref:theory-spectrograms> document for more information about setting their values.
 
-### [Common Parameters](xref:AnalysisPrograms.Recognizers.Base.CommonParameters): Call syllable limits
+#### [Common Parameters](xref:AnalysisPrograms.Recognizers.Base.CommonParameters): Call syllable limits
 
 A complete definition of the `BoobookSyllable` follows.
 
@@ -365,9 +351,11 @@ A complete definition of the `BoobookSyllable` follows.
 
 The additional parameters direct the actual search for target syllables in the spectrogram.
 
-- `MinHertz` and `MaxHertz` set the frequency band in which to search for the target event. Note that these parameters define the bounds of the search band, _not_ the bounds of the event itself. These limits are hard bounds.
-
-- `MinDuration` and `MaxDuration` set the minimum and maximum time duration (in seconds) of the target event. These limits are hard bounds.
+- `MinHertz` and `MaxHertz` set the frequency band in which to search for the target event.
+  Note that these parameters define the bounds of the search band, _not_ the bounds of the event itself. These limits
+  are hard bounds.
+- `MinDuration` and `MaxDuration` set the minimum and maximum time duration (in seconds) of the target event. These
+  limits are hard bounds.
 
 <figure>
 
@@ -392,29 +380,17 @@ Some of these algorithms have extra parameters, some do not, but all do have the
 | Oscillation      | [!OscillationParameters](xref:AnalysisPrograms.Recognizers.Base.OscillationParameters)   |
 | Harmonic         | [!HarmonicParameters](xref:AnalysisPrograms.Recognizers.Base.HarmonicParameters)         |
 
+### [Post Processing](xref:AudioAnalysisTools.Events.Types.EventPostProcessing.PostProcessingConfig)
 
-
-### [PostProcessing](xref:AudioAnalysisTools.Events.Types.EventPostProcessing.PostProcessingConfig)
-
-Post-processing of events is performed after event detection. Post-processing is performed once for each of the DecibelThresholds. 
-As an example: suppose you have three decibel thresholds (6, 9 and 12 dB is a typical set of values) in each of two profiles. 
-There will be three rounds of post-processing:
-
-- All the events detected at threshold 6 dB (by both profiles) will be collected together and subjected to the post-processing steps. Typically some or all of the events may fail to be accepted as "true" events based on your post-processing parameters.
-
-- Next all the events detected at 9 dB will be collected and independently subjected to post-processing.
-
-- Next all events detected at the 12 dB threshold will be post-processed. 
-
-This sequence of multiple post-processing steps gives rise to one or more temporally nested events. Think of them as Russion doll events! 
-The final post-processing step is to remove all but the longest duration event in any nested set of events.
+Events are _post-processed_ after their detection by the `Profiles`.
+Post processing is optional - you may decide to combine or filter the "raw" events using code you have written yourself.
+To add a post-processing section to your config file, insert the `PostProcessing` keyword and indent its parameters.
 
 [!code-yaml[post_processing](./Ecosounds.NinoxBoobook.yml#L34-L34 "Post Processing")]
 
-Post processing is optional - you may decide to combine or filter the "raw" events using code you have written yourself.
-To add a post-processing section to your config file, insert the `PostProcessing` keyword and indent its parameters.
 There are six post-processing possibilities, each of which is optional.
-However the order in which these steps are performed _cannot_ be changed by the user. The post-processing sequence is:
+However the order in which these steps are performed _cannot_ be changed by the user. 
+The post-processing sequence is:
 
 > 1. Combine events having temporal _and_ spectral overlap.
 
@@ -428,67 +404,86 @@ However the order in which these steps are performed _cannot_ be changed by the 
 
 > 6. Remove (filter) events that are enclosed by another event.
 
-  > [!NOTE]:
-    If you do not wish to include a post-processing step, delete or comment out the key-word and all its component parameters using a `#` at the start of each relevant line in the config file.
-    The only exception to this is to set boolean parameters to `false` where this option exists.
-    Removing a post-processing filter means that all events are accepted for that step.
+#### Order of operation
 
-### Combine events having temporal _and_ spectral overlap
+Post-processing steps 1- 5 are performed once for each of the DecibelThresholds. 
+
+As an example:
+
+> Suppose you have three decibel thresholds (6, 9 and 12 dB is a typical set of values) in each of two profiles.
+> There will be three rounds of post-processing:
+>
+> 1. All the events detected (by both profiles) at threshold 6 dB will be subject to those post-processing steps 1-5 enabled by the user.
+> 2. Next, all events detected at the  9 dB threshold will be passed through the same post-processing steps.
+> 3. Next, all events detected at the 12 dB threshold will be passed through the same post-processing steps.
+
+Running profiles with multiple decibel thresholds can produce sets of nested or enclosed
+events that are actually the result of detecting the same acoustic syllable.
+The final post-processing option (step 6) is to collect all events emerging from all rounds of post-processing 
+and remove those that are enclosed by another event. 
+	
+  > [!NOTE]:
+    If you do not wish to include a post-processing step, _disable_ it by deleting its key-word and all component parameters.
+	Alternatively, you can _comment out_ the relevant lines by inserting a `#`.
+    The only exception to this is to set boolean parameters to `false` where this option exists.
+    Disabling a post-processing filter means that all events are accepted for that step.
+	
+	
+#### Combine events having temporal _and_ spectral overlap
 
 [!code-yaml[post_processing_combining](./Ecosounds.NinoxBoobook.yml#L34-L42 "Post Processing: Combining")]
 
 The `CombineOverlappingEvents` parameter is typically set to `true`, but it depends on the target call. You would typically set this to true for two reasons:
 
 - the target call is composed of two or more overlapping syllables that you want to join as one event.
-
 - whistle events often require this step to unite whistle fragment detections into one event.
 
+#### Combine possible sequences of events that constitute a "call"
 
-### Combine possible sequences of events that constitute a "call"
-
-Unlike overlapping events, if you want to combine a group of events (like syllables) that are near each other but not overlapping, then make use of the `SyllableSequence` parameter. A typical example would be to join a sequence of chirps in a honeyeater call.
+Unlike overlapping events, if you want to combine a group of events (like syllables) that are near each other but not
+overlapping, then make use of the `SyllableSequence` parameter. A typical example would be to join a sequence of chirps
+in a honeyeater call.
 
 [!code-yaml[post_processing_combining_syllables](./Ecosounds.NinoxBoobook.yml?start=34&end=51&highlight=10- "Post Processing: Combining syllables")]
 
 `SyllableStartDifference` and `SyllableHertzGap` set the allowed tolerances when combining events into sequences
 
 - `SyllableStartDifference` sets the maximum allowed time difference (in seconds) between the starts of two events.
-
 - `SyllableHertzGap` sets the maximum allowed frequency difference (in Hertz) between the minimum frequencies of two events.
 
-Once you have combined possible sequences, you may wish to remove sequences that do not satisfy the periodicity constraints for your target call, that is, the maximum number of syllables permitted in a sequence and the average time gap between syllables. 
-To enable filtering on syllable periodicity, set `FilterSyllableSequence` to true and assign values to `SyllableMaxCount` and `ExpectedPeriod`.
+Once you have combined possible sequences, you may wish to remove sequences that do not satisfy the periodicity
+constraints for your target call, that is, the maximum number of syllables permitted in a sequence and the average time
+gap between syllables. To enable filtering on syllable periodicity, set `FilterSyllableSequence` to true and assign
+values to `SyllableMaxCount` and `ExpectedPeriod`.
 
 - `SyllableMaxCount` sets an upper limit on the number of events that constitute an allowed sequence.
-
 - `ExpectedPeriod` sets an expectation value for the average period (in seconds) of an allowed combination of events.
 
-    > [!NOTE]:
-    > This property interacts with `SyllableStartDifference`. Refer to the following documentation  for more information:
-     <xref:AudioAnalysisTools.Events.Types.EventPostProcessing.SyllableSequenceConfig>.
+> [!NOTE]
+> This property interacts with `SyllableStartDifference`. Refer to the following documentation  for more information:
+> <xref:AudioAnalysisTools.Events.Types.EventPostProcessing.SyllableSequenceConfig>.
 
-
-### Remove events whose duration is outside an acceptable range
+#### Remove events whose duration is outside an acceptable range
 
 [!code-yaml[post_processing_filtering](./Ecosounds.NinoxBoobook.yml?start=34&end=62&highlight=20- "Post Processing: filtering")]
 
-Use the parameter `Duration` to filter out events that are too long or short.
-There are two parameters:
+Use the parameter `Duration` to filter out events that are too long or short. There are two parameters:
 
 - `ExpectedDuration` defines the _expected_ or _average_ duration (in seconds) for the target events.
+- `DurationStandardDeviation` defines _one_ SD of the assumed distribution.
 
-- `DurationStandardDeviation` defines _one_ SD of the assumed distribution. Refer to the following documentation for more information: <xref:AudioAnalysisTools.Events.Types.EventPostProcessing.DurationConfig>.
+Refer to the following documentation for more information: <xref:AudioAnalysisTools.Events.Types.EventPostProcessing.DurationConfig>.
 
+#### Remove events whose bandwidth is outside an acceptable range
 
-### Remove events whose bandwidth is outside an acceptable range
-Use the parameter `Bandwidth` to filter out events whose bandwidth is too small or large.
-There are two parameters:
+Use the parameter `Bandwidth` to filter out events whose bandwidth is too small or large. There are two parameters:
 
 - `ExpectedBandwidth` defines the _expected_ or _average_ bandwidth (in Hertz) for the target events.
+- `BandwidthStandardDeviation` defines one SD of the assumed distribution.
 
-- `BandwidthStandardDeviation` defines one SD of the assumed distribution. Refer to the following documentation for more information: <xref:AudioAnalysisTools.Events.Types.EventPostProcessing.BandwidthConfig>.
+Refer to the following documentation for more information: <xref:AudioAnalysisTools.Events.Types.EventPostProcessing.BandwidthConfig>.
 
-### Remove events that have excessive noise or acoustic activity in their side-bands
+#### Remove events that have excessive noise or acoustic activity in their side-bands
 
 [!code-yaml[post_processing_sideband](./Ecosounds.NinoxBoobook.yml?start=34&end=69&highlight=30- "Post Processing: sideband noise removal")]
 
@@ -518,14 +513,15 @@ Only one sideband bin or frame is allowed to contain acoustic activity exceeding
         MaxBackgroundDecibels: 12
         #MaxActivityDecibels: 12
     ```
-    > In this example, only one test (for background noise) will be performed on only one sideband (the lower). If no sideband tests are performed, all events will be accepted regardless of the acoustic activity in their sidebands.
+    > In this example, only one test (for background noise) will be performed on only one sideband (the lower).
+	If no sideband tests are performed, all events will be accepted regardless of the acoustic activity in their sidebands.
+    For more detail on configuring this step see <xref:AudioAnalysisTools.Events.Types.EventPostProcessing.PostProcessingConfig#filtering-on-side-band-activity>.
 
 
 ### Remove events that are enclosed by other events.
 
-Running profiles with multiple decibel thresholds can produce sets of nested or enclosed
-events  (Russian doll events!)  that are actually the result of detecting the same acoustic syllable.
-This final (optional) post-processing step is to remove all but the outermost event of any nested set by setting the parameter `RemoveTemporallyEnclosedEvents` to `true`. 
+This final (optional) post-processing step removes enclosed events from any nested group of events emerging from post-processing steps 1-5.
+Enable this option by setting the parameter `RemoveTemporallyEnclosedEvents` to `true`. 
 You would typically do this only after reviewing the output spectrograms to confirm that you have sets of nested events.
 
 This brings us to the final group of parameters that determine what results are written to file.
@@ -543,16 +539,13 @@ Each of the parameters controls whether extra diagnostic files are saved while d
 > that are in total larger than the input audio data—you will fill your harddrive quickly!
 
 - `SaveSonogramImages` will save a spectrogram for each analysed segment (typically one-minute)
-
 - `SaveIntermediateWavFiles` will save the converted WAVE file used to analyze each segment
 
 Both parameters accept three values:
 
 - `Never`: disables the output.
-
 - `WhenEventsDetected`: only outputs the spectrogram/WAVE file when an event is found in the current segment.
   This choice is the most useful for debugging a new recognizer.
-
 - `Always`: always save the diagnostic files. Don't use this option if you're going to analyze a lot of files
 
 ### The completed example
@@ -567,40 +560,31 @@ Tuning parameter values can be frustrating and time-consuming if a logical seque
 tune parameters in the sequence in which they appear in the config file, keeping all "downstream" parameters as "open"
 or "unrestrictive" as possible. Here is a suggested tuning strategy:
 
-1. Turn off all post-processing steps. That is, comment out all post-processing keywords/parameters AND set all post-processing booleans to false.
-
+1. Turn off all post-processing steps. That is, comment out all post-processing keywords/parameters.
 2. Initially set all profile parameters so as to catch the maximum possible number of target calls/syllables.
-    >a. Set the array of decibel thresholds to cover the expected range of call amplitudes from minimum to maximum decibels.
-
-    >b. Set the minimum and maximum duration values to catch every target call by a wide margin. At this stage, do not
+    1. Set the array of decibel thresholds to cover the expected range of call amplitudes from minimum to maximum decibels.
+    2. Set the minimum and maximum duration values to catch every target call by a wide margin. At this stage, do not
       worry that you are also catching a lot of false-positive events.
-
-    >c. Set the minimum and maximum frequency bounds to catch every target call by a wide margin. Once again, do not
+    3. Set the minimum and maximum frequency bounds to catch every target call by a wide margin. Once again, do not
       worry that you are also catching a lot of false-positive events.
-
-    >d. Set other parameters to their least "restrictive" values in order to catch maximum possible target events.
+    4. Set other parameters to their least "restrictive" values in order to catch maximum possible target events.
 
 At this point you should have "captured" all the target calls/syllables (i.e. there should be minimal false-negatives), _but_ you are likely to have many false-positives.
 
 3. Gradually constrain the parameter bounds (i.e. increase minimum values and decrease maximum values) until you start
   to lose obvious target calls/syllables. Then back off so that once again you just capture all the target events—but
   you will still have several to many false-positives.
-
 4. Event combining: You are now ready to set parameters that determine the *post-processing* of events.
-   The first post-processing steps combine events that are likely to be *syllables* that are part of the same *call*.
-
+  The first post-processing steps combine events that are likely to be *syllables* that are part of the same *call*.
 5. Event Filtering: Now add in the event filters in the same sequence as they appear in the config file.
   This sequence cannot currently be changed because it is determined by the underlying code. There are event filters for duration, bandwidth, periodicity of component syllables within a call and finally acoustic activity in the sidebands of an event.
-
     1. Set the `periodicity` parameters for filtering events based on syllable sequences.
-
     2. Set the `duration` parameters for filtering events on their time duration.
-
     3. Set the `bandwidth` parameters for filtering events on their bandwidth.
-
     4. Set the `SidebandAcousticActivity` parameters for filtering based on sideband  _acoustic activity_.
 
-    > [!NOTE] You are unlikely to want to use all filters. Some may be irrelevant to your target call.
+> [!NOTE]
+> You are unlikely to want to use all filters. Some may be irrelevant to your target call.
 
 At the end of this process, you are likely to have a mixture of true-positives, false-positives and false-negatives.
 The goal is to set the parameter values so that the combined FP+FN total is minimized. You should adjust parameter
@@ -622,25 +606,18 @@ We described above the steps required to tune parameter values in a recognizer c
   environment. If this is difficult, one trick to try is to play examples of your target call through a loud speaker in
   a location that is similar to your intended operational environment. You can then record these calls using your
   intended Acoustic Recording Unit (ARU).
-
 2. Assign parameter values into your config.yml file for the target call(s).
-
 3. Run the recognizer, using the command line described in the next section.
-
 4. Review the detection accuracy and try to determine reasons for FP and FN detections.
-
 5. Tune or refine parameter values in order to increase the detection accuracy.
-
 6. Repeat steps 3, 4 and 5 until you appear to have achieved the best possible accuracy. In order to minimize the
   number of iterations of stages 3 to 5, it is best to tune the configuration parameters in the sequence described in
   the previous section.
-
 7. At this point you should have a recognizer that performs "as accurately as possible" on your training examples.
   The next step is to test your recognizer on one or a few examples that it has not seen before.
   That is, repeat steps 3, 4, 5 and 6 adding in a new example each time as they become available.
   It is also useful at this stage to accumulate a set of recordings that do *not* contain the target call.
   See Section 10 for more suggestions on building datasets.
-
 8. At some point you are ready to use your recognizer on recordings obtained from the operational environment.
 
 ## 9. Running a generic recognizer
@@ -650,7 +627,6 @@ _AP_ performs several functions. Each function is selected by altering the comma
 For running a generic recognizer we need to to use the [`audio2csv`](xref:command-analyze-long-recording) command.
 
 - For an introduction to running commands see <xref:cli>
-
 - For detailed help on the audio2csv command see <xref:command-analyze-long-recording>
 
 The basic form of the command line is:
@@ -674,7 +650,6 @@ AnalysisPrograms.exe audio2csv birds.wav NinoxBoobook.yml BoobookResults --analy
 If you want to run your generic recognizer more than once, you might want to use
 [powershell](xref:guides-scripting-pwsh) or [R](xref:guides-scripting-r) to script _AP_.
 
-
 ## 10. Building a larger data set
 
 As indicated above, it is useful to accumulate a set of recordings, some of which contain the target call and some of
@@ -687,11 +662,10 @@ effect the changes have on both data sets.
 Eventually, these two labelled data sets can be used for
 
 - validating the efficacy of your recognizer
-
 - or for machine learning purposes.
 
 _Egret_ is software designed to assess large datasets for recognizer performance, in an **automated** fashion.
-_Egret_ can greatly speed up the development of a recognizer because it is easier to repeatedly test small changes to 
+_Egret_ can greatly speed up the development of a recognizer because it is easier to repeatedly test small changes to
 your recognizer parameters.
 
 _Egret_ is available from [https://github.com/QutEcoacoustics/egret](https://github.com/QutEcoacoustics/egret).

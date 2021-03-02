@@ -68,12 +68,11 @@ PostProcessing:
         #MaxActivityDecibels: 12
 
 # Options to save results files
-# 1: Available options for saving spectrograms (case-sensitive): [Never | Always | WhenEventsDetected]
+# Available options for saving spectrograms: [Never | Always | WhenEventsDetected]
 # "Always" can be useful when debugging but "WhenEventsDetected" is a good default.
-#SaveSonogramImages: Always
 SaveSonogramImages: WhenEventsDetected
 
-# 2: Available options for saving data files (case-sensitive):  [Never | Always | WhenEventsDetected]
+# Available options for saving data files: [Never | Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 
 ...

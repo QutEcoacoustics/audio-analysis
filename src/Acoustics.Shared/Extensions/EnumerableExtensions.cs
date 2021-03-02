@@ -9,6 +9,7 @@ namespace System
 {
     using System.Collections;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -317,12 +318,16 @@ namespace System
             return result.ToString(0, result.Length - delimiter.Length);
         }
 
-        public static string JoinFormatted<T>(this IEnumerable<T> items, string delimiter = " ", string formatString = "{0:f2}")
+        public static string JoinFormatted(this IEnumerable<double> items, string formatString = "{0:f2}", string delimiter = " ") =>
+            JoinFormatted<double>(items, delimiter, formatString);
+
+        public static string JoinFormatted<T>(this IEnumerable<T> items, string formatString, string delimiter = " ")
+            where T : IFormattable
         {
             var result = new StringBuilder();
             foreach (var item in items)
             {
-                result.Append(string.Format(formatString, item));
+                result.AppendFormat(CultureInfo.InvariantCulture, formatString ?? "{0}", item);
                 result.Append(delimiter);
             }
 
