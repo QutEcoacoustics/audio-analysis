@@ -24,7 +24,7 @@ try {
 
     Set-Location docs
 
-    log "[Disabled] Prepare API metadata for docs"
+    log "Prepare API metadata for docs"
 
     exec { docfx metadata }
 
