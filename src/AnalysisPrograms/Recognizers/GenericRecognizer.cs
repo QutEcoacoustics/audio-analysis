@@ -138,15 +138,12 @@ namespace AnalysisPrograms.Recognizers
 
             var postprocessingConfig = configuration.PostProcessing;
             var postEvents = new List<EventCommon>();
-
             var groups = results.NewEvents.GroupBy(x => x.DecibelDetectionThreshold);
 
             foreach (var group in groups)
             {
                 var key = group.Key;
                 List<EventCommon> events = group.ToList<EventCommon>();
-                //Log.Debug($"Profiles detected {events.Count} events at threshold {key} dB.");
-
                 var ppEvents = EventPostProcessing.PostProcessingOfSpectralEvents(
                     events,
                     postprocessingConfig,
@@ -157,12 +154,19 @@ namespace AnalysisPrograms.Recognizers
                 postEvents.AddRange(ppEvents);
             }
 
-            // Running profiles with multiple dB thresholds produces nested (Russian doll) events.
+            // Running profiles with multiple dB thresholds can produce enclosed or temporally nested (Russian doll) events.
             // Remove all but the outermost event.
-            Log.Debug($"\nREMOVE EVENTS ENCLOSED BY LONGER EVENTS.");
-            Log.Debug($"Event count BEFORE removing enclosed events = {postEvents.Count}.");
-            results.NewEvents = CompositeEvent.RemoveEnclosedEvents(postEvents);
-            Log.Debug($"Event count AFTER  removing enclosed events = {postEvents.Count}.");
+            if (configuration.PostProcessing.RemoveTemporallyEnclosedEvents)
+            {
+                Log.Debug($"\nREMOVE EVENTS ENCLOSED BY LONGER EVENTS.");
+                Log.Debug($"Event count BEFORE removing enclosed events = {postEvents.Count}.");
+                results.NewEvents = CompositeEvent.RemoveEnclosedEvents(postEvents);
+                Log.Debug($"Event count AFTER  removing enclosed events = {postEvents.Count}.");
+            }
+            else
+            {
+                Log.Debug($"\nEVENTS ENCLOSED BY LONGER EVENTS WERE NOT REMOVED.");
+            }
 
             // Write out the events to log.
             if (postEvents.Count > 0)

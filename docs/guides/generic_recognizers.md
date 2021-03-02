@@ -413,7 +413,7 @@ The final post-processing step is to remove all but the longest duration event i
 
 Post processing is optional - you may decide to combine or filter the "raw" events using code you have written yourself.
 To add a post-processing section to your config file, insert the `PostProcessing` keyword and indent its parameters.
-There are five post-processing possibilities, each of which is optional.
+There are six post-processing possibilities, each of which is optional.
 However the order in which these steps are performed _cannot_ be changed by the user. The post-processing sequence is:
 
 > 1. Combine events having temporal _and_ spectral overlap.
@@ -424,10 +424,12 @@ However the order in which these steps are performed _cannot_ be changed by the 
 
 > 4. Remove (filter) events whose bandwidth is outside an acceptable range.
 
-> 5. Remove (filter) events having excessive acoustic activity in their sidebands.  
+> 5. Remove (filter) events having excessive acoustic activity in their sidebands.
 
-    > [!NOTE]:
-    If you do not wish to include a post-processing step, delete or comment out the key word and all its component parameters using a `#` at the start of each relevant line in the config file.
+> 6. Remove (filter) events that are enclosed by another event.
+
+  > [!NOTE]:
+    If you do not wish to include a post-processing step, delete or comment out the key-word and all its component parameters using a `#` at the start of each relevant line in the config file.
     The only exception to this is to set boolean parameters to `false` where this option exists.
     Removing a post-processing filter means that all events are accepted for that step.
 
@@ -501,7 +503,7 @@ Use the keyword `SidebandAcousticActivity` to enable sideband filtering. There a
 
 2. `UpperSidebandWidth` sets the width of the desired sideband "zone" above the target event.
 
-There are two tests for determining if the acoustic activity in a sideband is excessive, each having a single parameter:
+> There are two tests for determining if the acoustic activity in a sideband is excessive, each having a single parameter:
 
 3. `MaxBackgroundDecibels` sets a threshold value for the maximum permitted background or average decibel value in each sideband. The average is taken over all spectrogram cells included in a sideband, excluding those adjacent to the event.
 
@@ -517,6 +519,16 @@ Only one sideband bin or frame is allowed to contain acoustic activity exceeding
         #MaxActivityDecibels: 12
     ```
     > In this example, only one test (for background noise) will be performed on only one sideband (the lower). If no sideband tests are performed, all events will be accepted regardless of the acoustic activity in their sidebands.
+
+
+### Remove events that are enclosed by other events.
+
+Running profiles with multiple decibel thresholds can produce sets of nested or enclosed
+events  (Russian doll events!)  that are actually the result of detecting the same acoustic syllable.
+This final (optional) post-processing step is to remove all but the outermost event of any nested set by setting the parameter `RemoveTemporallyEnclosedEvents` to `true`. 
+You would typically do this only after reviewing the output spectrograms to confirm that you have sets of nested events.
+
+This brings us to the final group of parameters that determine what results are written to file.
 
 ### Parameters for saving results
 

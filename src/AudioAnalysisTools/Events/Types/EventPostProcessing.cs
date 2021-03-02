@@ -161,11 +161,6 @@ namespace AudioAnalysisTools.Events.Types
             public SyllableSequenceConfig SyllableSequence { get; set; }
 
             /// <summary>
-            /// Gets or sets the parameters required to filter events on the acoustic activity in their sidebands.
-            /// </summary>
-            public SidebandConfig SidebandAcousticActivity { get; set; }
-
-            /// <summary>
             /// Gets or sets the parameters required to filter events on their duration.
             /// </summary>
             public DurationConfig Duration { get; set; }
@@ -174,6 +169,19 @@ namespace AudioAnalysisTools.Events.Types
             /// Gets or sets the parameters required to filter events on their bandwidth.
             /// </summary>
             public BandwidthConfig Bandwidth { get; set; }
+
+            /// <summary>
+            /// Gets or sets the parameters required to filter events on the acoustic activity in their sidebands.
+            /// </summary>
+            public SidebandConfig SidebandAcousticActivity { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating Whether or not to remove temporally enclosed/nested events.
+            /// Running profiles with multiple dB thresholds can produce sets of enclosed or temporally nested events.
+            /// Russian doll events!
+            /// Setting this boolean true removes all but the outermost of any set of encloseed events.
+            /// </summary>
+            public bool RemoveTemporallyEnclosedEvents { get; set; }
         }
 
         /// <summary>

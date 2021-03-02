@@ -77,6 +77,10 @@ PostProcessing:
         MaxBackgroundDecibels: null
         MaxActivityDecibels: null
 
+    # 6: In the case of sets of nested/enclosed events, filter/remove all but the outermost event. 
+    RemoveTemporallyEnclosedEvents: true
+
+
 # Various options to save results files
 # 1: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
