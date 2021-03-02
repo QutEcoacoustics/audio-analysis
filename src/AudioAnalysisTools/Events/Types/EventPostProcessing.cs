@@ -177,7 +177,10 @@ namespace AudioAnalysisTools.Events.Types
         }
 
         /// <summary>
-        /// The next two properties determine filtering of events based on their duration.
+        /// The two properties in this class determine filtering of events based on their duration.
+        /// The filter removes events whose duration lies outside three standard deviations (SDs) of an expected value.
+        /// Assuming the duration is normally distributed, three SDs sets hard upper and lower duration bounds that includes 99.7% of instances.
+        /// The filtering algorithm calculates these hard (3 SD) bounds and removes acoustic events that fall outside the bounds.
         /// </summary>
         public class DurationConfig
         {
@@ -194,6 +197,9 @@ namespace AudioAnalysisTools.Events.Types
 
         /// <summary>
         /// The next two properties determine filtering of events based on their bandwidth.
+        /// This filter removes events whose bandwidth lies outside three standard deviations (SDs) of an expected value.
+        /// Assuming the bandwidth is normally distributed, three SDs sets hard upper and lower bandwidth bounds that includes 99.7% of instances.
+        /// The filtering algorithm calculates these hard bounds and removes acoustic events that fall outside the bounds.
         /// </summary>
         public class BandwidthConfig
         {
@@ -280,7 +286,11 @@ namespace AudioAnalysisTools.Events.Types
             /// Gets or sets a value indicating the expected periodicity in seconds.
             /// This value is used only where FilterSyllableSequence = true.
             /// Important Note: This property interacts with SyllableStartDifference.
-            ///                 SyllableStartDifference - ExpectedPeriod = 3 x SD of the period.
+            /// When setting ExpectedPeriod, you are actually setting a permissible range of values for the Period.
+            /// The maximum permitted period will be the value assigned to SyllableStartDifference.
+            /// The minimum period will be the ExpectedPeriod minus (SyllableStartDifference - ExpectedPeriod).
+            /// For example: if SyllableStartDifference = 3 seconds and ExpectedPeriod = 2.5 seconds, then the minimum allowed period will be 2 seconds.
+            /// THese bounds are hard bounds.
             /// </summary>
             public double ExpectedPeriod { get; set; }
 

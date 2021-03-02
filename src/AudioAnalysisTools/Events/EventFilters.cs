@@ -90,12 +90,12 @@ namespace AudioAnalysisTools.Events
                 var bandwidth = ((SpectralEvent)ev).BandWidthHertz;
                 if ((bandwidth > minBandwidth) && (bandwidth < maxBandwidth))
                 {
-                    Log.Debug($" Event{count} accepted: Actual bandwidth = {bandwidth}");
+                    Log.Debug($" Event[{count}] accepted: Actual bandwidth = {bandwidth}");
                     filteredEvents.Add(ev);
                 }
                 else
                 {
-                    Log.Debug($" Event{count} rejected: Actual bandwidth = {bandwidth}");
+                    Log.Debug($" Event[{count}] rejected: Actual bandwidth = {bandwidth}");
                     continue;
                 }
             }
@@ -178,12 +178,12 @@ namespace AudioAnalysisTools.Events
                 var duration = ((SpectralEvent)ev).EventDurationSeconds;
                 if ((duration > minimumDurationSeconds) && (duration < maximumDurationSeconds))
                 {
-                    Log.Debug($" Event{count} accepted: Actual duration = {duration:F3}s");
+                    Log.Debug($" Event[{count}] accepted: Actual duration = {duration:F3}s");
                     filteredEvents.Add(ev);
                 }
                 else
                 {
-                    Log.Debug($" Event{count} rejected: Actual duration = {duration:F3}s");
+                    Log.Debug($" Event[{count}] rejected: Actual duration = {duration:F3}s");
                     continue;
                 }
             }
@@ -256,7 +256,8 @@ namespace AudioAnalysisTools.Events
                     }
                 }
 
-                Log.Debug($" Event[{count}] actual periods: {actualPeriodSeconds.JoinFormatted(", ")}");
+                string formatString = "{0:f2}";
+                Log.Debug($" Event[{count}] actual periods: {actualPeriodSeconds.JoinFormatted(", ", formatString)}");
 
                 // reject composite events whose total syllable count exceeds the user defined max.
                 if (syllableCount > maxSyllableCount)
