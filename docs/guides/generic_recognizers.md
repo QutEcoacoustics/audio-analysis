@@ -248,7 +248,7 @@ the names of the algorithms (used to find those events) describe how the algorit
 
 | Acoustic Event | Algorithm name    | Parameters name              |
 |:--------------:|:-----------------:|:----------------------------:|
-| Shriek         | `Blob`            | `!Blob`                      |
+| Shriek         | `Blob`            | `!BlobParameters`                      |
 | Whistle        | `HorizontalTrack` | `!HorizontalTrackParameters` |
 | Chirp          | `ForwardTrack`    | `!ForwardTrackParameters`    |
 | Whip           | `UpwardsTrack`    | `!UpwardsTrackParameters`    |
@@ -268,7 +268,7 @@ See <xref:AnalysisPrograms.Recognizers.Base.CommonParameters> for more details.
 
 ## 6. Config parameters and values
 
-This section describes how to set the parameter values for each of the seven call-detection steps.
+This section describes how to set the parameter values for each of the call-detection steps.
 We use, as a concrete example, the config file for the Boobook Owl, *Ninox boobook*.
 
 The `YAML` lines are followed by an explanation of each parameter.
@@ -392,9 +392,8 @@ Post processing is optional - you may decide to combine or filter the "raw" even
 
 > [!NOTE]
 > If you do not wish to include a post-processing step, _disable_ it by deleting its keyword and all component parameters.
-	> Alternatively, you can _comment out_ the relevant lines by inserting a `#`.
-    The only exception to this is to set boolean parameters to `false` where this option exists.
-    Disabling a post-processing filter means that all events are accepted for that step.
+> Alternatively, you can _comment out_ the relevant lines by inserting a `#` at the start of each line.
+> Disabling a post-processing filter means that all events are accepted (not filtered out) for that step.
 
 #### Order of operation
 
@@ -408,7 +407,8 @@ However the order in which these steps are performed _cannot_ be changed by the 
 5. Remove (filter) events having excessive acoustic activity in their sidebands.
 6. Remove (filter) events that are enclosed by another event.
 
-Post-processing steps 1 through 5 are performed once for each of the `DecibelThresholds` used in the event detection stage. Post-processing step 6 is performed on all the events emerging from all rounds of post-processing steps 1-5. 
+Post-processing steps 1 through 5 are performed once for each of the `DecibelThresholds` used in the event detection stage.
+Post-processing step 6 is performed on all the events emerging from all rounds of post-processing steps 1-5. 
 
 #### Combine events having temporal _and_ spectral overlap
 
@@ -441,8 +441,9 @@ values to `SyllableMaxCount` and `ExpectedPeriod`.
 - `ExpectedPeriod` sets an expectation value for the average period (in seconds) of an allowed combination of events.
 
 > [!NOTE]
-> The properties `ExpectedPeriod` and `SyllableStartDifference` interact. Refer to the following documentation  for more information:
-> <xref:AudioAnalysisTools.Events.Types.EventPostProcessing.SyllableSequenceConfig>.
+> The properties `ExpectedPeriod` and `SyllableStartDifference` interact.
+
+Refer to the following documentation for more information: <xref:AudioAnalysisTools.Events.Types.EventPostProcessing.SyllableSequenceConfig>.
 
 #### Remove events whose duration is outside an acceptable range
 
@@ -477,7 +478,7 @@ For details on configuring this step see <xref:AudioAnalysisTools.Events.Types.E
 
 #### Remove events that are enclosed by other events
 
-Running profiles with multiple decibel thresholds can produce sets of wholly enclosed events
+Running profiles with multiple decibel thresholds can produce sets of enclosed (wholly overlapped by another event) events
 that are actually the result of detecting the same acoustic syllable. 
 This final (optional) post-processing step is to
 remove all but the outermost event of any nested set. Enable this option by setting the parameter `RemoveTemporallyEnclosedEvents` to `true`.
@@ -487,7 +488,7 @@ You would typically do this only after reviewing the output spectrograms to conf
 
 <aside>
 
-#### How `RemoveTemporallyEnclosedEvents` is applied
+##### How `RemoveTemporallyEnclosedEvents` is applied
 
 Suppose you have three decibel thresholds (6, 9 and 12 dB is a typical set of values) 
 in each of two profiles.
