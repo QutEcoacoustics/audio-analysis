@@ -49,6 +49,12 @@ trim_trailing_whitespace = false
 end_of_line = lf
 
 ###########################
+# Diagnsotic customizations
+###########################
+[*.{cs,csx,cake}]
+dotnet_diagnostic.RS0030.severity = error
+
+###########################
 # .NET Language Conventions
 # https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference#language-conventions
 ###########################

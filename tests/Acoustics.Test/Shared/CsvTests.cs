@@ -258,7 +258,7 @@ namespace Acoustics.Test.Shared
 
             //Assert.IsNotNull(actual.InnerException);
             StringAssert.Contains(actual.Message, "Row");
-            StringAssert.Contains(actual.Message, "Field Name");
+            StringAssert.Contains(actual.Message, "Column Name");
         }
 
         [TestMethod]
@@ -274,7 +274,9 @@ namespace Acoustics.Test.Shared
             string[] headers = null;
             var result = Csv.ReadFromCsv<CsvTestClass>(file, false, (reader) =>
             {
-                headers = reader.Context.HeaderRecord;
+#pragma warning disable RS0030 // Do not used banned APIs
+                headers = reader.Context.Reader.HeaderRecord;
+#pragma warning restore RS0030 // Do not used banned APIs
             });
 
             var expected = new[] { "SomeNumber", "SomeTimeSpan", "A", "B", "C", "D" };
@@ -304,11 +306,26 @@ namespace Acoustics.Test.Shared
                 partialExpected.Select(x => x.Item2).ToArray(),
                 actual);
 
-            foreach (var (type, classMapType) in partialExpected)
+            using var reader = Csv.GetReader(new StringReader("hello"));
+            using var writer = Csv.GetWriter(new StringWriter());
+
+            // contexts should be unique
+#pragma warning disable RS0030 // Do not used banned APIs
+            Assert.AreNotEqual(reader.Context, writer.Context);
+
+            // type converters are registered
+            CheckConverters(reader.Context);
+            CheckConverters(writer.Context);
+#pragma warning restore RS0030 // Do not used banned APIs
+
+            void CheckConverters(CsvContext context)
             {
-                var mapping = Csv.DefaultConfiguration.Maps[type];
-                Assert.IsNotNull(mapping, $"Mapping for type {type} was null");
-                Assert.AreEqual(classMapType, mapping.GetType());
+                foreach (var (type, classMapType) in partialExpected)
+                {
+                    var mapping = context.Maps[type];
+                    Assert.IsNotNull(mapping, $"Mapping for type {type} was null");
+                    Assert.AreEqual(classMapType, mapping.GetType());
+                }
             }
         }
 
@@ -318,11 +335,9 @@ namespace Acoustics.Test.Shared
             var ae = new AcousticEvent();
 
             var result = new StringBuilder();
-            using (var str = new StringWriter(result))
+            using (var stream = new StringWriter(result))
             {
-                var writer = new CsvWriter(str, Csv.DefaultConfiguration);
-
-                writer.WriteRecords(records: new[] { ae });
+                Csv.WriteToCsv(stream, ae.Wrap());
             }
 
             var actual = result.ToString();
@@ -393,8 +408,8 @@ namespace Acoustics.Test.Shared
         public void TestChildTypesAreSerializedWhenWrappedAsEnumerableParentType()
         {
             var exampleIndices = new SummaryIndexValues();
-            IEnumerable<SummaryIndexValues> childArray = exampleIndices.AsArray().AsEnumerable();
-            IEnumerable<SummaryIndexBase> baseArray = exampleIndices.AsArray().AsEnumerable();
+            IEnumerable<SummaryIndexValues> childArray = exampleIndices.Wrap();
+            IEnumerable<SummaryIndexBase> baseArray = exampleIndices.Wrap();
 
             Csv.WriteToCsv(this.testFile, childArray);
 
@@ -469,6 +484,28 @@ namespace Acoustics.Test.Shared
 ".NormalizeToCrLf();
 
             Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void EnumsAreConvertible()
+        {
+            var storage = new StringWriter();
+            using (var stream = storage) {
+                Csv.WriteToCsv(stream, new { Property = Topology.Closed }.Wrap());
+            }
+
+            Assert.AreEqual("Property\r\nInclusive\r\n", storage.ToString());
+        }
+
+        [TestMethod]
+        public void IntervalHasATypeConverter()
+        {
+            var storage = new StringWriter();
+            using (var stream = storage) {
+                Csv.WriteToCsv(stream, new { Property = new Interval<double>(0.5,3) }.Wrap());
+            }
+
+            Assert.AreEqual("Property\r\n\"[0.5, 3)\"\r\n", storage.ToString());
         }
 
         private static void AssertCsvEqual(string expected, FileInfo actual)

@@ -3799,8 +3799,8 @@ namespace TowseyLibrary
         public static Image<T> CombineImagesInLine<T>(Color fill, params Image<T>[] images)
             where T : unmanaged, IPixel<T>
         {
-            var maxHeight = images.Max(i => i.Height);
-            var totalWidth = images.Sum(i => i.Width);
+            var maxHeight = images.Max(i => i?.Height ?? 0);
+            var totalWidth = images.Sum(i => i?.Width ?? 0);
 
             var composite = Drawing.NewImage<T>(totalWidth, maxHeight, fill);
             int xOffset = 0;

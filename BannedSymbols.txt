@@ -1,0 +1,2 @@
+T:CsvHelper.CsvReader; You must not use CsvReader. Use The Acoustics.Shared.Csv.Read methods which properly construct the reader.
+T:CsvHelper.CsvWriter; You must not use CsvWriter. Use The Acoustics.Shared.Csv.Write methods which properly construct the writer.

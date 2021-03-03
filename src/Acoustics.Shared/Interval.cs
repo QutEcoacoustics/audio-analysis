@@ -11,6 +11,7 @@ namespace Acoustics.Shared
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
 
     public enum Topology : byte
     {
@@ -44,7 +45,7 @@ namespace Acoustics.Shared
     /// The type used to represent the points in this interval.
     /// </typeparam>
     public readonly struct Interval<T> : IEquatable<Interval<T>>, IComparable<Interval<T>>
-        where T : struct, IComparable<T>
+        where T : struct, IComparable<T>, IFormattable
     {
         public Interval(T minimum, T maximum)
         {
@@ -266,12 +267,15 @@ namespace Acoustics.Shared
         /// <returns>
         /// String representation.
         /// </returns>
-        public string ToString(bool suppressName)
+        public string ToString(bool suppressName, string tFormat = "R", CultureInfo culture = null)
         {
+            culture = culture ?? CultureInfo.InvariantCulture;
             var left = this.IsMinimumInclusive ? "[" : "(";
             var right = this.IsMaximumInclusive ? "]" : ")";
+            var min = this.Minimum.ToString(tFormat, culture);
+            var max = this.Maximum.ToString(tFormat, culture);
             var name = suppressName ? string.Empty : nameof(Interval<T>) + ": ";
-            return $"{name}{left}{this.Minimum}, {this.Maximum}{right}";
+            return $"{name}{left}{min}, {max}{right}";
         }
 
         public int CompareTo(Interval<T> other)
