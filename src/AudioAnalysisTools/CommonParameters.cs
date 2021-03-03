@@ -4,6 +4,7 @@
 
 namespace AnalysisPrograms.Recognizers.Base
 {
+    using AudioAnalysisTools.DSP;
     using TowseyLibrary;
 
     /// <summary>
@@ -81,5 +82,12 @@ namespace AnalysisPrograms.Recognizers.Base
         /// Units are decibels.
         /// </summary>
         public double?[] DecibelThresholds { get; set; }
+
+        /// <summary>
+        /// The type of noise reduction to use.
+        /// Defaults to <see cref="NoiseReductionType.Standard"/>.
+        /// </summary>
+        /// <value>One of the <see cref="NoiseReductionType"/> values.</value>
+        public NoiseReductionType? NoiseReductionType { get; set; }
     }
 }

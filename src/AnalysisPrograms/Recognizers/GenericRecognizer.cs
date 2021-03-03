@@ -193,7 +193,6 @@ namespace AnalysisPrograms.Recognizers
                     }
                 }
             }
-
             return results;
         }
 
@@ -461,7 +460,7 @@ namespace AnalysisPrograms.Recognizers
                 WindowStep = windowStep,
                 WindowOverlap = (windowSize - windowStep) / (double)windowSize,
                 WindowFunction = common.WindowFunction?.ToString(),
-                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionType = common.NoiseReductionType ?? NoiseReductionType.Standard,
                 NoiseReductionParameter = common.BgNoiseThreshold ?? 0.0,
             };
         }
