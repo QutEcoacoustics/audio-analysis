@@ -27,7 +27,7 @@ namespace AnalysisPrograms.Recognizers.Birds
 
         public override string Author => Bibliography.Anthony.LastName;
 
-        public override string SpeciesName => "Truskinger.CalyptorhynchusLathami";
+        public override string SpeciesName => "CalyptorhynchusLathami";
 
         public override string CommonName => "Glossy-black Cockatoo";
 
