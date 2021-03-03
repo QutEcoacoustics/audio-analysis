@@ -10,23 +10,92 @@ SegmentOverlap: 0
 
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recognizer and must have the current name.
+CommonParameters: &common_parameters
+      SpeciesName: Calyptorhynchus Lathami
+      FrameSize: 1024
+      FrameStep: 512
+      WindowFunction: HAMMING
+      NoiseReductionType: Modal
+      BgNoiseThreshold: 0.3
+
 Profiles:
-    BarkingOwlSyllable: !ForwardTrackParameters
-        SpeciesName: Ninox connivens
-        FrameSize: 1024
-        FrameStep: 256
-        WindowFunction: HANNING
+    Screech: !HarmonicParameters
+        <<: *common_parameters
 
         # min and max of the freq band to search
-        MinHertz: 220
-        MaxHertz: 1150
-        MinDuration: 0.15
-        MaxDuration: 0.18
+        MinHertz: 580
+        MaxHertz: 7000
+        MinDuration: 0.3
+        MaxDuration: 1.5
         # Scan the frequency band at these thresholds
         DecibelThresholds:
-            - 6.0
-            - 9.0
+            #- 0.5
+
+            #- 6.0
+            #- 12.0
+            - 15
+        #  Min & max Hertz gap between harmonics
+        MinFormantGap: 4000
+        MaxFormantGap: 6500
+        DctThreshold: 0.4
+        EventThreshold: 0
+    QuieterScreech: !HarmonicParameters
+        <<: *common_parameters
+
+        # min and max of the freq band to search
+        MinHertz: 2000
+        MaxHertz: 5500
+        MinDuration: 0.4
+        MaxDuration: 1.5
+        # Scan the frequency band at these thresholds
+        DecibelThresholds:
             - 12.0
+            # - 9.0
+            # - 12.0
+        #  Min & max Hertz gap between harmonics
+        MinFormantGap: 350
+        MaxFormantGap: 3000
+        DctThreshold: 0.4
+        EventThreshold: 0.0
+    MiddleScreech: !HarmonicParameters
+        <<: *common_parameters
+
+        # min and max of the freq band to search
+        MinHertz: 1500
+        MaxHertz: 7600
+        MinDuration: 0.4
+        MaxDuration: 1.5
+        # Scan the frequency band at these thresholds
+        DecibelThresholds:
+            - 12.0
+            # - 9.0
+            # - 12.0
+        #  Min & max Hertz gap between harmonics
+        MinFormantGap: 350
+        MaxFormantGap: 5000
+        DctThreshold: 0.4
+        EventThreshold: 0.0
+    # SuperFaintScreech: !HarmonicParameters
+    #     <<: *common_parameters
+
+    #     # min and max of the freq band to search
+    #     MinHertz: 2000
+    #     MaxHertz: 5000
+    #     MinDuration: 0.4
+    #     MaxDuration: 1.0
+    #     # Scan the frequency band at these thresholds
+    #     DecibelThresholds:
+    #         - 6.0
+    #         # - 9.0
+    #         # - 12.0
+    #     #  Min & max Hertz gap between harmonics
+    #     MinFormantGap: 350
+    #     MaxFormantGap: 3000
+    #     DctThreshold: 0.4
+    #     EventThreshold: 0.0
+
+
+
 
 #################### POST-PROCESSING of EVENTS ###################
 
@@ -38,25 +107,24 @@ PostProcessing:
 # # Step 4: Remove events that have excessive noise in their side-bands.
 
 #     # 1: Combine overlapping events
-#     CombineOverlappingEvents: true
+    CombineOverlappingEvents: true
 
-#     # 2: Combine possible syllable sequences
-#     SyllableSequence:
-#         CombinePossibleSyllableSequence: true
-#         SyllableStartDifference: 0.6
-#         SyllableHertzGap: 350
-#         FilterSyllableSequence: true
-#         SyllableMaxCount: 2
-#         ExpectedPeriod: 0.4
+    # 2: Combine possible syllable sequences
+    SyllableSequence:
+        SyllableStartDifference: 0.5
+        SyllableHertzGap: 350
+        FilterSyllableSequence: false
+        SyllableMaxCount: ~
+        ExpectedPeriod: ~
 
 #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
-#     #Duration:
-#         ExpectedDuration: 0.14
-#         DurationStandardDeviation: 0.01
+#     Duration:
+#         ExpectedDuration: 1.0
+#         DurationStandardDeviation: 0.3
 
-#     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
-#  #   Bandwidth:
-#         ExpectedBandwidth: 280
+# #     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
+#     Bandwidth:
+#         ExpectedBandwidth: 2800
 #         BandwidthStandardDeviation: 40
 
 #     # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
@@ -64,11 +132,12 @@ PostProcessing:
 #         LowerHertzBuffer: 150
 #         UpperHertzBuffer: 400
 #         MaxAverageSidebandDecibels: 3.0
+    RemoveTemporallyEnclosedEvents: true
 
 # Options to save results files
 # Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-SaveSonogramImages: WhenEventsDetected
+SaveSonogramImages: true
 
 # Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
