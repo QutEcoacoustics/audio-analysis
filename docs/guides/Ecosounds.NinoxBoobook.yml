@@ -1,5 +1,5 @@
 ---
-# This is a non-functional example used for docs. Please see the real config file for the Boobook recognizer.
+# This is a non-functional example used for documentation. Please see the real config file for the Boobook recognizer.
 # Boobook Owl = Towsey.NinoxBoobook
 # Resample rate must be 2 X the desired Nyquist
 ResampleRate: 22050
@@ -66,6 +66,10 @@ PostProcessing:
         #UpperSidebandWidth: 200
         MaxBackgroundDecibels: 12
         #MaxActivityDecibels: 12
+
+    # 6: In the case of sets of nested/enclosed events,
+    # filter/remove all but the outermost event.
+    RemoveTemporallyEnclosedEvents: true
 
 # Options to save results files
 # Available options for saving spectrograms: [Never | Always | WhenEventsDetected]

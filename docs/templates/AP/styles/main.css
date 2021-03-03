@@ -23,3 +23,11 @@ figure>figcaption {
     font-weight: bold;
     text-align: center;
 }
+
+aside {
+    border: 1px solid lightgray;
+    border-radius: 5px;
+    padding: 1em;
+    margin: 2em;
+    font-size: 90%;
+}
