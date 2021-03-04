@@ -78,7 +78,7 @@ PostProcessing:
         MaxActivityDecibels: null
 
     # 6: In the case of sets of nested/enclosed events, filter/remove all but the outermost event. 
-    RemoveTemporallyEnclosedEvents: true
+    RemoveEnclosedEvents: true
 
 
 # Various options to save results files

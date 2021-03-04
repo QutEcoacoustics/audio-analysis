@@ -154,18 +154,19 @@ namespace AnalysisPrograms.Recognizers
                 postEvents.AddRange(ppEvents);
             }
 
-            // Running profiles with multiple dB thresholds can produce enclosed or temporally nested (Russian doll) events.
-            // Remove all but the outermost event.
-            if (configuration.PostProcessing.RemoveTemporallyEnclosedEvents)
+            // Running profiles with multiple dB thresholds can produce enclosed/nested events.
+            // Remove all but the outermost events.
+            if (configuration.PostProcessing.RemoveEnclosedEvents)
             {
-                Log.Debug($"\nREMOVE EVENTS ENCLOSED BY LONGER EVENTS.");
+                Log.Debug($"\nREMOVE ENCLOSED EVENTS.");
                 Log.Debug($"Event count BEFORE removing enclosed events = {postEvents.Count}.");
                 results.NewEvents = CompositeEvent.RemoveEnclosedEvents(postEvents);
                 Log.Debug($"Event count AFTER  removing enclosed events = {postEvents.Count}.");
             }
             else
             {
-                Log.Debug($"\nEVENTS ENCLOSED BY LONGER EVENTS WERE NOT REMOVED.");
+                Log.Debug($"\nENCLOSED EVENTS WERE NOT REMOVED - {postEvents.Count} events returned.");
+                results.NewEvents = postEvents;
             }
 
             // Write out the events to log.
@@ -176,7 +177,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     counter++;
                     var spEvent = (SpectralEvent)ev;
-                    Log.Debug($"  Event[{counter}]: Start={spEvent.EventStartSeconds:f1}; Duration={spEvent.EventDurationSeconds:f2}; Bandwidth={spEvent.BandWidthHertz} Hz");
+                    Log.Debug($"  Event[{counter}]: Start={spEvent.EventStartSeconds:f1}; End={spEvent.EventEndSeconds:f1}; Duration={spEvent.EventDurationSeconds:f2}; Bandwidth={spEvent.BandWidthHertz} Hz");
                 }
             }
 

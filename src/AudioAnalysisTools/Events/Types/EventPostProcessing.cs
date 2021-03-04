@@ -181,7 +181,7 @@ namespace AudioAnalysisTools.Events.Types
             /// Russian doll events!
             /// Setting this boolean true removes all but the outermost of any set of encloseed events.
             /// </summary>
-            public bool RemoveTemporallyEnclosedEvents { get; set; }
+            public bool RemoveEnclosedEvents { get; set; }
         }
 
         /// <summary>
