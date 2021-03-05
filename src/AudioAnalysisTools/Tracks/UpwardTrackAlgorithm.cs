@@ -9,6 +9,7 @@ namespace AudioAnalysisTools.Tracks
     using System.Linq;
     using System.Text;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
@@ -71,8 +72,8 @@ namespace AudioAnalysisTools.Tracks
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(parameters.MinHertz.Value / binWidth);
             int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
-            var minBandwidthHertz = parameters.MinBandwidthHertz.Value;
-            var maxBandwidthHertz = parameters.MaxBandwidthHertz.Value;
+            var minBandwidthHertz = parameters.MinBandwidthHertz ?? throw new ArgumentNullException($"{nameof(UpwardTrackParameters.MinBandwidthHertz)} must be set. Check your config file?");
+            var maxBandwidthHertz = parameters.MaxBandwidthHertz ?? throw new ArgumentNullException($"{nameof(UpwardTrackParameters.MinBandwidthHertz)} must be set. Check your config file?");
 
             // Calculate the max score for normalisation purposes
             var maxScore = decibelThreshold * 5;

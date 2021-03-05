@@ -72,8 +72,11 @@ namespace AnalysisPrograms.Recognizers
             {
                 if (profile is CommonParameters c)
                 {
-                    c.MinHertz.NotNull(file);
-                    c.MaxHertz.NotNull(file);
+                    var checks = c.Validate(null).Where(v => v is not null);
+                    if (checks.Any())
+                    {
+                        throw new ConfigFileException(checks, file) { ProfileName = profileName };
+                    }
                 }
 
                 string algorithmName;

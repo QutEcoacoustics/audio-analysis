@@ -4,13 +4,16 @@
 
 namespace AnalysisPrograms.Recognizers.Base
 {
+    using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
+    using Acoustics.Shared.ConfigFile;
     using AudioAnalysisTools.DSP;
     using TowseyLibrary;
 
     /// <summary>
     /// Common parameters needed from a config file to detect components.
     /// </summary>
-    public abstract class CommonParameters
+    public abstract class CommonParameters : IValidatableObject
     {
         /// <summary>
         /// Gets or sets the name species name to give to a component.
@@ -44,7 +47,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// </summary>
         public double? BgNoiseThreshold { get; set; }
 
-        /// <summary>
+        /// <summary>snr
         /// Gets or sets the bottom bound of the rectangle. Units are Hertz.
         /// </summary>
         public int? MinHertz { get; set; }
@@ -89,5 +92,11 @@ namespace AnalysisPrograms.Recognizers.Base
         /// </summary>
         /// <value>One of the <see cref="NoiseReductionType"/> values.</value>
         public NoiseReductionType? NoiseReductionType { get; set; }
+
+        public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+                yield return this.MinHertz.ValidateNotNull(nameof(this.MinHertz));
+                yield return this.MaxHertz.ValidateNotNull(nameof(this.MaxHertz));
+        }
     }
 }

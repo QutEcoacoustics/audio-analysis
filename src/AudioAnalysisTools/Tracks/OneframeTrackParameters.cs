@@ -6,6 +6,7 @@ namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Linq;
     using Acoustics.Shared;
     using AudioAnalysisTools;
@@ -17,18 +18,8 @@ namespace AnalysisPrograms.Recognizers.Base
     /// Parameters needed from a config file to detect click components.
     /// </summary>
     [YamlTypeTag(typeof(OneframeTrackParameters))]
-    public class OneframeTrackParameters : CommonParameters
+    public class OneframeTrackParameters : MinAndMaxBandwidthParameters
     {
-        /// <summary>
-        /// Gets or sets the minimum bandwidth, units = Hertz.
-        /// </summary>
-        public int? MinBandwidthHertz { get; set; }
-
-        /// <summary>
-        /// Gets or sets maximum bandwidth, units = Hertz.
-        /// </summary>
-        public int? MaxBandwidthHertz { get; set; }
-
         /// <summary>
         /// MAY NOT WANT TO COMBINE CLICK EVENTS.
         /// Gets or sets a value indicating whether proximal similar clicks are to be combined.

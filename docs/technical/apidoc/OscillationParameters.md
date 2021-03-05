@@ -4,7 +4,10 @@ uid: AnalysisPrograms.Recognizers.Base.OscillationParameters
 
 ## Oscillation Event detection
 
-The algorithm to find oscillation events uses a `discrete cosine transform` or *DCT*. Setting the correct DCT for the target syllable requires additional parameters. Here is the `Profiles` declaration in the config file for the _flying fox_. It contains two profiles, the first for a vocalization and the second to detect the rhythmic sound of wing beats as a flying fox takes off or comes in to land.
+The algorithm to find oscillation events uses a `discrete cosine transform` or *DCT*. Setting the correct DCT for the
+target syllable requires additional parameters. Here is the `Profiles` declaration in the config file for the
+_flying fox_. It contains two profiles, the first for a vocalization and the second to detect the rhythmic sound of wing
+beats as a flying fox takes off or comes in to land.
 
 ```yml
 Profiles:
