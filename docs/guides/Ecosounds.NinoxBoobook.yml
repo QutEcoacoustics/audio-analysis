@@ -69,7 +69,7 @@ PostProcessing:
 
     # 6: In the case of sets of nested/enclosed events,
     # filter/remove all but the outermost event.
-    RemoveTemporallyEnclosedEvents: true
+    RemoveEnclosedEvents: true
 
 # Options to save results files
 # Available options for saving spectrograms: [Never | Always | WhenEventsDetected]

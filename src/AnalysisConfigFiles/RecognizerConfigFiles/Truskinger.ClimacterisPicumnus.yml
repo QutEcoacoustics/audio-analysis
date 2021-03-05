@@ -103,7 +103,7 @@ PostProcessing:
         LowerHertzBuffer: 150
         UpperHertzBuffer: 400
         MaxAverageSidebandDecibels: 3.0
-    RemoveTemporallyEnclosedEvents: true
+    RemoveEnclosedEvents: true
 
 # Options to save results files
 # Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
