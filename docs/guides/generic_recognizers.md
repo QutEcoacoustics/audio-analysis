@@ -248,10 +248,10 @@ the names of the algorithms (used to find those events) describe how the algorit
 
 | Acoustic Event | Algorithm name    | Parameters name              |
 |:--------------:|:-----------------:|:----------------------------:|
-| Shriek         | `Blob`            | `!BlobParameters`                      |
-| Whistle        | `HorizontalTrack` | `!HorizontalTrackParameters` |
+| Shriek         | `Blob`            | `!BlobParameters`            |
+| Whistle        | `OnebinTrack`     | `!OnebinTrackParameters`     |
 | Chirp          | `ForwardTrack`    | `!ForwardTrackParameters`    |
-| Whip           | `UpwardsTrack`    | `!UpwardsTrackParameters`    |
+| Whip           | `UpwardTrack`     | `!UpwardTrackParameters`     |
 | Click          | `VerticalTrack`   | `!VerticalTrackParameters`   |
 | Oscillation    | `Oscillation`     | `!OscillationParameters`     |
 | Harmonic       | `Harmonic`        | `!HarmonicParameters`        |
@@ -374,10 +374,10 @@ Some of these algorithms have extra parameters, some do not, but all do have the
 | I want to find a | I'll use this algorithm                                                                  |
 |------------------|------------------------------------------------------------------------------------------|
 | Shriek           | [!BlobParameters](xref:AnalysisPrograms.Recognizers.Base.BlobParameters)                 |
-| Whistle          | 🚧 !HorizontalTrackParameters 🚧                                                        |
+| Whistle          | 🚧 !OnebinTrackAlgorithm 🚧                                                             |
 | Chirp            | [!ForwardTrackParameters](xref:AnalysisPrograms.Recognizers.Base.ForwardTrackParameters) |
-| Whip             | 🚧!UpwardsTrackParameters 🚧                                                            |
-| Click            | 🚧 !VerticalTrackParameters 🚧                                                          |
+| Whip             | 🚧!UpwardTrackParameters 🚧                                                             |
+| Click            | 🚧 !OneframeTrackParameters 🚧                                                          |
 | Oscillation      | [!OscillationParameters](xref:AnalysisPrograms.Recognizers.Base.OscillationParameters)   |
 | Harmonic         | [!HarmonicParameters](xref:AnalysisPrograms.Recognizers.Base.HarmonicParameters)         |
 

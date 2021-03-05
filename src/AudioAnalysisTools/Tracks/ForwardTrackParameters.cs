@@ -9,8 +9,8 @@ namespace AnalysisPrograms.Recognizers.Base
     using Acoustics.Shared;
 
     /// <summary>
-    /// Parameters needed from a config file to detect fowards spectral peak tracks.
-    /// A FowardTrack sounds like a fluctuating tone or technically, a chirp. Each track point advances one time step. Points may move up or down by at most two frequency bins.
+    /// Parameters needed from a config file to detect forwards spectral peak tracks.
+    /// A ForwardTrack sounds like a fluctuating tone or technically, a chirp. Each track point advances one time step. Points may move up or down by at most two frequency bins.
     /// </summary>
     [YamlTypeTag(typeof(ForwardTrackParameters))]
     public class ForwardTrackParameters : CommonParameters

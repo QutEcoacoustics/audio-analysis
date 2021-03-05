@@ -10,15 +10,31 @@
 namespace Acoustics.Shared.ConfigFile
 {
     using System;
+    using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.IO;
+    using System.Linq;
+    using System.Runtime.Serialization;
 
     public class ConfigFileException : Exception
     {
-        public const string Prelude = "Configuration exception: ";
+        public const string Prelude = "Configuration exception";
 
         public ConfigFileException(string message)
             : base(message)
         {
+        }
+
+        public ConfigFileException(IEnumerable<ValidationResult> validations, string file)
+            : base(FormatValidations(validations))
+        {
+            this.File = file;
+        }
+
+        public ConfigFileException(IEnumerable<ValidationResult> validations, FileInfo file)
+            : base(FormatValidations(validations))
+        {
+            this.File = file.FullName;
         }
 
         public ConfigFileException(string message, string file)
@@ -45,6 +61,21 @@ namespace Acoustics.Shared.ConfigFile
 
         public string File { get; set; }
 
-        public override string Message => Prelude + base.Message;
+        public string ProfileName { get; init; }
+
+        public override string Message => Prelude + this.ProfileName?.Prepend(" in profile ") + ":" + base.Message + "\nin config file: " + (this.File ?? "<unknown>");
+
+        private static string FormatValidations(IEnumerable<ValidationResult> validations)
+        {
+            var filtered = validations?.Where(v => v is not null);
+            if (filtered.IsNullOrEmpty())
+            {
+                throw new ArgumentException("There are no errors in the validation list");
+            }
+
+            return filtered
+                .Select(x => x.MemberNames.Join(",") + ": " + x.ErrorMessage)
+                .FormatList();
+        }
     }
 }
