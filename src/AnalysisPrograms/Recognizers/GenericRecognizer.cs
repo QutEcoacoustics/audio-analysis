@@ -144,14 +144,15 @@ namespace AnalysisPrograms.Recognizers
 
             // ############################### PRE-PROCESSING ###############################
             // may at some future date do pre-processing
-
             // ############################### PROCESSING: DETECTION OF GENERIC EVENTS ###############################
             var results = RunProfiles(audioRecording, configuration, segmentStartOffset);
 
             // ############################### POST-PROCESSING OF GENERIC EVENTS ###############################
 
             var postprocessingConfig = configuration.PostProcessing;
-            if (postprocessingConfig is not null) {
+
+            if (postprocessingConfig is not null)
+            {
                 var postEvents = new List<EventCommon>();
                 var groups = results.NewEvents.GroupBy(x => x.DecibelDetectionThreshold);
 
