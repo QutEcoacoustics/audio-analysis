@@ -11,22 +11,61 @@ SegmentOverlap: 0
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recognizer and must have the current name.
 Profiles:
-    BarkingOwlSyllable: !ForwardTrackParameters
-        SpeciesName: Ninox connivens
+    Whip: !UpwardTrackParameters
+        SpeciesName: Climacteris picumnus
         FrameSize: 1024
         FrameStep: 256
         WindowFunction: HANNING
 
         # min and max of the freq band to search
-        MinHertz: 220
-        MaxHertz: 1150
-        MinDuration: 0.15
-        MaxDuration: 0.18
+        MinHertz: 2500
+        MaxHertz: 4400
+        MinDuration: 0.06
+        MaxDuration: 0.12
+        MinBandwidthHertz: 500
+        MaxBandwidthHertz: 1000
+
         # Scan the frequency band at these thresholds
         DecibelThresholds:
-            - 6.0
-            - 9.0
-            - 12.0
+            - 4.0
+            # - 9.0
+            # - 12.0
+    Tail: !OnebinTrackParameters
+        SpeciesName: Climacteris picumnus
+        FrameSize: 256
+        FrameStep: 64
+        WindowFunction: HAMMING
+        NoiseReductionType: Modal
+        BgNoiseThreshold: 0.3
+
+        # min and max of the freq band to search
+        MinHertz: 4100
+        MaxHertz: 4500
+        MinDuration: 0.01
+        MaxDuration: 0.8
+        # Scan the frequency band at these thresholds
+        DecibelThresholds:
+            - 4.0
+            # - 9.0
+            # - 12.0
+    Prelude: !UpwardTrackParameters
+        SpeciesName: Climacteris picumnus
+        FrameSize: 1024
+        FrameStep: 256
+        WindowFunction: HANNING
+
+        # min and max of the freq band to search
+        MinHertz: 4600
+        MaxHertz: 5600
+        MinDuration: 0.0
+        MaxDuration: 1
+        MinBandwidthHertz: 300
+        MaxBandwidthHertz: 2000
+        # Scan the frequency band at these thresholds
+        DecibelThresholds:
+            - 4.0
+            # - 9.0
+            # - 12.0
 
 #################### POST-PROCESSING of EVENTS ###################
 
@@ -38,32 +77,33 @@ PostProcessing:
 # # Step 4: Remove events that have excessive noise in their side-bands.
 
 #     # 1: Combine overlapping events
-#     CombineOverlappingEvents: true
+    CombineOverlappingEvents: false
 
 #     # 2: Combine possible syllable sequences
-#     SyllableSequence:
-#         CombinePossibleSyllableSequence: true
-#         SyllableStartDifference: 0.6
-#         SyllableHertzGap: 350
-#         FilterSyllableSequence: true
-#         SyllableMaxCount: 2
-#         ExpectedPeriod: 0.4
+    SyllableSequence:
+        CombinePossibleSyllableSequence: true
+        SyllableStartDifference: 0.3
+        SyllableHertzGap: 2000
+        # FilterSyllableSequence: true
+        # SyllableMaxCount: 2
+        ExpectedPeriod: 0.150
 
 #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
-#     #Duration:
-#         ExpectedDuration: 0.14
-#         DurationStandardDeviation: 0.01
+    # Duration:
+    #     ExpectedDuration: 0.8
+    #     DurationStandardDeviation: 0.16
 
 #     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
-#  #   Bandwidth:
-#         ExpectedBandwidth: 280
-#         BandwidthStandardDeviation: 40
+    Bandwidth:
+        ExpectedBandwidth: 2500
+        BandwidthStandardDeviation: 800
 
 #     # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
-#     SidebandActivity:
-#         LowerHertzBuffer: 150
-#         UpperHertzBuffer: 400
-#         MaxAverageSidebandDecibels: 3.0
+    SidebandActivity:
+        LowerHertzBuffer: 150
+        UpperHertzBuffer: 400
+        MaxAverageSidebandDecibels: 3.0
+    RemoveTemporallyEnclosedEvents: true
 
 # Options to save results files
 # Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
