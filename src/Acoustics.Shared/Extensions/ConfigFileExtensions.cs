@@ -29,5 +29,27 @@ namespace Acoustics.Shared.ConfigFile
 
             return ValidationResult.Success;
         }
+
+        public static ValidationResult ValidateNotEmpty<T>(this T[] value, string name, string message = "is an empty list - we need at least one value in the config file")
+        {
+            if (value?.Length == 0)
+            {
+                return new ValidationResult(message, name.Wrap());
+            }
+
+            return ValidationResult.Success;
+        }
+
+        public static ValidationResult ValidateLessThan<T>(this object _, T? a, string nameA, T? b, string nameB, string message = "{0} is not less than {1} - adjust the values in the config file")
+            where T : struct, IComparable<T>
+        {
+            if (a.HasValue && b.HasValue && a.Value.CompareTo(b.Value) != -1)
+            {
+                return new ValidationResult(message.Format(nameA, nameB), new[] { nameA, nameB });
+            }
+
+            return ValidationResult.Success;
+        }
     }
+
 }

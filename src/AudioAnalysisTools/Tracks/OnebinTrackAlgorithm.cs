@@ -7,16 +7,20 @@ namespace AudioAnalysisTools.Tracks
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using Acoustics.Shared;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
+    using log4net;
     using TowseyLibrary;
     using TrackType = AudioAnalysisTools.Events.Tracks.TrackType;
 
     public static class OnebinTrackAlgorithm
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         public static (List<EventCommon> Events, List<Plot> DecibelPlots) GetOnebinTracks(
             SpectrogramStandard spectrogram,
             OnebinTrackParameters parameters,
@@ -50,6 +54,7 @@ namespace AudioAnalysisTools.Tracks
         /// </summary>
         /// <param name="sonogram">The spectrogram to be searched.</param>
         /// <returns>A list of acoustic events containing whistle tracks.</returns>
+
         public static (List<EventCommon> ListOfevents, double[] CombinedIntensityArray) GetOnebinTracks(
             SpectrogramStandard sonogram,
             OnebinTrackParameters parameters,

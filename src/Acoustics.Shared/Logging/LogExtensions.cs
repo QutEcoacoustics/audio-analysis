@@ -178,5 +178,18 @@ namespace log4net
         {
             log.Logger.Log(null, Level.Trace, message, exception);
         }
+
+        public static T PassThrough<T>(this ILog log, T value, Level level = null, string message = "value")
+        {
+            log.Logger.Log(null, level ?? Level.Debug, $"{message}: {value}", null);
+            return value;
+        }
+
+        public static bool Choice(this ILog log, bool condition, string message, string trueMessage = "yes", string falseMessage = "no", Level level = null)
+        {
+            var formatted = condition ? trueMessage : falseMessage;
+            log.Logger.Log(null, level ?? Level.Debug, $"{message}: {formatted}", null);
+            return condition;
+        }
     }
 }

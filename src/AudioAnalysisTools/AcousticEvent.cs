@@ -779,8 +779,8 @@ namespace AudioAnalysisTools
             int startFrame = 0;
             int endFrame = 0;
 
-            // for all frames
-            for (int i = 1; i < count - minFrames; i++)
+            // for all frames - except the first and last frames
+            for (int i = 1; i < Math.Min(count - minFrames, count - 1); i++)
             {
                 // skip if value is below threshold
                 if (values[i] < thresholdValue)

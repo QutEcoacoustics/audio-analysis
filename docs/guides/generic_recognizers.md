@@ -479,7 +479,7 @@ For details on configuring this step see <xref:AudioAnalysisTools.Events.Types.E
 #### Remove events that are enclosed by other events
 
 Running profiles with multiple decibel thresholds can produce sets of enclosed (wholly overlapped by another event) events
-that are actually the result of detecting the same acoustic syllable. 
+that are actually the result of detecting the same acoustic syllable.
 This final (optional) post-processing step is to
 remove all but the outermost event of any nested set. Enable this option by setting the parameter `RemoveEnclosedEvents` to `true`.
 You would typically do this only after reviewing the output spectrograms to confirm that you have sets of overlapping events.
@@ -490,7 +490,7 @@ You would typically do this only after reviewing the output spectrograms to conf
 
 ##### How `RemoveEnclosedEvents` is applied
 
-Suppose you have three decibel thresholds (6, 9 and 12 dB is a typical set of values) 
+Suppose you have three decibel thresholds (6, 9 and 12 dB is a typical set of values)
 in each of two profiles.
 There will be three rounds of post-processing:
 
@@ -498,7 +498,7 @@ There will be three rounds of post-processing:
 2. Next, all events detected at the  9 dB threshold will be passed through the same post-processing steps.
 3. Next, all events detected at the 12 dB threshold will be passed through the same post-processing steps.
 
-The final option (step 6) is to collect all events emerging from all previous rounds of post-processing and to remove those that are enclosed by another event. 
+The final option (step 6) is to collect all events emerging from all previous rounds of post-processing and to remove those that are enclosed by another event.
 
 </aside>
 

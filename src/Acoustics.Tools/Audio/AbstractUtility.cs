@@ -376,11 +376,11 @@ namespace Acoustics.Tools.Audio
                 stopwatch.Stop();
 
                 this.Log.DebugFormat(
-                    "Executed {0} in working directory {1}. Took {2} ({3}ms). Exit code: {4}",
+                    "Executed {0} in working directory {1}. Took {2} ({3} s). Exit code: {4}",
                     processRunner.ExecutableFile.Name,
                     workingDirectory,
                     stopwatch.Elapsed.Humanise(),
-                    stopwatch.Elapsed.TotalMilliseconds,
+                    stopwatch.Elapsed.TotalSeconds,
                     processRunner.ExitCode);
 
                 this.Log.Verbose(processRunner.BuildLogOutput());

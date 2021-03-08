@@ -3,7 +3,7 @@ uid: AudioAnalysisTools.Events.Types.EventPostProcessing.SyllableSequenceConfig
 ---
 
 
-Set `CombinePossibleSyllableSequence` true where you want to combine possible syllable sequences. A typical example is
+Use `SyllableSequence`  where you want to combine possible syllable sequences. A typical example is
 a sequence of chirps in a honeyeater call.
 
 `SyllableStartDifference` and `SyllableHertzGap` set the allowed tolerances when combining events into sequences
