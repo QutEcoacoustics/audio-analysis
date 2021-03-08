@@ -305,8 +305,13 @@ namespace System
 
         public static string Join(this IEnumerable items, string delimiter = " ") => Join(items.Cast<object>(), delimiter);
 
-        public static string Join<T>(this IEnumerable<T> items, string delimiter = " ")
+        public static string Join<T>(this IEnumerable<T> items, string delimiter = " ", string prefix = "", string suffix = "")
         {
+            if (items is null)
+            {
+                return string.Empty;
+            }
+
             var result = new StringBuilder();
             foreach (var item in items)
             {
@@ -324,6 +329,11 @@ namespace System
         public static string JoinFormatted<T>(this IEnumerable<T> items, string formatString, string delimiter = " ")
             where T : IFormattable
         {
+            if (items?.Any() != true)
+            {
+                return string.Empty;
+            }
+
             var result = new StringBuilder();
             foreach (var item in items)
             {

@@ -23,6 +23,8 @@ namespace Acoustics.Shared
             {
                 Formatting = Formatting.Indented,
             };
+
+            Serializer.Converters.Add(new IntervalConverter());
         }
 
         public static JsonSerializer Serializer { get; }
@@ -112,6 +114,25 @@ namespace Acoustics.Shared
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        public class IntervalConverter : JsonConverter
+        {
+            public override bool CanConvert(Type objectType)
+            {
+                return objectType == typeof(Interval<double>);
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                var interval = (Interval<double>)value;
+                writer.WriteValue(interval.ToString(true, "F3"));
             }
         }
     }

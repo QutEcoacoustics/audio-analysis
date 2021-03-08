@@ -5,6 +5,10 @@
 namespace AnalysisPrograms.Recognizers.Base
 {
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
+    using MoreLinq;
+    using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
 
     /// <summary>
     /// Parameters needed from a config file to detect blob components.
@@ -21,6 +25,16 @@ namespace AnalysisPrograms.Recognizers.Base
         {
             this.MinHertz = 800;
             this.MaxHertz = 8000;
+        }
+
+        public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            return base
+                .Validate(validationContext)
+                .Append(
+                    this.BottomHertzBuffer.ValidateNotNull(nameof(this.BottomHertzBuffer)))
+                .Append(
+                    this.TopHertzBuffer.ValidateNotNull(nameof(this.TopHertzBuffer)));
         }
     }
 }

@@ -95,8 +95,11 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-                yield return this.MinHertz.ValidateNotNull(nameof(this.MinHertz));
-                yield return this.MaxHertz.ValidateNotNull(nameof(this.MaxHertz));
+            yield return this.MinHertz.ValidateNotNull(nameof(this.MinHertz));
+            yield return this.MaxHertz.ValidateNotNull(nameof(this.MaxHertz));
+            yield return this.ValidateLessThan(this.MinHertz, nameof(this.MinHertz), this.MaxHertz, nameof(this.MaxHertz));
+            yield return this.DecibelThresholds.ValidateNotNull(nameof(this.DecibelThresholds));
+            yield return this.DecibelThresholds.ValidateNotEmpty(nameof(this.DecibelThresholds));
         }
     }
 }
