@@ -29,7 +29,6 @@ namespace AudioAnalysisTools.Events.Types
         public static List<EventCommon> PostProcessingOfSpectralEvents(
             List<EventCommon> newEvents,
             PostProcessingConfig postprocessingConfig,
-            double decibelThreshold,
             BaseSonogram spectrogram,
             TimeSpan segmentStartOffset)
         {
@@ -40,8 +39,7 @@ namespace AudioAnalysisTools.Events.Types
             // Step 4: Remove events whose bandwidth is too small or large.
             // Step 5: Remove events that have excessive noise in their side-bands.
 
-            Log.Debug($"\nBEFORE post-processing.");
-            Log.Debug($"TOTAL EVENTS detected by profiles at {decibelThreshold:F0} dB threshold = {newEvents.Count}");
+            Log.DebugFormat($"\nBEFORE post-processing, event count: {0}.", newEvents.Count);
 
             // 1: Combine overlapping events.
             // This will be necessary where many small events have been found - possibly because the dB threshold is set low.
@@ -81,14 +79,23 @@ namespace AudioAnalysisTools.Events.Types
                     Log.Debug($" Expected Syllable Sequence: max={maxComponentCount},  Period: av={periodAv}s, sd={periodSd:F3} min={minPeriod:F3}s, max={maxPeriod:F3}s");
                     if (minPeriod <= 0.0)
                     {
-                        Log.Error($"Expected period={periodAv};sd={periodSd:F3} => min={minPeriod:F3}s;max={maxPeriod:F3}",
+                        Log.Error(
+                            $"Expected period={periodAv};sd={periodSd:F3} => min={minPeriod:F3}s;max={maxPeriod:F3}",
                             new Exception("FATAL ERROR: This combination of values is invalid => negative minimum value."));
-                        System.Environment.Exit(1);
                     }
 
                     newEvents = EventFilters.FilterEventsOnSyllableCountAndPeriodicity(newEvents, maxComponentCount, periodAv, periodSd);
                     Log.Debug($" Event count after filtering on periodicity = {newEvents.Count}");
                 }
+            }
+
+            if (Log.Choice(postprocessingConfig.CombineVerticalSyllables is not null, "Combine syllables vertically?"))
+            {
+                newEvents = CompositeEvent.CombineVerticalEvents(
+                    newEvents.Cast<SpectralEvent>().ToList(),
+                    postprocessingConfig.CombineVerticalSyllables.MaxDifferenceSeconds.Seconds(),
+                    (int)postprocessingConfig.CombineVerticalSyllables.MaxGapHertz);
+                Log.Debug($" Event count after combining vertical events = {newEvents.Count}");
             }
 
             // 3: Filter the events for time duration (seconds)
@@ -161,6 +168,14 @@ namespace AudioAnalysisTools.Events.Types
             public SyllableSequenceConfig SyllableSequence { get; set; }
 
             /// <summary>
+            /// Gets or sets the parameters required to combine syllables vertically.
+            /// </summary>
+            /// <remarks>
+            /// Useful for when you have two different profiles for detecting a lower and upper portion of an event.
+            /// </remarks>
+            public SyllableStackConfig CombineVerticalSyllables { get; set; }
+
+            /// <summary>
             /// Gets or sets the parameters required to filter events on their duration.
             /// </summary>
             public DurationConfig Duration { get; set; }
@@ -182,6 +197,16 @@ namespace AudioAnalysisTools.Events.Types
             /// Setting this boolean true removes all but the outermost of any set of encloseed events.
             /// </summary>
             public bool RemoveEnclosedEvents { get; set; }
+
+            /// <summary>
+            /// If true (the default) post-processing of events will be done in groups based on their decibel threshold detection value.
+            /// For example, all events at 3dB will be post-processed seperately from all events at 6dB.
+            /// If false will process ebents as if they were all detected at the same decibel threshold.
+            /// </summary>
+            /// <value>
+            /// <c>true</c> will enable grouping, <c>false</c> will disable grouping. Defaults to <c>true</c>.
+            /// </value>
+            public bool? PostProcessInDecibelGroups { get; set; }
         }
 
         /// <summary>
@@ -263,11 +288,6 @@ namespace AudioAnalysisTools.Events.Types
         {
 
             /// <summary>
-            /// Gets or sets a value indicating Whether or not to combine events that constitute a sequence of the same strophe.
-            /// </summary>
-            public bool CombinePossibleSyllableSequence { get; set; }
-
-            /// <summary>
             /// Gets or sets a value indicating the maximum allowable start time gap (seconds) between events within the same strophe.
             /// The gap between successive syllables is the "period" of the sequence.
             /// This value is used only where CombinePossibleSyllableSequence = true.
@@ -317,6 +337,27 @@ namespace AudioAnalysisTools.Events.Types
             {
                 get => (this.SyllableStartDifference - this.ExpectedPeriod) / 3;
             }
+        }
+
+        /// <summary>
+        /// These parameters define the limits for combining stacked events - that is, events that are above or
+        /// below each other with some spectral gap between them.
+        /// </summary>
+        public class SyllableStackConfig
+        {
+            /// <summary>
+            /// The maximum allowed gap between the top of the lower event and the bottom of the higher event.
+            /// Any events that are closer than this gap will be combined.
+            /// </summary>
+            /// <value>The allowable gap in Hertz.</value>
+            public double MaxGapHertz {get; set; }
+
+            /// <summary>
+            /// Controls how much variance is allowed in the temporal bounds of the event.
+            /// If the events are part of the same large event, then they should start and end at the same time.
+            /// </summary>
+            /// <value>The allowable difference in seconds</value>
+            public double MaxDifferenceSeconds {get; set; }
         }
     }
 }

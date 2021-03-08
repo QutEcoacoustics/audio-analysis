@@ -154,27 +154,39 @@ namespace AnalysisPrograms.Recognizers
             if (postprocessingConfig is not null)
             {
                 var postEvents = new List<EventCommon>();
-                var groups = results.NewEvents.GroupBy(x => x.DecibelDetectionThreshold);
 
-                foreach (var group in groups)
+                if (Log.Choice(postprocessingConfig.PostProcessInDecibelGroups ?? true, "Post-processing in decibel groups?"))
                 {
-                    var key = group.Key;
-                    List<EventCommon> events = group.ToList<EventCommon>();
-                    var ppEvents = EventPostProcessing.PostProcessingOfSpectralEvents(
-                        events,
+                    foreach (var group in results.NewEvents.GroupBy(x => x.DecibelDetectionThreshold))
+                    {
+                        var decibelThreshold = group.Key;
+                        var events = group.ToList();
+
+                        Log.Debug($"TOTAL EVENTS detected by profiles at {decibelThreshold:F0} dB threshold = {events.Count}");
+
+                        var ppEvents = PostProcessingOfSpectralEvents(
+                            events,
+                            postprocessingConfig,
+                            results.Sonogram,
+                            segmentStartOffset);
+
+                        postEvents.AddRange(ppEvents);
+                    }
+                }
+                else
+                {
+                    postEvents = PostProcessingOfSpectralEvents(
+                        results.NewEvents,
                         postprocessingConfig,
-                        key.Value,
                         results.Sonogram,
                         segmentStartOffset);
-
-                    postEvents.AddRange(ppEvents);
                 }
 
                 // Running profiles with multiple dB thresholds can produce enclosed/nested events.
                 // Remove all but the outermost events.
                 if (configuration.PostProcessing.RemoveEnclosedEvents)
                 {
-                    Log.Debug($"\nREMOVE ENCLOSED EVENTS.");
+                    Log.Debug($"\nREMOVE EVENTS ENCLOSED BY OTHER EVENTS.");
                     Log.Debug($"Event count BEFORE removing enclosed events = {postEvents.Count}.");
                     results.NewEvents = CompositeEvent.RemoveEnclosedEvents(postEvents);
                     Log.Debug($"Event count AFTER  removing enclosed events = {postEvents.Count}.");
@@ -197,6 +209,7 @@ namespace AnalysisPrograms.Recognizers
                     }
                 }
             }
+
             return results;
         }
 
