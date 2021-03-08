@@ -1,6 +1,6 @@
 ---
 
-# Barking Owl = Truskinger.NinoxConnivens
+# Bell Miner = Truskinger.ManorinaMelanophrys
 # Resample rate must be 2 X the desired Nyquist
 #ResampleRate: 22050
 # SegmentDuration: units=seconds;
@@ -8,25 +8,127 @@ SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
-# Each of these profiles will be analyzed
-# This profile is required for the species-specific recognizer and must have the current name.
-Profiles:
-    BarkingOwlSyllable: !ForwardTrackParameters
-        SpeciesName: Ninox connivens
-        FrameSize: 1024
-        FrameStep: 256
-        WindowFunction: HANNING
 
+# target frequency: 2825 Hz
+# with window of 2048, each bin targets 10.7 Hz, each frame is 0.092 s
+# with window of 1024, each bin targets 21.5 Hz, each from is 0.185 s
+# Except from a spectrum analysis (2048 window)
+# 2756.250000	-84.011116
+# 2767.016602	-74.373528
+# 2777.783203	-71.081131 <-- other signal
+# 2788.549805	-77.278343 <-- trough
+# 2799.316406	-66.821739
+# 2810.083008	-56.514599
+# 2820.849609	-51.399525 <-- peak bin
+# 2831.616211	-52.278667
+# 2842.382813	-60.248814
+# 2853.149414	-64.970131
+# 2863.916016	-75.771622
+# 2874.682617	-80.658485
+# 2885.449219	-80.001793
+# 2896.215820	-80.042725
+# 2906.982422	-84.098389 <-- trough
+# 2917.749023	-79.858597 <-- other signal
+# 2928.515625	-75.660385
+# 2939.282227	-74.956184
+# Sample stats from a training file (duration):
+# Count             : 46
+# Average           : 0.0906254310526832
+# Sum               : 4.16876982842343
+# Maximum           : 0.223140174813855
+# Minimum           : 0.0313790870831987
+# StandardDeviation : 0.0334863473986165
+#
+# Sample stats from a training file (bandwidth):
+# Count             : 46
+#  Average           : 774.869565217391
+#  Sum               : 35644
+#  Maximum           : 1427
+#  Minimum           : 492
+#  StandardDeviation : 223.636074280977
+#
+# Sample stats from a training file (middle frequency):
+# Count             : 46
+# Average           : 2976.10869565217
+# Sum               : 136901
+# Maximum           : 3325.5
+# Minimum           : 2818.5
+# StandardDeviation : 96.6057804253669
+#
+# These calls seem to be tri-modal. They're very narrow and move around by less than 100 Hz
+CommonParameters: &common_parameters
+    SpeciesName: Manorina melanophrys
+    FrameSize: 4096
+    FrameStep: 2048
+    WindowFunction: HANNING
+    NoiseReductionType: Standard
+    BgNoiseThreshold: 3
+    MinDuration: 0.03
+    MaxDuration: 0.35
+    BottomHertzBuffer: 11
+    TopHertzBuffer: 11
+
+    # Scan the frequency band at these thresholds
+    DecibelThresholds:
+        - 2.5
+        #- 3.0
+        #- 6.0
+        # - 7.0
+        # - 8.0
+
+Profiles:
+    # Bell1: !BlobParameters
+    #     <<: *common_parameters
+    #     # min and max of the freq band to search
+    #     MinHertz: 2700
+    #     MaxHertz: 2800
+    Bell2: !BlobParameters
+        <<: *common_parameters
         # min and max of the freq band to search
-        MinHertz: 220
-        MaxHertz: 1150
-        MinDuration: 0.15
-        MaxDuration: 0.18
-        # Scan the frequency band at these thresholds
-        DecibelThresholds:
-            - 6.0
-            - 9.0
-            - 12.0
+        MinHertz: 2800
+        MaxHertz: 2850
+    Bell3: !BlobParameters
+        <<: *common_parameters
+        # min and max of the freq band to search
+        MinHertz: 2850
+        MaxHertz: 2900
+    Bell4: !BlobParameters
+        <<: *common_parameters
+        # min and max of the freq band to search
+        MinHertz: 2900
+        MaxHertz: 2950
+    Bell5: !BlobParameters
+        <<: *common_parameters
+        # min and max of the freq band to search
+        MinHertz: 2950
+        MaxHertz: 3000
+    BellUpper2: !BlobParameters
+        <<: *common_parameters
+        # min and max of the freq band to search
+        MinHertz: 8150
+        MaxHertz: 8500
+    BellUpper3: !BlobParameters
+        <<: *common_parameters
+        # min and max of the freq band to search
+        MinHertz: 8200
+        MaxHertz: 8500
+    BellUpper3a: !BlobParameters
+        <<: *common_parameters
+        # min and max of the freq band to search
+        MinHertz: 8400
+        MaxHertz: 8700
+    BellUpper4: !BlobParameters
+        <<: *common_parameters
+        # min and max of the freq band to search
+        MinHertz: 8450
+        MaxHertz: 9100
+    BellUpper5: !BlobParameters
+        <<: *common_parameters
+        # min and max of the freq band to search
+        MinHertz: 8900
+        MaxHertz: 9200
+
+
 
 #################### POST-PROCESSING of EVENTS ###################
 
@@ -48,32 +150,33 @@ PostProcessing:
 #         FilterSyllableSequence: true
 #         SyllableMaxCount: 2
 #         ExpectedPeriod: 0.4
+    CombineVerticalSyllables:
+        MaxGapHertz: 7000
+        MaxDifferenceSeconds: 0.2
+# #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
+# #     #Duration:
+# #         ExpectedDuration: 0.14
+# #         DurationStandardDeviation: 0.01
 
-#     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
-#     #Duration:
-#         ExpectedDuration: 0.14
-#         DurationStandardDeviation: 0.01
-
-#     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
-#  #   Bandwidth:
-#         ExpectedBandwidth: 280
-#         BandwidthStandardDeviation: 40
+# #     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
+    Bandwidth:
+        ExpectedBandwidth: 6500
+        BandwidthStandardDeviation: 250
 
 #     # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
 #     SidebandActivity:
 #         LowerHertzBuffer: 150
 #         UpperHertzBuffer: 400
 #         MaxAverageSidebandDecibels: 3.0
+    #RemoveEnclosedEvents: true
 
 # Options to save results files
 # Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-SaveSonogramImages: WhenEventsDetected
+SaveSonogramImages: Always
 
 # Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-
-
 
 ...
