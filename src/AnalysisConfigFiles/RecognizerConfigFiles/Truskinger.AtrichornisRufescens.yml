@@ -8,73 +8,101 @@ SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
+CommonParameters: &common_parameters
+      SpeciesName: Atrichornis rufescens
+      FrameSize: 1024
+      FrameStep: 512
+      WindowFunction: HAMMING
+      NoiseReductionType: Modal
+      BgNoiseThreshold: 0.2
+
+      # Scan the frequency band at these thresholds
+      DecibelThresholds:
+          - 3
+          - 6
+          - 9
+
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recognizer and must have the current name.
 Profiles:
-    # Whip: !UpwardTrackParameters
-    #     SpeciesName: Atrichornis rufescens
-    #     FrameSize: 1024
-    #     FrameStep: 128
-    #     WindowFunction: HAMMING
-    #     NoiseReductionType: Binary
-    #     BgNoiseThreshold: 3
+    LowerWhip: !BlobParameters
+        <<: *common_parameters
 
+        # min and max of the freq band to search
+        MinHertz: 2000
+        MaxHertz: 4400
+        MinDuration: 0.2
+        MaxDuration: 0.3
+        BottomHertzBuffer: 300
+        TopHertzBuffer: 0
+
+    LowerWhip2: !BlobParameters
+        <<: *common_parameters
+
+        # min and max of the freq band to search
+        MinHertz: 2800
+        MaxHertz: 4400
+        MinDuration: 0.2
+        MaxDuration: 0.4
+        BottomHertzBuffer: 300
+        TopHertzBuffer: 0
+
+    UpperWhip: !BlobParameters
+        <<: *common_parameters
+
+        # min and max of the freq band to search
+        MinHertz: 4600
+        MaxHertz: 7600
+        BottomHertzBuffer: 0
+        TopHertzBuffer: 0
+        MinDuration: 0.20
+        MaxDuration: 0.3
+    # MiddleWhip: !BlobParameters
+    #     <<: *common_parameters
 
     #     # min and max of the freq band to search
-    #     MinHertz: 2000
-    #     MaxHertz: 7600
-    #     MinBandwidthHertz: 500
-    #     MaxBandwidthHertz: 6000
-
-    #     # Scan the frequency band at these thresholds
-    #     DecibelThresholds:
-    #         - 0.5
-    Whip2: !AedParameters
-        IntensityThreshold: 8
-        SmallAreaThreshold: 500
-        BandpassMinimum: 2000
-        BandpassMaximum: 7600
-        NoiseReductionType: Standard
-        NoiseBgThreshold: 10
-        IncludeHitElementsInOutput: true
-
-
-#################### POST-PROCESSING of EVENTS ###################
+    #     MinHertz: 3800
+    #     MaxHertz: 6200
+    #     BottomHertzBuffer: 0
+    #     TopHertzBuffer: 0
+    #     MinDuration: 0.20
+    #     MaxDuration: 0.3
 
 PostProcessing:
-# # The following generic post-processing steps are determined by config settings.
-# # Step 1: Combine overlapping events - events derived from all profiles.
-# # Step 2: Combine possible syllable sequences and filter on excess syllable count.
-# # Step 3: Remove events whose bandwidth is too small or large.
-# # Step 4: Remove events that have excessive noise in their side-bands.
+    PostProcessInDecibelGroups: false
 
-#     # 1: Combine overlapping events
-    #CombineOverlappingEvents: true
+    # 1: Combine overlapping events
+    CombineOverlappingEvents: false
 
-    # 2: Combine possible syllable sequences
+    #2: Combine possible syllable sequences
     SyllableSequence:
         CombinePossibleSyllableSequence: true
-        SyllableStartDifference: 0.6
+        SyllableStartDifference: 0.4
         SyllableHertzGap: 1000
         # FilterSyllableSequence: true
         # SyllableMaxCount: 3
         # ExpectedPeriod: 0.33
+    CombineVerticalSyllables:
+        MaxGapHertz: 2400
+        MaxDifferenceSeconds: 0.5
 
-# #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
-#     Duration:
-#         ExpectedDuration: 0.83
-#         DurationStandardDeviation: 0.15
+# # #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
+    Duration:
+        ExpectedDuration: 0.83
+        DurationStandardDeviation: 0.15
 
-# #     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
-#  #   Bandwidth:
-#         ExpectedBandwidth: 1000
-#         BandwidthStandardDeviation: 40
+# # #     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
+    Bandwidth:
+        # trying to get events that are 2400 and 5600 hz with one number
+        ExpectedBandwidth: 5600
+        BandwidthStandardDeviation: 100
 
 #     # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
 #     SidebandActivity:
 #         LowerHertzBuffer: 150
 #         UpperHertzBuffer: 400
 #         MaxAverageSidebandDecibels: 3.0
+    RemoveEnclosedEvents: true
 
 # Options to save results files
 # Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
