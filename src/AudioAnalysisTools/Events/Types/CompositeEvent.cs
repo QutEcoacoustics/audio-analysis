@@ -284,6 +284,45 @@ namespace AudioAnalysisTools.Events.Types
         }
 
         /// <summary>
+        /// Combines events that are possible stacked harmonics or formants.
+        /// Two conditions apply:
+        /// (1) the events are coincident (have similar start and end times)
+        /// (2) the events are stacked (their minima and maxima are within the passed frequency gap).
+        /// NOTE: The difference between this method and CombineProximalEvents() is that stacked events should have similar start AND similar end times.
+        ///       Having similar start and end times means the events are "stacked" (like pancakes!) in the spectrogram.
+        ///       How closely stacked is determined by the hertzDifference argument. Typicaly, the formant spacing is not large, ~100-200Hz.
+        /// </summary>
+        public static List<EventCommon> CombineVerticalEvents(List<SpectralEvent> events, TimeSpan timeDifference, int hertzDifference)
+        {
+            if (events.Count < 2)
+            {
+                return events.Cast<EventCommon>().ToList();
+            }
+
+            for (int i = events.Count - 1; i >= 0; i--)
+            {
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    bool eventsStartTogether = Math.Abs(events[i].EventStartSeconds - events[j].EventStartSeconds) < timeDifference.TotalSeconds;
+                    bool eventsEndTogether = Math.Abs(events[i].EventEndSeconds - events[j].EventEndSeconds) < timeDifference.TotalSeconds;
+                    bool eventsAreCoincident = eventsStartTogether && eventsEndTogether;
+                    bool eventMinimaAreSimilar = Math.Abs(events[i].HighFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference;
+                    bool eventMaximaAreSimilar = Math.Abs(events[j].HighFrequencyHertz - events[i].LowFrequencyHertz) < hertzDifference;
+                    if (eventsAreCoincident && (eventMinimaAreSimilar || eventMaximaAreSimilar))
+                    {
+                        var compositeEvent = CombineTwoEvents(events[i], events[j]);
+                        events[j] = compositeEvent;
+                        events.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
+            return events.Cast<EventCommon>().ToList();
+        }
+
+
+        /// <summary>
         /// Merges two spectral events into one event.
         /// </summary>
         /// <param name="e1">first event.</param>
