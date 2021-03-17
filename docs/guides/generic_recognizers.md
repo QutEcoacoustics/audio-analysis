@@ -252,7 +252,7 @@ the names of the algorithms (used to find those events) describe how the algorit
 | Whistle        | `OnebinTrack`     | `!OnebinTrackParameters`     |
 | Chirp          | `ForwardTrack`    | `!ForwardTrackParameters`    |
 | Whip           | `UpwardTrack`     | `!UpwardTrackParameters`     |
-| Click          | `VerticalTrack`   | `!VerticalTrackParameters`   |
+| Click          | `VerticalTrack`   | `!OneframeTrackParameters`   |
 | Oscillation    | `Oscillation`     | `!OscillationParameters`     |
 | Harmonic       | `Harmonic`        | `!HarmonicParameters`        |
 

@@ -20,7 +20,7 @@ AbbreviatedSpeciesName: PteropusSp
 # Resample rate must be 2 X the desired Nyquist
 ResampleRate: 22050
 
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
@@ -34,24 +34,24 @@ Profiles:
   #EventThreshold: 0.2
   Territorial:
     # min and max of the freq band to search
-    MinHz: 800          
+    MinHz: 800
     MaxHz: 8000
     MinDuration: 0.15
     MaxDuration: 0.8
-    DecibelThreshold: 9.0
+    DecibelThresholds: 9.0
   Wingbeats:
-    MinHz: 200          
+    MinHz: 200
     MaxHz: 2000
     DecibelThreshold: 6.0
-    # duration of DCT in seconds 
+    # duration of DCT in seconds
     DctDuration: 0.5
     # minimum acceptable value of a DCT coefficient
     DctThreshold: 0.5
     # ignore oscillation rates below the min & above the max threshold
     # A sample of four wingbeats yielded an average of 5.1 +/-0.5 beats/s.
-    # 95% confidence interval (2 SDs) is therefore approx 4-6 beats/s.    
+    # 95% confidence interval (2 SDs) is therefore approx 4-6 beats/s.
     # OSCILLATIONS PER SECOND
-    MinOscilFreq: 4        
+    MinOscilFreq: 4
     MaxOscilFreq: 6
     # Minimum and maximum duration for the length of a true call.
     MinDuration: 1.0

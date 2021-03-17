@@ -8,48 +8,92 @@ SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
+
+CommonParameters: &common_parameters
+    SpeciesName: Tyto tenebricosa
+    FrameSize: 2048
+    FrameStep: 256
+    WindowFunction: HANNING
+    NoiseReductionType: Standard
+    BgNoiseThreshold: 3
+    # Scan the frequency band at these thresholds
+    DecibelThresholds:
+        #- 9.0
+        - 12.0
+        - 15
+TrillParameters: &tree_parameters
+    SpeciesName: Tyto tenebricosa
+    FrameSize: 2048
+    FrameStep: 256
+    WindowFunction: HANNING
+    NoiseReductionType: Standard
+    BgNoiseThreshold: 3
+    # Scan the frequency band at these thresholds
+    DecibelThresholds:
+        - 9.0
+        #- 12.0
+        #- 15
+
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recognizer and must have the current name.
 Profiles:
-    # SootyOwlCall: !HarmonicParameters
-    #     SpeciesName: Tyto tenebricosa
-    #     FrameSize: 2048
-    #     FrameStep: 256
-    #     WindowFunction: HANNING
-
-    #     # min and max of the freq band to search
-    #     MinHertz: 1200
-    #     MaxHertz: 6300
-    #     MinFormantGap: 1100
-    #     MaxFormantGap: 1300
-    #     DctThreshold: 0.5
-    #     MinDuration: 0.7
-    #     MaxDuration: 3.0
-    #     # Scan the frequency band at these thresholds
-    #     DecibelThresholds:
-    #         - 6.0
-    #         - 9.0
-    #         - 12.0
-    SootyOwlCall: !ForwardTrackParameters
-        SpeciesName: Tyto tenebricosa
-        FrameSize: 2048
-        FrameStep: 256
-        WindowFunction: HANNING
+    Screech: !HarmonicParameters
+        <<: *common_parameters
 
         # min and max of the freq band to search
         MinHertz: 1200
-        MaxHertz: 1650
-        MinDuration: 0.7
+        MaxHertz: 6500
+        MinFormantGap: 400
+        MaxFormantGap: 6500
+        DctThreshold: 0.3
+        MinDuration: 0.9
         MaxDuration: 3.0
-        # Scan the frequency band at these thresholds
-        DecibelThresholds:
-            - 6.0
-            - 9.0
-            - 12.0
+
+    TrillHighUp: !BlobParameters
+        <<: *tree_parameters
+
+        # min and max of the freq band to search
+        MinHertz: 8000
+        MaxHertz: 11025
+        MinDuration: 0.7
+        MaxDuration: 1.5
+        BottomHertzBuffer: 0
+        TopHertzBuffer: 0
+    TrillHighDown: !BlobParameters
+        <<: *tree_parameters
+
+        # min and max of the freq band to search
+        MinHertz: 5800
+        MaxHertz: 10300
+        MinDuration: 0.1
+        MaxDuration: 0.3
+        BottomHertzBuffer: 0
+        TopHertzBuffer: 100
+    TrillMidDown: !BlobParameters
+        <<: *tree_parameters
+
+        # min and max of the freq band to search
+        MinHertz: 4500
+        MaxHertz: 9400
+        MinDuration: 0.7
+        MaxDuration: 1.1
+        BottomHertzBuffer: 0
+        TopHertzBuffer: 0
+    TrillMidUShape: !BlobParameters
+        <<: *tree_parameters
+
+        # min and max of the freq band to search
+        MinHertz: 5800
+        MaxHertz: 8200
+        MinDuration: 0.3
+        MaxDuration: 1.5
+        BottomHertzBuffer: 0
+        TopHertzBuffer: 0
 
 #################### POST-PROCESSING of EVENTS ###################
 
 PostProcessing:
+    PostProcessInDecibelGroups: false
 # # The following generic post-processing steps are determined by config settings.
 # # Step 1: Combine overlapping events - events derived from all profiles.
 # # Step 2: Combine possible syllable sequences and filter on excess syllable count.
@@ -57,16 +101,13 @@ PostProcessing:
 # # Step 4: Remove events that have excessive noise in their side-bands.
 
 #     # 1: Combine overlapping events
-#     CombineOverlappingEvents: true
+    # CombineOverlappingEvents: true
 
-#     # 2: Combine possible syllable sequences
-#     SyllableSequence:
-#         CombinePossibleSyllableSequence: true
-#         SyllableStartDifference: 0.6
-#         SyllableHertzGap: 350
-#         FilterSyllableSequence: true
-#         SyllableMaxCount: 2
-#         ExpectedPeriod: 0.4
+    # # 2: Combine possible syllable sequences
+    # SyllableSequence:
+    #     CombinePossibleSyllableSequence: true
+    #     SyllableStartDifference: 1.5
+    #     SyllableHertzGap: 3000
 
 #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
 #     #Duration:
@@ -83,11 +124,12 @@ PostProcessing:
 #         LowerHertzBuffer: 150
 #         UpperHertzBuffer: 400
 #         MaxAverageSidebandDecibels: 3.0
+    RemoveEnclosedEvents: true
 
 # Options to save results files
 # Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-SaveSonogramImages: WhenEventsDetected
+SaveSonogramImages: Always
 
 # Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never

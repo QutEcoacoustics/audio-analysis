@@ -74,7 +74,7 @@ Here are some **invalid** examples:
    _AP_ looks for an analysis called `Towsey.Acousticmarine` which doesn't exist. It should be `Towsey.Acoustic.marine.yml`
 
 If you find a config file that does not match this format, it will likely produce an error.
-If your config file must be named in a different format the `--analysis-name` (or the short form `-a`) argument can be used to
+If your config file must be named in a different format the `--analysis-identifier` (or the short form `-a`) argument can be used to
 disambiguate the analysis type you want to use.
 
 Please note this rule does not apply to other config files not directly used by `audio2csv`. For example,
