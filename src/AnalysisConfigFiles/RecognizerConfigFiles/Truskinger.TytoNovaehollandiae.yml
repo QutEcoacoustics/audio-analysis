@@ -1,6 +1,6 @@
 ---
 
-# Sooty Owl = Truskinger.TytoNovaehollandiae.yml
+# Masked Owl = Truskinger.TytoNovaehollandiae.yml
 # Resample rate must be 2 X the desired Nyquist
 #ResampleRate: 22050
 # SegmentDuration: units=seconds;

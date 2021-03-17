@@ -14,10 +14,11 @@ CommonParameters: &common_parameters
       FrameStep: 512
       WindowFunction: HAMMING
       NoiseReductionType: Modal
-      BgNoiseThreshold: 0.2
+      BgNoiseThreshold: 0.1
 
       # Scan the frequency band at these thresholds
       DecibelThresholds:
+          - 2
           - 3
           - 6
           - 9

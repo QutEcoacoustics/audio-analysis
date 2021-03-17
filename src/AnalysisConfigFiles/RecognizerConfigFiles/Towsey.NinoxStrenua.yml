@@ -11,7 +11,7 @@
 
 # Resample rate must be 2 X the desired Nyquist
 #ResampleRate: 22050
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
@@ -20,14 +20,14 @@ SegmentOverlap: 0
 # This profile is required for the species-specific recogniser and must have the current name.
 Profiles:
     StrenuaSyllable: !ForwardTrackParameters
-        ComponentName: RidgeTrack 
+        ComponentName: RidgeTrack
         SpeciesName: NinoxStrenua
         FrameSize: 1024
         FrameStep: 256
         WindowFunction: HANNING
-        
+
         # min and max of the freq band to search
-        MinHertz: 300          
+        MinHertz: 300
         MaxHertz: 600
         MinDuration: 0.3
         MaxDuration: 0.6
@@ -38,7 +38,7 @@ Profiles:
             - 24.0
             - 30.0
             - 36.0
-         
+
 #################### POST-PROCESSING of EVENTS ###################
 
 PostProcessing:
@@ -63,7 +63,7 @@ PostProcessing:
     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
     #Duration:
     #    ExpectedDuration: 0.14
-    #    DurationStandardDeviation: 0.01        
+    #    DurationStandardDeviation: 0.01
 
     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
     Bandwidth:
@@ -77,7 +77,7 @@ PostProcessing:
         MaxBackgroundDecibels: null
         MaxActivityDecibels: null
 
-    # 6: In the case of sets of nested/enclosed events, filter/remove all but the outermost event. 
+    # 6: In the case of sets of nested/enclosed events, filter/remove all but the outermost event.
     RemoveEnclosedEvents: true
 
 

@@ -8,115 +8,122 @@ SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
+CommonParameters: &common_parameters
+    SpeciesName: Petaurus breviceps
+    FrameSize: 512
+    FrameStep: 256
+    WindowFunction: HANNING
+    NoiseReductionType: Standard
+    BgNoiseThreshold: 3
+    # Scan the frequency band at these thresholds
+    DecibelThresholds:
+        - 2.0
+        - 6.0
+
+
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recognizer and must have the current name.
 Profiles:
-    BarkingOwlSyllableUpwardLow: !ForwardTrackParameters
-        SpeciesName: Petaurus breviceps
-        FrameSize: 512
-        FrameStep: 256
-        WindowFunction: HANNING
+    SyllableUpwardLow: !ForwardTrackParameters
+        <<: *common_parameters
 
         # min and max of the freq band to search
         MinHertz: 560
-        MaxHertz: 1150
-        MinDuration: 0.06
-        MaxDuration: 0.1
-        # Scan the frequency band at these thresholds
-        DecibelThresholds:
-            - 6.0
-            - 9.0
-            - 12.0
-    BarkingOwlSyllableTailLow: !OnebinTrackParameters
-        SpeciesName: Petaurus breviceps
-        FrameSize: 512
-        FrameStep: 256
-        WindowFunction: HANNING
+        MaxHertz: 1300
+        MinDuration: 0.2
+        MaxDuration: 0.8
+
+    SyllableTailLow: !BlobParameters
+        <<: *common_parameters
 
         # min and max of the freq band to search
-        MinHertz: 990
-        MaxHertz: 1150
+        MinHertz: 900
+        MaxHertz: 1200
         MinDuration: 0.2
-        MaxDuration: 0.5
-        # Scan the frequency band at these thresholds
-        DecibelThresholds:
-            - 6.0
-            - 9.0
-            - 12.0
-    BarkingOwlSyllableUpwardHigh: !ForwardTrackParameters
-        SpeciesName: Petaurus breviceps
-        FrameSize: 512
-        FrameStep: 256
-        WindowFunction: HANNING
+        MaxDuration: 0.8
+        BottomHertzBuffer: 0
+        TopHertzBuffer: 0
+
+
+    SyllableUpwardHigh: !ForwardTrackParameters
+        <<: *common_parameters
 
         # min and max of the freq band to search
         MinHertz: 1200
         MaxHertz: 2200
-        MinDuration: 0.06
-        MaxDuration: 0.1
-        # Scan the frequency band at these thresholds
-        DecibelThresholds:
-            - 6.0
-            - 9.0
-            - 12.0
-    BarkingOwlSyllableTailHigh: !OnebinTrackParameters
-        SpeciesName: Petaurus breviceps
-        FrameSize: 512
-        FrameStep: 256
-        WindowFunction: HANNING
+        MinDuration: 0.2
+        MaxDuration: 0.8
+
+    SyllableTailHigh: !BlobParameters
+        <<: *common_parameters
 
         # min and max of the freq band to search
-        MinHertz: 2050
+        MinHertz: 1900
         MaxHertz: 2200
         MinDuration: 0.2
-        MaxDuration: 0.5
+        MaxDuration: 0.8
+        BottomHertzBuffer: 0
+        TopHertzBuffer: 50
+
+
+    Bark: !HarmonicParameters
+        <<: *common_parameters
+
+        # min and max of the freq band to search
+        MinHertz: 350
+        MaxHertz: 2700
+        MinDuration: 0.1
+        MaxDuration: 0.3
+        MinFormantGap: 150
+        MaxFormantGap: 2400
+        DctThreshold: 0.15
         # Scan the frequency band at these thresholds
         DecibelThresholds:
-            - 6.0
-            - 9.0
-            - 12.0
+          - 3.0
+          - 6.0
+          - 9.0
 
 #################### POST-PROCESSING of EVENTS ###################
 
 PostProcessing:
-# # The following generic post-processing steps are determined by config settings.
-# # Step 1: Combine overlapping events - events derived from all profiles.
-# # Step 2: Combine possible syllable sequences and filter on excess syllable count.
-# # Step 3: Remove events whose bandwidth is too small or large.
-# # Step 4: Remove events that have excessive noise in their side-bands.
+    PostProcessInDecibelGroups: false
 
     # 1: Combine overlapping events
-    CombineOverlappingEvents: true
+    # CombineOverlappingEvents: true
 
     # 2: Combine possible syllable sequences
-    SyllableSequence:
-        CombinePossibleSyllableSequence: true
-        SyllableStartDifference: 0.8
-        SyllableHertzGap: 100
-        FilterSyllableSequence: true
-        SyllableMaxCount: 4
-        ExpectedPeriod: 0.8
+    # SyllableSequence:
+    #     CombinePossibleSyllableSequence: true
+    #     SyllableStartDifference: 0.8
+    #     SyllableHertzGap: 100
+        # FilterSyllableSequence: true
+        # SyllableMaxCount: 4
+        # ExpectedPeriod: 0.8
+    CombineVerticalSyllables:
+        MaxGapHertz: 2400
+        MaxDifferenceSeconds: 0.5
 
-#     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
-#     #Duration:
-#         ExpectedDuration: 0.14
-#         DurationStandardDeviation: 0.01
+# #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
+    Duration:
+        ExpectedDuration: 0.5
+        DurationStandardDeviation: 0.15
 
 #     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
-#  #   Bandwidth:
-#         ExpectedBandwidth: 280
-#         BandwidthStandardDeviation: 40
+    Bandwidth:
+        ExpectedBandwidth: 1750
+        BandwidthStandardDeviation: 250
 
 #     # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
 #     SidebandActivity:
 #         LowerHertzBuffer: 150
 #         UpperHertzBuffer: 400
 #         MaxAverageSidebandDecibels: 3.0
+    RemoveEnclosedEvents: true
 
 # Options to save results files
 # Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-SaveSonogramImages: WhenEventsDetected
+SaveSonogramImages: Always
 
 # Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never

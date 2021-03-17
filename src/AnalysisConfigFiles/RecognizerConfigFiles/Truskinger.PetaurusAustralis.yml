@@ -8,67 +8,66 @@ SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
+CommonParameters: &common_parameters
+    SpeciesName: Petaurus australis
+    FrameSize: 512
+    FrameStep: 512
+    WindowFunction: HANNING
+    NoiseReductionType: Modal
+    BgNoiseThreshold: 0.0
+
+
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recognizer and must have the current name.
 Profiles:
-    YellowBelliedGlider_FirstShriek: !BlobParameters
-        SpeciesName: Petaurus australis
-        FrameSize: 1024
-        FrameStep: 256
-        WindowFunction: HANNING
+    FirstShriek: !BlobParameters
+        <<: *common_parameters
 
         # min and max of the freq band to search
-        MinHertz: 1200
-        MaxHertz: 2100
-        BottomHertzBuffer: 100
-        TopHertzBuffer: 100
-        MinDuration: 0.4
+        MinHertz: 270
+        MaxHertz: 3300
+        BottomHertzBuffer: 0
+        TopHertzBuffer: 0
+        MinDuration: 0.1
         MaxDuration: 0.6
         # Scan the frequency band at these thresholds
         DecibelThresholds:
-            - 1.0
-            - 3.0
+            - 3
             - 6.0
-    YellowBelliedGlider2_SecondShriek: !BlobParameters
-        SpeciesName: Petaurus australis
-        FrameSize: 1024
-        FrameStep: 256
-        WindowFunction: HANNING
+            - 9.0
+    SecondShriek: !BlobParameters
+        <<: *common_parameters
 
         # min and max of the freq band to search
-        MinHertz: 2200
-        MaxHertz: 3550
+        MinHertz: 2000
+        MaxHertz: 6500
         BottomHertzBuffer: 100
         TopHertzBuffer: 50
-        MinDuration: 0.6
-        MaxDuration: 0.8
+        MinDuration: 0.5
+        MaxDuration: 1.5
         # Scan the frequency band at these thresholds
         DecibelThresholds:
-            - 1.0
             - 3.0
             - 6.0
-    YellowBelliedGlider3_TrailingShriek: !BlobParameters
-        SpeciesName: Petaurus australis
-        FrameSize: 1024
-        FrameStep: 256
-        WindowFunction: HANNING
+    TrailingShriek: !BlobParameters
+        <<: *common_parameters
 
         # min and max of the freq band to search
-        MinHertz: 1200
-        MaxHertz: 2100
+        MinHertz: 200
+        MaxHertz: 5400
         BottomHertzBuffer: 100
         TopHertzBuffer: 100
-        MinDuration: 0.6
+        MinDuration: 0.15
         MaxDuration: 2.0
         # Scan the frequency band at these thresholds
         DecibelThresholds:
-            - 1.0
             - 3.0
             - 6.0
 
 #################### POST-PROCESSING of EVENTS ###################
 
 PostProcessing:
+    PostProcessInDecibelGroups: false
 # # The following generic post-processing steps are determined by config settings.
 # # Step 1: Combine overlapping events - events derived from all profiles.
 # # Step 2: Combine possible syllable sequences and filter on excess syllable count.
@@ -76,21 +75,20 @@ PostProcessing:
 # # Step 4: Remove events that have excessive noise in their side-bands.
 
 #     # 1: Combine overlapping events
-#     CombineOverlappingEvents: true
+    CombineOverlappingEvents: false
 
     # 2: Combine possible syllable sequences
     SyllableSequence:
-        CombinePossibleSyllableSequence: true
-        SyllableStartDifference: 0.6
+        SyllableStartDifference: 1.2
         SyllableHertzGap: 2400
-        FilterSyllableSequence: true
-        SyllableMaxCount: 3
-        ExpectedPeriod: 0.1
+        # FilterSyllableSequence: true
+        # SyllableMaxCount: 3
+        # ExpectedPeriod: 0.1
 
-#     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
-#     #Duration:
-#         ExpectedDuration: 0.14
-#         DurationStandardDeviation: 0.01
+# #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
+    Duration:
+        ExpectedDuration: 2.5
+        DurationStandardDeviation: 0.6
 
 #     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
 #  #   Bandwidth:
@@ -102,11 +100,12 @@ PostProcessing:
 #         LowerHertzBuffer: 150
 #         UpperHertzBuffer: 400
 #         MaxAverageSidebandDecibels: 3.0
+    RemoveEnclosedEvents: false
 
 # Options to save results files
 # Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-SaveSonogramImages: WhenEventsDetected
+SaveSonogramImages: Always
 
 # Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
