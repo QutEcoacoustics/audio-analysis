@@ -39,7 +39,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.IO.Abstractions" Version="13.2.1" />
+    <PackageReference Include="System.IO.Abstractions" Version="13.2.28" />
     <PackageReference Include="YamlDotNet" Version="9.1.0" />
   </ItemGroup>
 </Project>
