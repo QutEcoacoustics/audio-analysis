@@ -1,5 +1,5 @@
 ---
-name: Bug report
+name: Bug report (run time, unexpected exception, something is broken on my computer)
 about: Create a report to help us fix a problem in AP.exe
 ---
 <!--
