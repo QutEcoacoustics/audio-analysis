@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask us a question
+    url: https://github.com/QutEcoacoustics/audio-analysis/discussions
+    about: Please ask us questions in our discussions section, like if you need advice, or you want to start a dicsussion
