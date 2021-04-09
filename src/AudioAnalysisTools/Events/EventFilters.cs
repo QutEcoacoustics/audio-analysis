@@ -256,9 +256,6 @@ namespace AudioAnalysisTools.Events
                     }
                 }
 
-                string formatString = "{0:f2}";
-                Log.Debug($" Event[{count}] actual periods: {actualPeriodSeconds.JoinFormatted(", ", formatString)}");
-
                 // reject composite events whose total syllable count exceeds the user defined max.
                 if (syllableCount > maxSyllableCount)
                 {
@@ -276,6 +273,10 @@ namespace AudioAnalysisTools.Events
                 }
                 else
                 {
+                    // There are two or more syllables/events.
+                    string formatString = "{0:f2}";
+                    Log.Debug($" Event[{count}] actual periods: {actualPeriodSeconds.JoinFormatted(", ", formatString)}");
+
                     // If there are only two events, with one interval, THEN ...
                     var actualAvPeriod = actualPeriodSeconds[0];
 
