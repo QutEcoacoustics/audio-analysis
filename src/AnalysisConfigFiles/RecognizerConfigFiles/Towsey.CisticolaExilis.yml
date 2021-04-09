@@ -3,7 +3,7 @@
 # Golden-headed cisticola = Cisticola exilis
 # Resample rate must be 2 X the desired Nyquist
 ResampleRate: 16000
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
@@ -12,13 +12,13 @@ SegmentOverlap: 0
 # This profile is required for the species-specific recogniser and must have the current name.
 Profiles:
     CisticolaSyllable: !UpwardTrackParameters
-        ComponentName: Whip 
+        ComponentName: Whip
         SpeciesName: CisticolaExilis
         FrameSize: 512
         FrameStep: 128
         WindowFunction: HANNING
         # min and max of the freq band to search
-        MinHertz: 2100          
+        MinHertz: 2100
         MaxHertz: 3300
         # min and max bandwidth of the events that are found
         MinBandwidthHertz: 200
@@ -37,7 +37,7 @@ PostProcessing:
 # Step 2: Combine possible syllable sequences and filter on excess syllable count.
 # Step 3: Remove events whose bandwidth is too small or large.
 # Step 4: Remove events that have excessive noise in their side-bands.
-
+    PostProcessInDecibelGroups: false
     # 1: Combine overlapping events
     CombineOverlappingEvents: true
 
@@ -53,7 +53,7 @@ PostProcessing:
     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
     Duration:
         ExpectedDuration: 0.14
-        DurationStandardDeviation: 0.01        
+        DurationStandardDeviation: 0.01
 
     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
  #   Bandwidth:
