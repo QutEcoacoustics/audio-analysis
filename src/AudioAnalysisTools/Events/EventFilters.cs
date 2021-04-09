@@ -88,7 +88,7 @@ namespace AudioAnalysisTools.Events
             {
                 count++;
                 var bandwidth = ((SpectralEvent)ev).BandWidthHertz;
-                if ((bandwidth > minBandwidth) && (bandwidth < maxBandwidth))
+                if ((bandwidth >= minBandwidth) && (bandwidth <= maxBandwidth))
                 {
                     Log.Debug($" Event[{count}] accepted: Actual bandwidth = {bandwidth}");
                     filteredEvents.Add(ev);
@@ -176,7 +176,7 @@ namespace AudioAnalysisTools.Events
             {
                 count++;
                 var duration = ((SpectralEvent)ev).EventDurationSeconds;
-                if ((duration > minimumDurationSeconds) && (duration < maximumDurationSeconds))
+                if ((duration >= minimumDurationSeconds) && (duration <= maximumDurationSeconds))
                 {
                     Log.Debug($" Event[{count}] accepted: Actual duration = {duration:F3}s");
                     filteredEvents.Add(ev);
