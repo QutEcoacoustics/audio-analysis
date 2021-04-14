@@ -21,6 +21,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
     using static global::AudioAnalysisTools.Events.Types.EventPostProcessing;
 
     [TestClass]
@@ -207,6 +208,11 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             Assert.AreEqual("DTMF", @event.Name);
         }
 
+        /// <summary>
+        /// The test whistle used here has its centre maximum amplitude at 433 Hertz.
+        /// The larger the frame size and therefore smaller the width of a frequency bin,
+        /// the more accuratly the whistle algorithm centres on the whistle.
+        /// </summary>
         [TestMethod]
         public void TestWhistleAlgorithm()
         {
@@ -215,17 +221,63 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 Profiles = new Dictionary<string, object>()
                 {
                     {
-                        "TestWhistle",
+                        "TestWhistle1",
+                        new OnebinTrackParameters()
+                        {
+                            FrameSize = 2048,
+                            FrameStep = 512,
+                            WindowFunction = WindowFunctions.HANNING,
+                            BgNoiseThreshold = 0.0,
+                            SearchbandMinHertz = 0, //340,
+                            SearchbandMaxHertz = 1000, //560,
+                            MinDuration = 4,
+                            MaxDuration = 6,
+                            SpeciesName = "NoName",
+                            DecibelThresholds = new double?[] { 1.0 },
+                        }
+                    },
+                    {
+                        "TestWhistle2",
+                        new OnebinTrackParameters()
+                        {
+                            FrameSize = 1024,
+                            FrameStep = 512,
+                            WindowFunction = WindowFunctions.HANNING,
+                            BgNoiseThreshold = 0.0,
+                            SearchbandMinHertz = 0,
+                            SearchbandMaxHertz = 1000,
+                            MinDuration = 4,
+                            MaxDuration = 6,
+                            SpeciesName = "NoName",
+                            DecibelThresholds = new double?[] { 1.0 },
+                        }
+                    },
+                    {
+                        "TestWhistle3",
+                        new OnebinTrackParameters()
+                        {
+                            FrameSize = 1024,
+                            FrameStep = 512,
+                            WindowFunction = WindowFunctions.HANNING,
+                            BgNoiseThreshold = 0.0,
+                            SearchbandMinHertz = 301,
+                            SearchbandMaxHertz = 517,
+                            MinDuration = 4,
+                            MaxDuration = 6,
+                            SpeciesName = "NoName",
+                            DecibelThresholds = new double?[] { 1.0 },
+                        }
+                    },
+                    {
+                        "TestWhistle4",
                         new OnebinTrackParameters()
                         {
                             FrameSize = 512,
                             FrameStep = 512,
                             WindowFunction = WindowFunctions.HANNING,
                             BgNoiseThreshold = 0.0,
-                            MinHertz = 340,
-                            MaxHertz = 560,
-                            BottomHertzBuffer = 0,
-                            TopHertzBuffer = 0,
+                            SearchbandMinHertz = 100,
+                            SearchbandMaxHertz = 700,
                             MinDuration = 4,
                             MaxDuration = 6,
                             SpeciesName = "NoName",
@@ -238,13 +290,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                     CombineOverlappingEvents = false,
 
                     // filter on bandwidth
+                    // this is set very large to accomodate the different widths of freqeuncy bin
                     Bandwidth = new BandwidthConfig()
                     {
-                        ExpectedBandwidth = 90,
-                        BandwidthStandardDeviation = 10,
+                        ExpectedBandwidth = 150,
+                        BandwidthStandardDeviation = 40,
                     },
 
-                    // filter on acousstic activity in sidebands.
+                    // filter on acoustic activity in sidebands.
                     // zero indicates no filtering.
                     SidebandAcousticActivity = new SidebandConfig()
                     {
@@ -257,18 +310,47 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
 
-            Assert.AreEqual(1, results.NewEvents.Count);
+            // add next two lines because cannot find spectrogram included with the test results.
+            // Used for debugging only
+            var image = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.NewEvents, results.Plots, null);
+            image.SaveAsPng("C:/temp/image.png");
+
+            Assert.AreEqual(4, results.NewEvents.Count);
             var @event = (SpectralEvent)results.NewEvents[0];
 
             Assert.AreEqual(101.2, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(106.2, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(378, @event.LowFrequencyHertz);
+            Assert.AreEqual(462, @event.HighFrequencyHertz);
+            Assert.AreEqual(84, @event.BandWidthHertz); // 4 freq bins
+            Assert.AreEqual("TestWhistle1", @event.Profile);
+            Assert.AreEqual("NoName", @event.Name);
 
-            // NOTE: The whistle algorithm assigns the top and bottom freq bounds of an event based on where it finds the whistle.
-            //       Not on what the user has set.
-            //       In this test the margin of error has been set arbitrarily to width of one frequency bin.
-            Assert.AreEqual(430, @event.LowFrequencyHertz, 44.0);
-            Assert.AreEqual(516, @event.HighFrequencyHertz, 44.0);
-            Assert.AreEqual("TestWhistle", @event.Profile);
+            @event = (SpectralEvent)results.NewEvents[1];
+            Assert.AreEqual(101.2, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(106.2, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(301, @event.LowFrequencyHertz);
+            Assert.AreEqual(516, @event.HighFrequencyHertz);
+            Assert.AreEqual(215, @event.BandWidthHertz); // 5 bins
+            Assert.AreEqual("TestWhistle2", @event.Profile);
+            Assert.AreEqual("NoName", @event.Name);
+
+            @event = (SpectralEvent)results.NewEvents[2];
+            Assert.AreEqual(101.2, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(106.2, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(301, @event.LowFrequencyHertz);
+            Assert.AreEqual(516, @event.HighFrequencyHertz);
+            Assert.AreEqual(215, @event.BandWidthHertz); // 5 bins
+            Assert.AreEqual("TestWhistle3", @event.Profile);
+            Assert.AreEqual("NoName", @event.Name);
+
+            @event = (SpectralEvent)results.NewEvents[3];
+            Assert.AreEqual(101.2, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(106.2, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(258, @event.LowFrequencyHertz);
+            Assert.AreEqual(516, @event.HighFrequencyHertz);
+            Assert.AreEqual(258, @event.BandWidthHertz); // 3 frequency bins
+            Assert.AreEqual("TestWhistle4", @event.Profile);
             Assert.AreEqual("NoName", @event.Name);
         }
 

@@ -40,6 +40,11 @@ namespace AudioAnalysisTools.Tracks
             segmentStartOffset,
             decibelThreshold.Value);
 
+            foreach (var ev in events)
+            {
+                ev.Name = profileName;
+            }
+
             spectralEvents.AddRange(events);
 
             var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Whistles:{decibelThreshold.Value:F0}dB)", decibelThreshold.Value);
@@ -66,8 +71,22 @@ namespace AudioAnalysisTools.Tracks
             int binCount = sonogramData.GetLength(1);
             int nyquist = sonogram.NyquistFrequency;
             double binWidth = nyquist / (double)binCount;
-            int minBin = (int)Math.Round(parameters.MinHertz.Value / binWidth);
-            int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
+
+            // set lower frequency bins of the search band
+            int minSearchBin = (int)Math.Floor(parameters.SearchbandMinHertz.Value / binWidth);
+            if (minSearchBin < 1)
+            {
+                minSearchBin = 1;
+            }
+
+            // set top search bin allowing for the top sideband.
+            int maxSearchBin = (int)Math.Floor(parameters.SearchbandMaxHertz.Value / binWidth) - 1;
+            if (maxSearchBin > binCount - 6)
+            {
+                maxSearchBin = binCount - 6;
+            }
+
+            // get max and min duration for the whistle event.
             double minDuration = parameters.MinDuration.Value;
             double maxDuration = parameters.MaxDuration.Value;
 
@@ -79,20 +98,23 @@ namespace AudioAnalysisTools.Tracks
 
             //Find all bin peaks and place in peaks matrix
             var peaks = new double[frameCount, binCount];
+
+            // tf = timeframes
             for (int tf = 0; tf < frameCount; tf++)
             {
-                for (int bin = minBin + 1; bin < maxBin - 1; bin++)
+                for (int bin = minSearchBin; bin <= maxSearchBin; bin++)
                 {
                     if (sonogramData[tf, bin] < decibelThreshold)
                     {
                         continue;
                     }
 
-                    // here we define the amplitude profile of a whistle. The buffer zone around whistle is five bins wide.
+                    // here we define the amplitude profile of a whistle.
+                    // The buffer zone around centre of whistle is five bins wide. Ignore bins -2 and +2
                     var bandIntensity = ((sonogramData[tf, bin - 1] * 0.5) + sonogramData[tf, bin] + (sonogramData[tf, bin + 1] * 0.5)) / 2.0;
                     var topSidebandIntensity = (sonogramData[tf, bin + 3] + sonogramData[tf, bin + 4] + sonogramData[tf, bin + 5]) / 3.0;
                     var netAmplitude = 0.0;
-                    if (bin < 4)
+                    if (bin < 5)
                     {
                         netAmplitude = bandIntensity - topSidebandIntensity;
                     }
@@ -138,7 +160,7 @@ namespace AudioAnalysisTools.Tracks
                 {
                     SegmentStartSeconds = segmentStartOffset.TotalSeconds,
                     SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
-                    Name = "Whistle",
+                    Name = "Whistle", // this name can be overridden later.
                 };
 
                 events.Add(ae);
