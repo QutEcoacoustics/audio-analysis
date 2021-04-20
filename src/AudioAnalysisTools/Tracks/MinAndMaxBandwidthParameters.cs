@@ -10,23 +10,29 @@ namespace AnalysisPrograms.Recognizers.Base
 
     public class MinAndMaxBandwidthParameters : CommonParameters
     {
-        /// <summary>snr
-        /// Gets or sets the bottom bound of the rectangle. Units are Hertz.
+        /// <summary>
+        /// Gets or sets the bottom bound of a search band. Units are Hertz.
+        /// A search band is the frequency band within which an algorithm searches for a particular track or event.
+        /// This is to be carefully distinguished from the top and bottom bounds of a specific event.
+        /// A search band consists of two parallel lines/freqeuncy bins.
+        /// An event is represented by a rectangle.
+        /// Events will/should always lie within a search band. THere may be exception in edge cases, i.e. where an event sits on a search bound.
         /// </summary>
         public int? SearchbandMinHertz { get; set; }
 
         /// <summary>
-        /// Gets or sets the the top bound of the rectangle. Units are Hertz.
+        /// Gets or sets the the top bound of a search band. Units are Hertz.
+        /// A search band is the frequency band within which an algorithm searches for a particular track or event.
         /// </summary>
         public int? SearchbandMaxHertz { get; set; }
 
         /// <summary>
-        /// Gets or sets the minimum bandwidth, units = Hertz.
+        /// Gets or sets the minimum allowed bandwidth of a spectrogram track or event, units = Hertz.
         /// </summary>
         public int? MinBandwidthHertz { get; set; }
 
         /// <summary>
-        /// Gets or sets maximum bandwidth, units = Hertz.
+        /// Gets or sets the maximum allowed bandwidth of a spectrogram track or event, units = Hertz.
         /// </summary>
         public int? MaxBandwidthHertz { get; set; }
 
