@@ -66,15 +66,16 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             // events[2] should be a composite event.
             var ev = (CompositeEvent)events[2];
             Assert.IsInstanceOfType(events[2], typeof(CompositeEvent));
-            Assert.AreEqual(22, ev.EventStartSeconds, TestHelper.AllowedDelta);
-            Assert.AreEqual(22, ev.EventEndSeconds, TestHelper.AllowedDelta);
+            Assert.AreEqual(22.000, ev.EventStartSeconds, TestHelper.AllowedDelta);
+            Assert.AreEqual(22.368, ev.EventEndSeconds, TestHelper.AllowedDelta);
             Assert.AreEqual(4743, ev.BandWidthHertz);
 
             var componentEvents = ev.ComponentEvents;
-            Assert.AreEqual(3, componentEvents.Count);
+            //Assert.AreEqual(3, componentEvents.Count);
+            Assert.AreEqual(13, componentEvents.Count);
 
             // This tests that the component tracks are correctly combined.
-            //This can also be tested somewhere else, starting with just the comosite event in json file.
+            //This can also be tested somewhere else, starting with just the composite event in json file.
             var points = EventExtentions.GetCompositeTrack(componentEvents.Cast<WhipEvent>()).ToArray();
             Assert.AreEqual(22.016, points[1].Seconds.Minimum, TestHelper.AllowedDelta);
             Assert.AreEqual(5456, points[1].Hertz.Minimum);

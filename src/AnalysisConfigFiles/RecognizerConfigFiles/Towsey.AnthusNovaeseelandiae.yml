@@ -18,8 +18,8 @@ Profiles:
         FrameStep: 256
         WindowFunction: HANNING
         # min and max of the freq band to search
-        MinHertz: 2000
-        MaxHertz: 7000
+        SearchbandMinHertz: 2000
+        SearchbandMaxHertz: 7000
         # min and max bandwidth of the events that are found
         MinBandwidthHertz: 500
         MaxBandwidthHertz: 6000
@@ -37,7 +37,7 @@ PostProcessing:
 # Step 2: Combine possible syllable sequences and filter on excess syllable count.
 # Step 3: Remove events whose bandwidth is too small or large.
 # Step 4: Remove events that have excessive noise in their side-bands.
-    PostProcessInDecibelGroups: true
+    PostProcessInDecibelGroups: false
     # 1: Combine overlapping events
     CombineOverlappingEvents: true
 

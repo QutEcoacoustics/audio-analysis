@@ -10,6 +10,16 @@ namespace AnalysisPrograms.Recognizers.Base
 
     public class MinAndMaxBandwidthParameters : CommonParameters
     {
+        /// <summary>snr
+        /// Gets or sets the bottom bound of the rectangle. Units are Hertz.
+        /// </summary>
+        public int? SearchbandMinHertz { get; set; }
+
+        /// <summary>
+        /// Gets or sets the the top bound of the rectangle. Units are Hertz.
+        /// </summary>
+        public int? SearchbandMaxHertz { get; set; }
+
         /// <summary>
         /// Gets or sets the minimum bandwidth, units = Hertz.
         /// </summary>
@@ -22,6 +32,8 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+            yield return this.SearchbandMinHertz.ValidateNotNull(nameof(this.MinBandwidthHertz));
+            yield return this.SearchbandMaxHertz.ValidateNotNull(nameof(this.MaxBandwidthHertz));
             yield return this.MinBandwidthHertz.ValidateNotNull(nameof(this.MinBandwidthHertz));
             yield return this.MaxBandwidthHertz.ValidateNotNull(nameof(this.MaxBandwidthHertz));
 

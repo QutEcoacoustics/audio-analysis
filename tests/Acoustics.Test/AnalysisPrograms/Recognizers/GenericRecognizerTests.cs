@@ -465,8 +465,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             var parameters = new OnebinTrackParameters()
             {
-                MinHertz = 500,
-                MaxHertz = 6000,
+                SearchbandMinHertz = 500,
+                SearchbandMaxHertz = 6000,
                 MinDuration = 0.2,
                 MaxDuration = 1.1,
                 CombinePossibleSyllableSequence = false,
@@ -719,8 +719,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var decibelThreshold = 2.0;
             var parameters = new UpwardTrackParameters()
             {
-                MinHertz = 6000,
-                MaxHertz = 11000,
+                SearchbandMinHertz = 6000,
+                SearchbandMaxHertz = 11000,
                 MinBandwidthHertz = 100,
                 MaxBandwidthHertz = 5000,
 
@@ -805,8 +805,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var decibelThreshold = 2.0;
             var parameters = new UpwardTrackParameters()
             {
-                MinHertz = 500,
-                MaxHertz = 6000,
+                SearchbandMinHertz = 500,
+                SearchbandMaxHertz = 6000,
                 MinBandwidthHertz = 200,
                 MaxBandwidthHertz = 5000,
 
