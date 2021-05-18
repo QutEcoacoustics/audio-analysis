@@ -70,8 +70,8 @@ namespace AudioAnalysisTools.Tracks
             var frameStep = sonogram.FrameStep;
             int nyquist = sonogram.NyquistFrequency;
             double binWidth = nyquist / (double)binCount;
-            int minSearchBin = (int)Math.Round(parameters.SearchbandMinHertz.Value / binWidth);
-            int maxSearchBin = (int)Math.Round(parameters.SearchbandMaxHertz.Value / binWidth);
+            int minSearchBin = (int)Math.Round(parameters.MinHertz.Value / binWidth);
+            int maxSearchBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
             var minBandwidthHertz = parameters.MinBandwidthHertz ?? throw new ArgumentNullException($"{nameof(UpwardTrackParameters.MinBandwidthHertz)} must be set. Check your config file?");
             var maxBandwidthHertz = parameters.MaxBandwidthHertz ?? throw new ArgumentNullException($"{nameof(UpwardTrackParameters.MinBandwidthHertz)} must be set. Check your config file?");
 

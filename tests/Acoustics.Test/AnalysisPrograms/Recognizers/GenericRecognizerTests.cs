@@ -719,8 +719,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var decibelThreshold = 2.0;
             var parameters = new UpwardTrackParameters()
             {
-                SearchbandMinHertz = 6000,
-                SearchbandMaxHertz = 11000,
+                //set the Searchband bounds
+                MinHertz = 6000,
+                MaxHertz = 11000,
                 MinBandwidthHertz = 100,
                 MaxBandwidthHertz = 5000,
 
@@ -805,8 +806,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var decibelThreshold = 2.0;
             var parameters = new UpwardTrackParameters()
             {
-                SearchbandMinHertz = 500,
-                SearchbandMaxHertz = 6000,
+                //set the Searchband bounds
+                MinHertz = 500,
+                MaxHertz = 6000,
                 MinBandwidthHertz = 200,
                 MaxBandwidthHertz = 5000,
 
