@@ -21,16 +21,6 @@ namespace AnalysisPrograms.Recognizers.Base
     public class OnebinTrackParameters : CommonParameters
     {
         /// <summary>
-        /// Gets or sets a value indicating the minimum Hertz value of the search band.
-        /// </summary>
-        public int? SearchbandMinHertz { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating the maximum Hertz value of the search band.
-        /// </summary>
-        public int? SearchbandMaxHertz { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether proximal whistle tracks are to be combined.
         /// Proximal means the whistle tracks are in the same frequency band
         /// ... and that the gap between their start times is not greater than the specified seconds interval.
