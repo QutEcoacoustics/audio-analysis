@@ -37,7 +37,7 @@ PostProcessing:
 # Step 2: Combine possible syllable sequences and filter on excess syllable count.
 # Step 3: Remove events whose bandwidth is too small or large.
 # Step 4: Remove events that have excessive noise in their side-bands.
-    PostProcessInDecibelGroups: true
+    PostProcessInDecibelGroups: false
     # 1: Combine overlapping events
     CombineOverlappingEvents: true
 

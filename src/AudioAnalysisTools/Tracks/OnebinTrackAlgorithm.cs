@@ -17,6 +17,26 @@ namespace AudioAnalysisTools.Tracks
     using TowseyLibrary;
     using TrackType = AudioAnalysisTools.Events.Tracks.TrackType;
 
+    /// <summary>
+    /// This class searches a spectrogram for whistles, that is, for tones or spectral peaks that persist in one frequency bin.
+    /// In practice, the whistles of birds and other natural sources do not occupy a single frequency bin,
+    /// although this statement is confounded by the choice of recording sample rate and frame size.
+    /// But typically, a bird whistle spreads itself across three or more frequency bins using typical values for SR etc.
+    /// In this class, we make an assumption about the spectral profile of a whistle and the user is expected to find the appropriate
+    /// sample rate, frame size and frame step such that the target whistle is detected using the profile.
+    /// We define a whistle profile that is 11 bins wide. The actual whistle occupies the centre three bins, ie bins -1, 0 , +1.
+    /// Bins -2 and +2 are ignored to allow for some flexibility in getting he right combination of sample rate, frame size and frame step.
+    /// To establish that the centre three bins contain a spectral peak (i.e. are part of a potential whistle),
+    /// we define top and bottom sidebands, each of width three bins.
+    /// These are used to establish a baseline intensity which must be less than that of the centre three bins.
+    /// The bottom sideband = bins -3, -4, -5. The top sideband = bins +3, +4, +5.
+    /// Defining a whistle this way introduces edge effects at the top and bottom of the spectrogram.
+    /// In case of the low frequency edge, in order to get as close as possible to the frequency bin zero, we do not incorporate a bottom sidebound into the calculations.
+    /// Also note that a typical bird whistle is not exactly a pure tone. It typically fluctuates slightly from one frequency bin to an adjacent bin and back.
+    /// Consequently a final step in this whistle detection algorithm is to merge adjacent whistle tracks.
+    /// The algorithm is not perfect but it does detect constant tone sounds. Theis algorithm is designed so as not to pick up chirps,
+    /// i.e. gradually rising and falling tones. However, here again the right choice of SR, frame size and frame step are important.
+    /// </summary>
     public static class OnebinTrackAlgorithm
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -40,6 +60,11 @@ namespace AudioAnalysisTools.Tracks
             segmentStartOffset,
             decibelThreshold.Value);
 
+            foreach (var ev in events)
+            {
+                ev.Name = profileName;
+            }
+
             spectralEvents.AddRange(events);
 
             var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Whistles:{decibelThreshold.Value:F0}dB)", decibelThreshold.Value);
@@ -49,72 +74,100 @@ namespace AudioAnalysisTools.Tracks
         }
 
         /// <summary>
-        /// This method returns whistle (spectral peak) tracks enclosed in spectral events.
+        /// This method returns whistle (spectral peak) tracks enclosed as spectral events.
         /// It averages dB log values incorrectly but it is faster than doing many log conversions.
         /// </summary>
-        /// <param name="sonogram">The spectrogram to be searched.</param>
+        /// <param name="spectrogram">The spectrogram to be searched.</param>
+        /// <param name="parameters">The parameters that determine the search.</param>
+        /// <param name="segmentStartOffset">Enables assignment of a start time (relative to recording) to any valid event.</param>
+        /// <param name="decibelThreshold">The threshold for detection of a track.</param>
         /// <returns>A list of acoustic events containing whistle tracks.</returns>
-
         public static (List<EventCommon> ListOfevents, double[] CombinedIntensityArray) GetOnebinTracks(
-            SpectrogramStandard sonogram,
+            SpectrogramStandard spectrogram,
             OnebinTrackParameters parameters,
             TimeSpan segmentStartOffset,
             double decibelThreshold)
         {
-            var sonogramData = sonogram.Data;
-            int frameCount = sonogramData.GetLength(0);
-            int binCount = sonogramData.GetLength(1);
-            int nyquist = sonogram.NyquistFrequency;
+            var spectroData = spectrogram.Data;
+            int frameCount = spectroData.GetLength(0);
+            int binCount = spectroData.GetLength(1);
+            int nyquist = spectrogram.NyquistFrequency;
             double binWidth = nyquist / (double)binCount;
-            int minBin = (int)Math.Round(parameters.MinHertz.Value / binWidth);
-            int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
+
+            // calculate the frequency bin for bottom of search band
+            // Allow for whistle sideband = one bin
+            int minSearchBin = (int)Math.Floor(parameters.MinHertz.Value / binWidth);
+            if (minSearchBin < 1)
+            {
+                minSearchBin = 1;
+            }
+
+            // calculate the frequency bin for top of search band, allowing for the top sideband.
+            // see class summary above.
+            int topSideband = 6;
+            int maxSearchBin = (int)Math.Floor(parameters.MaxHertz.Value / binWidth) - 1;
+            if (maxSearchBin > binCount - topSideband)
+            {
+                maxSearchBin = binCount - topSideband;
+            }
+
+            // get max and min duration for the whistle event.
             double minDuration = parameters.MinDuration.Value;
             double maxDuration = parameters.MaxDuration.Value;
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
-                sampleRate: sonogram.SampleRate,
-                frameSize: sonogram.Configuration.WindowSize,
-                frameOverlap: sonogram.Configuration.WindowOverlap);
+                sampleRate: spectrogram.SampleRate,
+                frameSize: spectrogram.Configuration.WindowSize,
+                frameOverlap: spectrogram.Configuration.WindowOverlap);
 
             //Find all bin peaks and place in peaks matrix
-            var peaks = new double[frameCount, binCount];
+            // tf = timeframe and bin = frequency bin.
+            var peaksMatrix = new double[frameCount, binCount];
             for (int tf = 0; tf < frameCount; tf++)
             {
-                for (int bin = minBin + 1; bin < maxBin - 1; bin++)
+                for (int bin = minSearchBin; bin <= maxSearchBin; bin++)
                 {
-                    if (sonogramData[tf, bin] < decibelThreshold)
+                    //skip spectrogram cells below threshold
+                    if (spectroData[tf, bin] < decibelThreshold)
                     {
                         continue;
                     }
 
-                    // here we define the amplitude profile of a whistle. The buffer zone around whistle is five bins wide.
-                    var bandIntensity = ((sonogramData[tf, bin - 1] * 0.5) + sonogramData[tf, bin] + (sonogramData[tf, bin + 1] * 0.5)) / 2.0;
-                    var topSidebandIntensity = (sonogramData[tf, bin + 3] + sonogramData[tf, bin + 4] + sonogramData[tf, bin + 5]) / 3.0;
+                    // Here we define the amplitude profile of a whistle. The profile is 11 bins wide.
+                    // The whistle occupies the centre three bins, ie bins -1, 0 , +1. Bins -2 and +2 are ignored.
+                    // A top and bottom sidebands, each of width three bins, are used to establish a baseline intensity.
+                    // The bottom sideband = bins -3, -4, -5. The top sideband = bins +3, +4, +5.
+                    // For more detail see the class summary.
+                    var bandIntensity = ((spectroData[tf, bin - 1] * 0.5) + spectroData[tf, bin] + (spectroData[tf, bin + 1] * 0.5)) / 2.0;
+                    var topSidebandIntensity = (spectroData[tf, bin + 3] + spectroData[tf, bin + 4] + spectroData[tf, bin + 5]) / 3.0;
                     var netAmplitude = 0.0;
-                    if (bin < 4)
+                    if (bin < 5)
                     {
+                        // if bin < 5, i.e. too close to the bottom bin of the spectrogram, then only subtract intensity of the top sideband.
+                        // see class summary above.
                         netAmplitude = bandIntensity - topSidebandIntensity;
                     }
                     else
                     {
-                        var bottomSideBandIntensity = (sonogramData[tf, bin - 3] + sonogramData[tf, bin - 4] + sonogramData[tf, bin - 5]) / 3.0;
+                        var bottomSideBandIntensity = (spectroData[tf, bin - 3] + spectroData[tf, bin - 4] + spectroData[tf, bin - 5]) / 3.0;
                         netAmplitude = bandIntensity - ((topSidebandIntensity + bottomSideBandIntensity) / 2.0);
                     }
 
                     if (netAmplitude >= decibelThreshold)
                     {
-                        peaks[tf, bin] = sonogramData[tf, bin];
+                        peaksMatrix[tf, bin] = spectroData[tf, bin];
                     }
                 }
             }
 
-            var tracks = GetOnebinTracks(peaks, minDuration, maxDuration, decibelThreshold, converter);
+            var tracks = GetOnebinTracks(peaksMatrix, minDuration, maxDuration, decibelThreshold, converter);
 
             // Initialise tracks as events and get the combined intensity array.
             var events = new List<WhistleEvent>();
             var combinedIntensityArray = new double[frameCount];
-            var scoreRange = new Interval<double>(0, decibelThreshold * 5);
+            int scalingFactor = 5; // used to make plot easier to interpret.
+            var scoreRange = new Interval<double>(0, decibelThreshold * scalingFactor);
 
             foreach (var track in tracks)
             {
@@ -138,14 +191,16 @@ namespace AudioAnalysisTools.Tracks
                 {
                     SegmentStartSeconds = segmentStartOffset.TotalSeconds,
                     SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
-                    Name = "Whistle",
+                    Name = "Whistle", // this name can be overridden later.
                 };
 
                 events.Add(ae);
             }
 
             // This algorithm tends to produce temporally overlapped whistle events in adjacent channels.
-            // Combine overlapping whistle events
+            // This is because a typical bird whistle is not exactly horozontal.
+            // Combine overlapping whistle events if they are within four frequency bins of each other.
+            // The value 4 is somewhat arbitrary but is consistent with the whistle profile described in the class comments above.
             var hertzDifference = 4 * binWidth;
             var whistleEvents = WhistleEvent.CombineAdjacentWhistleEvents(events, hertzDifference);
 
@@ -169,8 +224,8 @@ namespace AudioAnalysisTools.Tracks
             var tracks = new List<Track>();
 
             // Look for possible track starts and initialise as track.
-            // Cannot include edge rows & columns because of edge effects.
             // Each row is a time frame which is a spectrum. Each column is a frequency bin
+            // Cannot include the three edge columns/frequency bins because of edge effects when determining a valid peak.
             for (int row = 0; row < frameCount; row++)
             {
                 for (int col = 3; col < bandwidthBinCount - 3; col++)

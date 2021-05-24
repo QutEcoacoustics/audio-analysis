@@ -11,17 +11,19 @@ namespace AnalysisPrograms.Recognizers.Base
     public class MinAndMaxBandwidthParameters : CommonParameters
     {
         /// <summary>
-        /// Gets or sets the minimum bandwidth, units = Hertz.
+        /// Gets or sets the minimum allowed bandwidth of a spectrogram track or event, units = Hertz.
         /// </summary>
         public int? MinBandwidthHertz { get; set; }
 
         /// <summary>
-        /// Gets or sets maximum bandwidth, units = Hertz.
+        /// Gets or sets the maximum allowed bandwidth of a spectrogram track or event, units = Hertz.
         /// </summary>
         public int? MaxBandwidthHertz { get; set; }
 
         public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+            yield return this.MinHertz.ValidateNotNull(nameof(this.MinHertz));
+            yield return this.MaxHertz.ValidateNotNull(nameof(this.MaxHertz));
             yield return this.MinBandwidthHertz.ValidateNotNull(nameof(this.MinBandwidthHertz));
             yield return this.MaxBandwidthHertz.ValidateNotNull(nameof(this.MaxBandwidthHertz));
 

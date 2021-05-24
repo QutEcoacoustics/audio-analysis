@@ -70,8 +70,8 @@ namespace AudioAnalysisTools.Tracks
             var frameStep = sonogram.FrameStep;
             int nyquist = sonogram.NyquistFrequency;
             double binWidth = nyquist / (double)binCount;
-            int minBin = (int)Math.Round(parameters.MinHertz.Value / binWidth);
-            int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
+            int minSearchBin = (int)Math.Round(parameters.MinHertz.Value / binWidth);
+            int maxSearchBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
             var minBandwidthHertz = parameters.MinBandwidthHertz ?? throw new ArgumentNullException($"{nameof(UpwardTrackParameters.MinBandwidthHertz)} must be set. Check your config file?");
             var maxBandwidthHertz = parameters.MaxBandwidthHertz ?? throw new ArgumentNullException($"{nameof(UpwardTrackParameters.MinBandwidthHertz)} must be set. Check your config file?");
 
@@ -90,7 +90,7 @@ namespace AudioAnalysisTools.Tracks
             var peaks = new double[frameCount, binCount];
             for (int row = 1; row < frameCount - 1; row++)
             {
-                for (int col = minBin; col < maxBin; col++)
+                for (int col = minSearchBin; col < maxSearchBin; col++)
                 {
                     if (sonogramData[row, col] < decibelThreshold)
                     {
@@ -107,7 +107,7 @@ namespace AudioAnalysisTools.Tracks
             }
 
             //NOTE: the Peaks matrix is same size as the sonogram.
-            var tracks = GetUpwardTracks(peaks, minBin, maxBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
+            var tracks = GetUpwardTracks(peaks, minSearchBin, maxSearchBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
 
             // initialise tracks as events and get the combined intensity array.
             var events = new List<SpectralEvent>();
