@@ -12,12 +12,22 @@ namespace AnalysisPrograms.SpectrogramGenerator
 #pragma warning disable SA1623 // Property summary documentation should match accessors
         public int WaveformHeight { get; set; } = 100;
 
-        public double BgNoiseThreshold { get; set; } = 3.0;
+        public double BgNoiseThreshold { get; set; } = 0.0;
 
         /// <summary>
         /// DIFFERENCE SPECTROGRAM - PARAMETER (in decibels).
         /// </summary>
         public double DifferenceThreshold { get; set; } = 3.0;
+
+        /// <summary>
+        /// CEPSTROGRAM - PARAMETER.
+        /// </summary>
+        public bool IncludeDelta { get; set; } = false;
+
+        /// <summary>
+        /// CEPSTROGRAM - PARAMETER.
+        /// </summary>
+        public bool IncludeDoubleDelta { get; set; } = false;
 
         /// <summary>
         /// LOCAL CONTRAST NORMALIZATION PARAMETERS.

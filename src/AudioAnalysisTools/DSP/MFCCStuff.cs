@@ -343,8 +343,9 @@ namespace AudioAnalysisTools.DSP
             return binBounds;
         }
 
+        /*
         /// <summary>
-        /// Does MelFilterBank for passed sonogram matrix.
+        /// Calculates the MelFilterBank for passed sonogram matrix.
         /// IMPORTANT !!!!! Assumes that min freq of passed sonogram matrix = 0 Hz and maxFreq = Nyquist.
         /// Uses Greg's MelIntegral.
         /// </summary>
@@ -413,9 +414,10 @@ namespace AudioAnalysisTools.DSP
 
             return outData;
         }
+        */
 
         /// <summary>
-        /// Does mel conversion for sonogram for any frequency band given by minFreq and maxFreq.
+        /// Does conversion from linear frequency scale to mel-scale for any frequency band given by minFreq and maxFreq.
         /// Uses Greg's MelIntegral
         /// The first step is to calculate the number of filters for the required frequency sub-band.
         /// </summary>
@@ -429,8 +431,7 @@ namespace AudioAnalysisTools.DSP
             double freqRange = maxFreq - minFreq;
             if (freqRange <= 0)
             {
-                Log.WriteLine("Speech.MelFilterBank(): WARNING!!!! Freq range = zero");
-                throw new Exception("Speech.LinearFilterBank(): WARNING!!!! Freq range = zero. Check values of min & max freq.");
+                throw new Exception("FATAL ERROR: Speech.LinearFilterBank(): Freq range = zero. Check values of min & max freq.");
             }
 
             double melNyquist = Mel(nyquist);
@@ -514,7 +515,7 @@ namespace AudioAnalysisTools.DSP
         //********************************************************************************************************************
         //********************************************************************************************************************
         //********************************************************************************************************************
-        //******************************* CEPTRA COEFFICIENTS USING DCT AND COSINES
+        //******************************* CALCULATION OF CEPTRAL COEFFICIENTS USING DCT AND COSINES
 
         public static double[,] Cepstra(double[,] spectra, int coeffCount)
         {
