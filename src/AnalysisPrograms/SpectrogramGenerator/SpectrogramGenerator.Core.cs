@@ -217,6 +217,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
                 sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
 
                 sonoConfig.mfccConfig.DoMelScale = true;
+                sonoConfig.mfccConfig.FilterbankCount = config.FilterbankCount;
 
                 // set the default number of cepstral coefficients
                 sonoConfig.mfccConfig.CcCount = 12;

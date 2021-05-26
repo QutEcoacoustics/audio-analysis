@@ -21,11 +21,27 @@ namespace AnalysisPrograms.SpectrogramGenerator
 
         /// <summary>
         /// CEPSTROGRAM - PARAMETER.
+        /// Do pre-emphasis prior to FFT.
+        /// </summary>
+        public bool DoPreemphasis { get; set; } = false;
+
+        /// <summary>
+        /// CEPSTROGRAM - PARAMETER
+        /// The size of the Mel-scale filter bank.
+        /// The default value is 64.
+        /// THe minimum I have seen referenced = 26.
+        /// </summary>
+        public int FilterbankCount { get; set; } = 64;
+
+        /// <summary>
+        /// CEPSTROGRAM - PARAMETER.
+        /// Include the delta features in the returned MFCC feature vector.
         /// </summary>
         public bool IncludeDelta { get; set; } = false;
 
         /// <summary>
         /// CEPSTROGRAM - PARAMETER.
+        /// Include the delta-delta or acceleration features in the returned MFCC feature vector.
         /// </summary>
         public bool IncludeDoubleDelta { get; set; } = false;
 

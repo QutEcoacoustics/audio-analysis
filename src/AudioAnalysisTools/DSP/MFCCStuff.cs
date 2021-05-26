@@ -681,9 +681,9 @@ namespace AudioAnalysisTools.DSP
         public static double[,] AcousticVectors(double[,] mfcc, double[] dBNormed, bool includeDelta, bool includeDoubleDelta)
         {
             //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
-            int frameCount = mfcc.GetLength(0); //number of frames
-            int mfccCount = mfcc.GetLength(1); //number of MFCCs
-            int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
+            int frameCount = mfcc.GetLength(0); //number of time frames
+            int mfccCount = mfcc.GetLength(1);  //number of MFCC coefficients
+            int coeffcount = mfccCount + 1;     //number of MFCCs + 1 for energy
             int dim = coeffcount;
             if (includeDelta)
             {
@@ -695,19 +695,123 @@ namespace AudioAnalysisTools.DSP
                 dim += coeffcount;
             }
 
+            // create matrix to take the required set of features, mfccs, deltas and double deltas.
             double[,] acousticM = new double[frameCount, dim];
+
+            // loop through the time frames and create feature vector for each frame.
             for (int t = 0; t < frameCount; t++)
             {
-                double[] fv = GetFeatureVector(dBNormed, mfcc, t, includeDelta, includeDoubleDelta); //get feature vector for frame (t)
+                double[] fv = GetMfccFeatureVector(dBNormed, mfcc, t, includeDelta, includeDoubleDelta); //get feature vector for frame (t)
+
+                //transfer feature vector to the matrix of acoustic features.
                 for (int i = 0; i < dim; i++)
                 {
-                    acousticM[t, i] = fv[i];  //transfer feature vector to acoustic matrix.
+                    acousticM[t, i] = fv[i];
                 }
             }
 
             return acousticM;
         }
 
+        /// <summary>
+        /// Constructs a feature vector of MFCCs including deltas and double deltas as requested by user.
+        /// </summary>
+        /// <param name="dB"></param>
+        /// <param name="matrix"></param>
+        /// <param name="timeId"></param>
+        /// <param name="includeDelta"></param>
+        /// <param name="includeDoubleDelta"></param>
+        /// <returns></returns>
+        public static double[] GetMfccFeatureVector(double[] dB, double[,] matrix, int timeId, bool includeDelta, bool includeDoubleDelta)
+        {
+            //the dB array has been normalised in 0-1.
+            int frameCount = matrix.GetLength(0); //number of frames
+            int mfccCount = matrix.GetLength(1);  //number of MFCCs
+            int coeffcount = mfccCount + 1;  //number of MFCCs + 1 for energy
+            int dim = coeffcount;
+            if (includeDelta)
+            {
+                dim += coeffcount;
+            }
+
+            if (includeDoubleDelta)
+            {
+                dim += coeffcount;
+            }
+
+            double[] fv = new double[dim];
+
+            //add in the CEPSTRAL coefficients
+            fv[0] = dB[timeId];
+            for (int i = 0; i < mfccCount; i++)
+            {
+                fv[1 + i] = matrix[timeId, i];
+            }
+
+            //add in the DELTA coefficients
+            int offset = coeffcount;
+            if (includeDelta)
+            {
+                // First deal with edge effects
+                if (timeId + 1 >= frameCount || timeId - 1 < 0)
+                {
+                    for (int i = offset; i < dim; i++)
+                    {
+                        fv[i] = 0.5;
+                    }
+
+                    return fv;
+                }
+
+                fv[offset] = dB[timeId + 1] - dB[timeId - 1];
+                for (int i = 0; i < mfccCount; i++)
+                {
+                    fv[1 + offset + i] = matrix[timeId + 1, i] - matrix[timeId - 1, i];
+                }
+
+                //Normalise Matrix Values values that potentially range from -1 to +1
+                for (int i = offset; i < offset + mfccCount + 1; i++)
+                {
+                    fv[i] = (fv[i] + 1) / 2;
+                }
+            }
+
+            //add in the DOUBLE DELTA coefficients
+            if (includeDoubleDelta)
+            {
+                //deal with edge effects
+                offset += coeffcount;
+                if (timeId + 2 >= frameCount || timeId - 2 < 0)
+                {
+                    for (int i = offset; i < dim; i++)
+                    {
+                        fv[i] = 0.5;
+                    }
+
+                    return fv;
+                }
+
+                fv[offset] = dB[timeId + 2] - dB[timeId] - (dB[timeId] - dB[timeId - 2]);
+                for (int i = 0; i < mfccCount; i++)
+                {
+                    fv[1 + offset + i] = matrix[timeId + 2, i] - matrix[timeId, i] - (matrix[timeId, i] - matrix[timeId - 2, i]);
+                }
+
+                //Normalise Matrix Values values that potentially range from -2 to +2
+                for (int i = offset; i < offset + mfccCount + 1; i++)
+                {
+                    fv[i] = (fv[i] + 2) / 4;
+
+                    //if (fv[i] < 0.0) fv[i] = 0.0;
+                    //if (fv[i] > 1.0) fv[i] = 1.0;
+                }
+            }
+
+            return fv;
+        }
+
+        // ##################### The below methods are older and no longer referenced. Keeping just in case?!
+        /*
         public static double[] AcousticVector(int index, double[,] mfcc, double[] dB, bool includeDelta, bool includeDoubleDelta)
         {
             //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
@@ -779,7 +883,9 @@ namespace AudioAnalysisTools.DSP
 
             return fv;
         }
+        */
 
+        /*
         public static double[] GetFeatureVector(double[,] matrix, int timeId, bool includeDelta, bool includeDoubleDelta)
         {
             int frameCount = matrix.GetLength(0); //number of frames
@@ -865,90 +971,6 @@ namespace AudioAnalysisTools.DSP
 
             return fv;
         }
-
-        public static double[] GetFeatureVector(double[] dB, double[,] matrix, int timeId, bool includeDelta, bool includeDoubleDelta)
-        {
-            //the dB array has been normalised in 0-1.
-            int frameCount = matrix.GetLength(0); //number of frames
-            int mfccCount = matrix.GetLength(1);  //number of MFCCs
-            int coeffcount = mfccCount + 1;  //number of MFCCs + 1 for energy
-            int dim = coeffcount;
-            if (includeDelta)
-            {
-                dim += coeffcount;
-            }
-
-            if (includeDoubleDelta)
-            {
-                dim += coeffcount;
-            }
-
-            double[] fv = new double[dim];
-
-            //add in the CEPSTRAL coefficients
-            fv[0] = dB[timeId];
-            for (int i = 0; i < mfccCount; i++)
-            {
-                fv[1 + i] = matrix[timeId, i];
-            }
-
-            //add in the DELTA coefficients
-            int offset = coeffcount;
-            if (includeDelta)
-            {
-                if (timeId + 1 >= frameCount || timeId - 1 < 0) //deal with edge effects
-                {
-                    for (int i = offset; i < dim; i++)
-                    {
-                        fv[i] = 0.5;
-                    }
-
-                    return fv;
-                }
-
-                fv[offset] = dB[timeId + 1] - dB[timeId - 1];
-                for (int i = 0; i < mfccCount; i++)
-                {
-                    fv[1 + offset + i] = matrix[timeId + 1, i] - matrix[timeId - 1, i];
-                }
-
-                for (int i = offset; i < offset + mfccCount + 1; i++)
-                {
-                    fv[i] = (fv[i] + 1) / 2;    //NormaliseMatrixValues values that potentially range from -1 to +1
-                }
-            }
-
-            //add in the DOUBLE DELTA coefficients
-            if (includeDoubleDelta)
-            {
-                //deal with edge effects
-                offset += coeffcount;
-                if (timeId + 2 >= frameCount || timeId - 2 < 0)
-                {
-                    for (int i = offset; i < dim; i++)
-                    {
-                        fv[i] = 0.5;
-                    }
-
-                    return fv;
-                }
-
-                fv[offset] = dB[timeId + 2] - dB[timeId] - (dB[timeId] - dB[timeId - 2]);
-                for (int i = 0; i < mfccCount; i++)
-                {
-                    fv[1 + offset + i] = matrix[timeId + 2, i] - matrix[timeId, i] - (matrix[timeId, i] - matrix[timeId - 2, i]);
-                }
-
-                for (int i = offset; i < offset + mfccCount + 1; i++)
-                {
-                    fv[i] = (fv[i] + 2) / 4;   //NormaliseMatrixValues values that potentially range from -2 to +2
-
-                    //if (fv[i] < 0.0) fv[i] = 0.0;
-                    //if (fv[i] > 1.0) fv[i] = 1.0;
-                }
-            }
-
-            return fv;
-        }
+        */
     }
 }
