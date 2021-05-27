@@ -26,7 +26,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
             this.Configuration = sg.Configuration;
             this.DecibelsPerFrame = sg.DecibelsPerFrame;
-            this.DecibelsNormalised = sg.DecibelsNormalised;
             this.Duration = sg.Duration;
             this.FrameCount = sg.FrameCount;
             this.DecibelReference = sg.DecibelReference;
@@ -40,41 +39,22 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.Make(this.Data);
         }
 
-        public SpectrogramCepstral(AmplitudeSonogram sg, int minHz, int maxHz)
-            : this(sg)
-        {
-            this.DecibelsPerFrame = sg.DecibelsPerFrame;
-            this.DecibelsNormalised = sg.DecibelsNormalised;
-            this.Duration = sg.Duration;
-            this.FrameCount = sg.FrameCount;
-            this.DecibelReference = sg.DecibelReference;
-            this.MaxAmplitude = sg.MaxAmplitude;
-            this.SampleRate = sg.SampleRate;
-            this.SigState = sg.SigState;
-            this.SnrData = sg.SnrData;
-            this.Data = SpectrogramTools.ExtractFreqSubband(sg.Data, minHz, maxHz, this.Configuration.DoMelScale, sg.Configuration.FreqBinCount, sg.FBinWidth);
-
-            //converts amplitude matrix to cepstral sonogram
-            this.Make(this.Data);
-        }
-
         /// <summary>
         /// Converts amplitude matrix to cepstral sonogram.
         /// </summary>
         /// <param name="amplitudeM">Matrix of amplitude values.</param>
         public override void Make(double[,] amplitudeM)
         {
-            var tuple = MakeCepstrogram(this.Configuration, amplitudeM, this.DecibelsNormalised, this.SampleRate);
-            this.Data = tuple.Item1;
-            this.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
+            this.Data = SpectrogramCepstral.MakeCepstrogram(this.Configuration, amplitudeM, this.DecibelsPerFrame, this.SampleRate);
         }
 
         //##################################################################################################################################
 
         /// <summary>
-        /// NOTE!!!! The decibel array has been normalised in 0 - 1.
+        /// Returns a cepstrogram matrix of mfcc values from a spectrogram matrix of amplitude values.
+        /// This was revised May 2021 in light of more recent literature on mfcc's.
         /// </summary>
-        protected static Tuple<double[,], double[]> MakeCepstrogram(SonogramConfig config, double[,] matrix, double[] decibels, int sampleRate)
+        protected static double[,] MakeCepstrogram(SonogramConfig config, double[,] matrix, double[] frameLogEnergy, int sampleRate)
         {
             double[,] m = matrix;
             int nyquist = sampleRate / 2;
@@ -82,7 +62,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             bool includeDelta = config.mfccConfig.IncludeDelta;
             bool includeDoubleDelta = config.mfccConfig.IncludeDoubleDelta;
 
-            //(i) APPLY FILTER BANK
+            //(i) MAKE THE FILTER BANK
             int bandCount = config.mfccConfig.FilterbankCount;
             bool doMelScale = config.mfccConfig.DoMelScale;
             int ccCount = config.mfccConfig.CcCount;
@@ -100,93 +80,37 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     bandCount + " > " + fftBinCount + ")\n\n");
             }
 
-            //this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth.
-            m = doMelScale ? MFCCStuff.MelFilterBank(m, bandCount, nyquist, minHz, maxHz) : MFCCStuff.LinearFilterBank(m, bandCount, nyquist, minHz, maxHz);
+            // (ii) CONVERT AMPLITUDES TO ENERGY
+            m = MatrixTools.SquareValues(m);
 
+            // (iii) Do the filter-bank.
+            // The filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth.
+            m = doMelScale ? MFCCStuff.MelFilterBank(m, bandCount, nyquist, minHz, maxHz) : MFCCStuff.LinearFilterBank(m, bandCount, nyquist, minHz, maxHz);
             Log.WriteIfVerbose("\tDim after filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
 
-            //(ii) CONVERT AMPLITUDES TO DECIBELS
-            m = MFCCStuff.DecibelSpectra(m, config.WindowPower, sampleRate, epsilon); //from spectrogram
+            // (iv) TAKE LOG OF THE ENERGY VALUES AFTER FILTERBANK
+            m = MFCCStuff.GetLogOfEnergySpectrogram(m, config.WindowPower, sampleRate, epsilon); //from spectrogram
 
-            //(iii) NOISE REDUCTION
-            var tuple1 = SNR.NoiseReduce(m, config.NoiseReductionType, config.NoiseReductionParameter);
-            m = tuple1.Item1;
+            // (v) SQUARE THE MEL VALUES BEFORE DOING DCT
+            // This reduces the smaller values wrt the higher energy values. It is supposed to increase the accuracy of ASR.
+            m = MatrixTools.SquareValues(m);
 
-            //(iv) calculate cepstral coefficients
+            // (vi) calculate cepstral coefficients
             m = MFCCStuff.Cepstra(m, ccCount);
 
-            //(v) Normalize Matrix Values
-            m = DataTools.normalise(m);
+            // (vii) Calculate the full range of MFCC coefficients ie including decibel and deltas, etc
+            // normalise the array of frame log-energy values. These will later be added into the mfcc feature vectors.
+            var frameLogEnergyNormed = DataTools.normalise(frameLogEnergy);
 
-            //(vi) Calculate the full range of MFCC coefficients ie including decibel and deltas, etc
-            m = MFCCStuff.AcousticVectors(m, decibels, includeDelta, includeDoubleDelta);
-            var tuple2 = Tuple.Create(m, tuple1.Item2);
+            // Normalise the mfcc values and the other deltas etc.
+            m = MatrixTools.NormaliseMatrixValues(m);
+            m = MFCCStuff.AcousticVectors(m, frameLogEnergyNormed, includeDelta, includeDoubleDelta);
 
-            // return matrix and full bandwidth modal noise profile
-            return tuple2;
+            // (viii) Normalize Matrix columns, i.e. weight coefficients so that all have similar range.
+            //       Tried this because said to be effective but the resulting cepstrograms are very noisy.
+            //m = MatrixTools.NormaliseMatrixColumns(m);
+
+            return m;
         }
-    } // class CepstralSonogram
-
-    //##################################################################################################################################
-    //##################################################################################################################################
-
-    public class TriAvSonogram : SpectrogramCepstral
-    {
-        public TriAvSonogram(string configFile, WavReader wav)
-            : base(SonogramConfig.Load(configFile), wav)
-        {
-        }
-
-        public TriAvSonogram(SonogramConfig config, WavReader wav)
-            : base(config, wav)
-        {
-        }
-
-        public override void Make(double[,] amplitudeM)
-        {
-            this.Data = MakeAcousticVectors(this.Configuration, amplitudeM, this.DecibelsNormalised, this.SampleRate);
-        }
-
-        public static double[,] MakeAcousticVectors(SonogramConfig config, double[,] matrix, double[] decibels, int sampleRate)
-        {
-            //int ccCount = config.mfccConfig.CcCount;
-            bool includeDelta = config.mfccConfig.IncludeDelta;
-            bool includeDoubleDelta = config.mfccConfig.IncludeDoubleDelta;
-            int deltaT = config.DeltaT;
-
-            Log.WriteIfVerbose(" MakeAcousticVectors(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ", deltaT=" + deltaT + ")");
-            var tuple = MakeCepstrogram(config, matrix, decibels, sampleRate);
-            double[,] m = tuple.Item1;
-
-            //initialize feature vector for template - will contain three acoustic vectors - for T-dT, T and T+dT
-            int frameCount = m.GetLength(0);
-            int cepstralL = m.GetLength(1);  // length of cepstral vector
-            int featurevL = 3 * cepstralL;   // to accomodate cepstra for T-2, T and T+2
-
-            double[,] acousticM = new double[frameCount, featurevL]; //init the matrix of acoustic vectors
-            for (int i = deltaT; i < frameCount - deltaT; i++)
-            {
-                double[] rowTm2 = DataTools.GetRow(m, i - deltaT);
-                double[] rowT = DataTools.GetRow(m, i);
-                double[] rowTp2 = DataTools.GetRow(m, i + deltaT);
-
-                for (int j = 0; j < cepstralL; j++)
-                {
-                    acousticM[i, j] = rowTm2[j];
-                }
-
-                for (int j = 0; j < cepstralL; j++)
-                {
-                    acousticM[i, cepstralL + j] = rowT[j];
-                }
-
-                for (int j = 0; j < cepstralL; j++)
-                {
-                    acousticM[i, cepstralL + cepstralL + j] = rowTp2[j];
-                }
-            }
-
-            return acousticM;
-        }
-    } //end class AcousticVectorsSonogram : CepstralSonogram
+    }
 }

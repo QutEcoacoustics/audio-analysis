@@ -76,8 +76,12 @@ namespace AnalysisPrograms.SpectrogramGenerator
             // Default noiseReductionType = Standard
             var bgNoiseThreshold = config.BgNoiseThreshold;
 
+            // set pre-emphasis to the default value false.
+            bool doPreemphasis = false;
+
             // EXTRACT ENVELOPE and SPECTROGRAM FROM RECORDING SEGMENT
-            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recordingSegment, frameSize, frameStep);
+            // The output from this call to ExtractEnvelopeAndFfts is used only for standard spectrograms.
+            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recordingSegment, doPreemphasis, frameSize, frameStep);
 
             // This constructor initializes default values for Melscale and Mfcc spectrograms and other parameters.
             var sonoConfig = new SonogramConfig()
@@ -211,9 +215,13 @@ namespace AnalysisPrograms.SpectrogramGenerator
             // IMAGE 7) Cepstral Spectrogram
             if (@do.Contains(CepstralSpectrogram))
             {
-                // TODO at present noise reduction type must be set = Standard.
-                // ... but use the NoiseReductionParameter that is set in the config file.
-                //sonoConfig.NoiseReductionParameter = 0.0;
+                // The cepstrogram requires additional config settings. Cannot use previous spectrograms.
+                // Set up the config file.
+                // Use some defaults and get other parameters from config file.
+                sonoConfig.DoPreemphasis = config.DoPreemphasis;
+
+                // TODO CHECK IF THERE IS A NEED FOR NOISE REDUCTION
+                sonoConfig.NoiseReductionParameter = 0.0;
                 sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
 
                 sonoConfig.mfccConfig.DoMelScale = true;
@@ -223,9 +231,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
                 sonoConfig.mfccConfig.CcCount = 12;
                 sonoConfig.mfccConfig.IncludeDelta = config.IncludeDelta;
                 sonoConfig.mfccConfig.IncludeDoubleDelta = config.IncludeDoubleDelta;
-                images.Add(
-                    CepstralSpectrogram,
-                    GetCepstrogram(sonoConfig, recordingSegment, sourceRecordingName));
+                images.Add(CepstralSpectrogram, GetCepstrogram(sonoConfig, recordingSegment, sourceRecordingName));
             }
 
             // IMAGE 8) Octave-frequency scale Spectrogram
@@ -445,12 +451,18 @@ namespace AnalysisPrograms.SpectrogramGenerator
             return image;
         }
 
+        /// <summary>
+        /// Returns a cepstrogram image.
+        /// </summary>
         public static Image<Rgb24> GetCepstrogram(
-            SonogramConfig sonoConfig,
+            SonogramConfig config,
             AudioRecording recording,
             string sourceRecordingName)
         {
-            var cepstrogram = new SpectrogramCepstral(sonoConfig, recording.WavReader);
+            // Get the cepstrogram
+            var cepstrogram = new SpectrogramCepstral(config, recording.WavReader);
+
+            // Now prepare it as an image.
             var image = cepstrogram.GetImage();
             var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(
                     "CEPSTROGRAM " + sourceRecordingName,
@@ -458,7 +470,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
                     ImageTags[CepstralSpectrogram]);
             var startTime = TimeSpan.Zero;
             var xAxisTicInterval = TimeSpan.FromSeconds(1);
-            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(sonoConfig.WindowStep / (double)sonoConfig.SampleRate);
+            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(config.WindowStep / (double)config.SampleRate);
             var labelInterval = TimeSpan.FromSeconds(5);
             image = BaseSonogram.FrameSonogram(image, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration, labelInterval);
             return image;

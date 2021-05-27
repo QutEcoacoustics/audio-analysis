@@ -10,7 +10,7 @@ namespace AudioAnalysisTools.DSP
     public class MFCCStuff
     {
         /// <summary>
-        /// Converts spectral amplitudes directly to dB, normalising for window power and sample rate.
+        /// Converts amplitude spectra (in a spectrogram) directly to dB spectra, normalising for window power and sample rate.
         /// NOTE 1: The window contributes power to the signal which must subsequently be removed from the spectral power.
         /// NOTE 2: Spectral power must be normalised for sample rate. Effectively calculate freq power per sample.
         /// NOTE 3: The power in all freq bins except f=0 must be doubled because the power spectrum is an even function about f=0;
@@ -75,6 +75,80 @@ namespace AudioAnalysisTools.DSP
                 else
                 {
                     spectra[i, binCount - 1] = 10 * Math.Log10(amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate);
+                }
+            }
+
+            return spectra;
+        }
+
+        /// <summary>
+        /// This method is similar to the above DecibelSpectra() method,
+        /// except that the passed spectrogram matrix contains energy values, i.e. squared amplitude values.
+        /// This method is used when calculating mfcc's. The passed energy spectrogram is output from the mel-frequency filter bank,
+        /// and the energy values are converted directly to log-energy, normalising for window power and sample rate.
+        /// Note that the output is log-energy, not decibels: decibels =  10 * log-energy
+        /// NOTE 1: The window contributes power to the signal which must subsequently be removed from the spectral power.
+        /// NOTE 2: Spectral power must be normalised for sample rate. Effectively calculate freq power per sample.
+        /// NOTE 3: The power in all freq bins except f=0 must be doubled because the power spectrum is an even function about f=0;
+        ///         This is due to the fact that the spectrum actually consists of 512 + 1 values, the centre value being for f=0.
+        /// NOTE 5: THIS METHOD ASSUMES THAT THE LAST BIN IS THE NYQUIST FREQ BIN
+        /// NOTE 6: THIS METHOD ASSUMES THAT THE FIRST BIN IS THE MEAN or DC FREQ BIN.
+        /// </summary>
+        /// <param name="energyM"> the amplitude spectra. </param>
+        /// <param name="windowPower">value for window power normalisation.</param>
+        /// <param name="sampleRate">to NormaliseMatrixValues for the sampling rate.</param>
+        /// <param name="epsilon">small value to avoid log of zero.</param>
+        /// <returns>a spectrogram of decibel values.</returns>
+        public static double[,] GetLogOfEnergySpectrogram(double[,] energyM, double windowPower, int sampleRate, double epsilon)
+        {
+            int frameCount = energyM.GetLength(0);
+            int binCount = energyM.GetLength(1);
+            double minLogEnergy = Math.Log10(epsilon / windowPower / sampleRate);
+            double minLogEnergy2 = Math.Log10(epsilon * 2 / windowPower / sampleRate);
+
+            double[,] spectra = new double[frameCount, binCount];
+
+            //calculate power of the DC value - first column of matrix
+            for (int i = 0; i < frameCount; i++)
+            {
+                if (energyM[i, 0] < epsilon)
+                {
+                    spectra[i, 0] = minLogEnergy;
+                }
+                else
+                {
+                    spectra[i, 0] = Math.Log10(energyM[i, 0] / windowPower / sampleRate);
+                }
+            }
+
+            // calculate power in frequency bins - must multiply by 2 to accomodate two spectral components, ie positive and neg freq.
+            for (int j = 1; j < binCount - 1; j++)
+            {
+                // foreach time step or frame
+                for (int i = 0; i < frameCount; i++)
+                {
+                    if (energyM[i, j] < epsilon)
+                    {
+                        spectra[i, j] = minLogEnergy2;
+                    }
+                    else
+                    {
+                        spectra[i, j] = Math.Log10(energyM[i, j] * 2 / windowPower / sampleRate);
+                    }
+                }
+            } //end of all freq bins
+
+            //calculate power of the Nyquist freq bin - last column of matrix
+            for (int i = 0; i < frameCount; i++)
+            {
+                //calculate power of the DC value
+                if (energyM[i, binCount - 1] < epsilon)
+                {
+                    spectra[i, binCount - 1] = minLogEnergy;
+                }
+                else
+                {
+                    spectra[i, binCount - 1] = Math.Log10(energyM[i, binCount - 1] / windowPower / sampleRate);
                 }
             }
 
@@ -421,7 +495,7 @@ namespace AudioAnalysisTools.DSP
         /// Uses Greg's MelIntegral
         /// The first step is to calculate the number of filters for the required frequency sub-band.
         /// </summary>
-        /// <param name="matrix">the sonogram.</param>
+        /// <param name="matrix">the spectrogram.</param>
         /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist.</param>
         /// <param name="nyquist">max frequency in original spectra.</param>
         /// <param name="minFreq">min freq in the passed sonogram matrix.</param>
@@ -675,10 +749,15 @@ namespace AudioAnalysisTools.DSP
         //*********************************************** GET ACOUSTIC VECTORS
 
         /// <summary>
-        /// This method assumes that the supplied mfcc matrix DOES NOT contain dB values in column one.
-        /// These are added in from the supplied dB array.
+        /// This method assumes that the supplied mfcc matrix DOES NOT contain frame dB (log energy) values in column zero.
+        /// These are added in from the supplied array of frame log-energies.
         /// </summary>
-        public static double[,] AcousticVectors(double[,] mfcc, double[] dBNormed, bool includeDelta, bool includeDoubleDelta)
+        /// <param name="mfcc">A matrix of mfcc coefficients. Column zero is empty.</param>
+        /// <param name="frameDbNormed">log-energy values for the frames.</param>
+        /// <param name="includeDelta">Whether or not to add delta features.</param>
+        /// <param name="includeDoubleDelta">Whether or not to add double delta features.</param>
+        /// <returns>A matrix of complete mfcc values with additional deltas, frame energies etc.</returns>
+        public static double[,] AcousticVectors(double[,] mfcc, double[] frameDbNormed, bool includeDelta, bool includeDoubleDelta)
         {
             //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
             int frameCount = mfcc.GetLength(0); //number of time frames
@@ -701,7 +780,7 @@ namespace AudioAnalysisTools.DSP
             // loop through the time frames and create feature vector for each frame.
             for (int t = 0; t < frameCount; t++)
             {
-                double[] fv = GetMfccFeatureVector(dBNormed, mfcc, t, includeDelta, includeDoubleDelta); //get feature vector for frame (t)
+                double[] fv = GetMfccFeatureVector(frameDbNormed, mfcc, t, includeDelta, includeDoubleDelta); //get feature vector for frame (t)
 
                 //transfer feature vector to the matrix of acoustic features.
                 for (int i = 0; i < dim; i++)
