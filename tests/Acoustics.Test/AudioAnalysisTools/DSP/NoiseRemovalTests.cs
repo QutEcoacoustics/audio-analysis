@@ -57,6 +57,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             var fftdata = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
+                false,
                 windowSize,
                 windowOverlap,
                 windowFunction);

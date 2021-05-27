@@ -43,18 +43,23 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
             int windowSize = 512;
 
-            // window overlap is used only for sonograms. It is not used when calculating acoustic indices.
+            // set default value for pre-emphasis.
+            // set true ony when dealing with human speech.
+            bool doPreemphasis = false;
+
+            // window overlap is used only for spectrograms. It is not used when calculating acoustic indices.
             double windowOverlap = 0.0;
             var windowFunction = WindowFunctions.HAMMING.ToString();
 
             var fftdata = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
+                doPreemphasis,
                 windowSize,
                 windowOverlap,
                 windowFunction);
 
             // Now recover the data
-            // The following data is required when constructing sonograms
+            // The following data is required when constructing spectrograms
             var duration = recording.WavReader.Time;
             var sr = recording.SampleRate;
             var frameCount = fftdata.FrameCount;
@@ -109,6 +114,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
             Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
             CollectionAssert.That.AreEqual(expectedColSums, columnSums, Delta);
+
+            //FileTools.WriteArray2File_Formatted(expectedColSums, "C:\\temp\\array.txt", "0.00");
         }
 
         /// <summary>
@@ -122,12 +129,17 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
             int windowSize = 512;
 
-            // window overlap is used only for sonograms. It is not used when calculating acoustic indices.
+            // set default value for pre-emphasis.
+            // set true ony when dealing with human speech.
+            bool doPreemphasis = false;
+
+            // window overlap is used only for spectrograms. It is not used when calculating acoustic indices.
             double windowOverlap = 0.0;
             var windowFunction = WindowFunctions.HAMMING.ToString();
 
             var fftdata = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
+                doPreemphasis,
                 windowSize,
                 windowOverlap,
                 windowFunction);
@@ -135,7 +147,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Now recover the data
 
             /*
-            // The following data is required when constructing sonograms
+            // The following data is required when constructing spectrograms
             var duration = recording.WavReader.Time;
             var sr = recording.SampleRate;
             var frameCount = fftdata.FrameCount;
@@ -207,6 +219,80 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             Assert.AreEqual(255, nyquistBin);
             Assert.AreEqual(11025, nyquistFreq);
             Assert.AreEqual(43.0664, freqBinWidth, 0.00001);
+        }
+
+        /// <summary>
+        /// Test the output from EnvelopeAndFft.
+        /// This is the same as TestEnvelopeAndFft1() EXCEPT that Pre-empahsis is set true.
+        /// Pre-empahsis is set true only when dealing speech. Never when calculating acoustic indices.
+        /// Only test those variables that are used to construct sonograms.
+        /// </summary>
+        [TestMethod]
+        public void TestEnvelopeAndFft3()
+        {
+            var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
+            int windowSize = 512;
+            bool doPreemphasis = true;
+            double windowOverlap = 0.0;
+            var windowFunction = WindowFunctions.HAMMING.ToString();
+
+            var fftdata = DSP_Frames.ExtractEnvelopeAndFfts(
+                recording,
+                doPreemphasis,
+                windowSize,
+                windowOverlap,
+                windowFunction);
+
+            // Now recover the data
+            // The following data is required when constructing sonograms
+            var duration = recording.WavReader.Time;
+            var sr = recording.SampleRate;
+            var frameCount = fftdata.FrameCount;
+            var fractionOfHighEnergyFrames = fftdata.FractionOfHighEnergyFrames;
+            var epislon = fftdata.Epsilon;
+            var windowPower = fftdata.WindowPower;
+            var amplSpectrogram = fftdata.AmplitudeSpectrogram;
+
+            // DO THE TESTS
+            int expectedSR = 22050;
+            Assert.AreEqual(expectedSR, sr);
+            Assert.AreEqual(60.244535147392290249433106575964M, recording.WavReader.ExactDurationSeconds);
+            Assert.AreEqual(2594, frameCount);
+            int expectedBitsPerSample = 16;
+            double expectedEpsilon = Math.Pow(0.5, expectedBitsPerSample - 1);
+            Assert.AreEqual(expectedEpsilon, epislon);
+            double expectedWindowPower = 203.0778;
+            Assert.AreEqual(expectedWindowPower, windowPower, 0.0001);
+            Assert.AreEqual(0.0, fractionOfHighEnergyFrames, 0.0000001);
+
+            // Test sonogram data matrix by comparing the vector of column sums.
+            double[] columnSums = MatrixTools.SumColumns(amplSpectrogram);
+
+            var sumFile = PathHelper.ResolveAsset("EnvelopeAndFft", "BAC2_20071008-085040_DataColumnSums.bin");
+
+            // uncomment this to update the binary data. Should be rarely needed
+            //Binary.Serialize(sumFile, columnSums);
+
+            var expectedColSums = Binary.Deserialize<double[]>(sumFile);
+            var totalDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Sum();
+            var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
+            Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
+            CollectionAssert.That.AreEqual(expectedColSums, columnSums, Delta);
+
+            //FileTools.WriteArray2File_Formatted(expectedColSums, "C:\\temp\\array.txt", "0.00");
+
+            // The effect of pre-emphasis on the first 10 signal samples.
+            //ID   -preE  +preE
+            // 0  105.43  10.23
+            // 1  160.10  10.25
+            // 2  220.47  12.96
+            // 3  265.59  17.49
+            // 4  319.03  24.20
+            // 5  410.82  35.50
+            // 6  432.17  40.17
+            // 7  353.41  34.89
+            // 8  221.72  24.35
+            // 9  162.78  21.10
         }
     }
 }
