@@ -2097,6 +2097,30 @@ namespace TowseyLibrary
         }
 
         /// <summary>
+        /// Normalises a matrix so that the values in each column lie between 0 and 1.
+        /// This method is used in producing mfcc's where all the coefficients are weighted so has to have similar range.
+        /// </summary>
+        public static double[,] NormaliseMatrixColumns(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+
+            double[,] m2Return = new double[rows, cols];
+
+            // extract each column in turn, normalise and return.
+            for (int c = 0; c < cols; c++)
+            {
+                var column = MatrixTools.GetColumn(m, c);
+                var colNormalised = DataTools.normalise(column);
+
+                // return the column.
+                MatrixTools.SetColumn(m2Return, c, colNormalised);
+            }
+
+            return m2Return;
+        }
+
+        /// <summary>
         /// normalises the values in a matrix such that the minimum value
         /// is the average of the edge values.
         /// Truncate thos original values that are below the edge average.
