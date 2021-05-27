@@ -64,10 +64,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public SNR SnrData { get; set; }
 
         /// <summary>
-        /// Gets or sets decibels per signal frame.
+        /// Gets or sets decibels per signal frame. i.e. log frame energy.
         /// </summary>
         public double[] DecibelsPerFrame { get; set; }
 
+        /// <summary>
+        /// Gets or sets the array of frame log-energy values normalised 0,1.
+        /// This is derived from the array variable DecibelsPerFrame[].
+        /// </summary>
         public double[] DecibelsNormalised { get; set; }
 
         /// <summary>
@@ -185,6 +189,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             var recording = new AudioRecording(wav);
             var fftData = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
+                this.Configuration.DoPreemphasis,
                 this.Configuration.WindowSize,
                 this.Configuration.WindowOverlap,
                 this.Configuration.WindowFunction);

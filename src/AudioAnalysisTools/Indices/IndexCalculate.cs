@@ -55,6 +55,10 @@ namespace AudioAnalysisTools.Indices
         {
             // returnSonogramInfo = true; // if debugging
             double epsilon = recording.Epsilon;
+
+            // never do signal preemphasis when calculating indices.
+            bool doPreemphasis = false;
+
             int signalLength = recording.WavReader.GetChannel(0).Length;
             int sampleRate = recording.WavReader.SampleRate;
             var segmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
@@ -138,7 +142,7 @@ namespace AudioAnalysisTools.Indices
             // ################################## NOW GET THE AMPLITUDE SPECTORGRAMS
 
             // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
-            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, frameSize, frameStep);
+            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(subsegmentRecording, doPreemphasis, frameSize, frameStep);
 
             // Select band according to min and max bandwidth
             int minBand = (int)(dspOutput1.AmplitudeSpectrogram.GetLength(1) * config.MinBandWidth);
@@ -202,7 +206,7 @@ namespace AudioAnalysisTools.Indices
                 var bgnRecording = AudioRecording.GetRecordingSubsegment(recording, startSample, endSample, sampleBuffer);
 
                 // EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
-                dspOutput2 = DSP_Frames.ExtractEnvelopeAndFfts(bgnRecording, frameSize, frameStep);
+                dspOutput2 = DSP_Frames.ExtractEnvelopeAndFfts(bgnRecording, doPreemphasis, frameSize, frameStep);
 
                 // If necessary, recalculate the spectrogram according to octave scale. This option works only when have high SR recordings.
                 if (octaveScale)

@@ -40,8 +40,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.Attributes.FramesPerSecond = wav.SampleRate / (double)config.WindowStep;
 
             var recording = new AudioRecording(wav);
+
+            // set the default value for pre-emphasis
+            bool doPreemphasis = false;
             var fftdata = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
+                doPreemphasis,
                 config.WindowSize,
                 config.WindowOverlap,
                 this.Configuration.WindowFunction);

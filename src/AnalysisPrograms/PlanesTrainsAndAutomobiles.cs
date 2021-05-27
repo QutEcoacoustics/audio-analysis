@@ -110,6 +110,7 @@ namespace AnalysisPrograms
                 recording.WavReader.Samples,
                 sr,
                 epsilon,
+                false,
                 windowSize,
                 windowOverlap);
             double[] avAbsolute = results2.Average; //average absolute value over the minute recording

@@ -82,7 +82,8 @@ namespace AudioAnalysisTools.Indices
 
             // EXTRACT ENVELOPE and SPECTROGRAM FROM RECORDING SEGMENT
             // Note that the amplitude spectrogram has had the DC bin removed. i.e. has only 256 columns.
-            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recording, frameSize, frameStep);
+            bool doPreemphasis = false;
+            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recording, doPreemphasis, frameSize, frameStep);
             var amplitudeSpectrogram = dspOutput1.AmplitudeSpectrogram;
 
             // (B) ################################## EXTRACT OSC SPECTRAL INDEX DIRECTLY FROM THE RECORDING ##################################

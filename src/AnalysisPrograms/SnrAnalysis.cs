@@ -78,13 +78,6 @@ namespace AnalysisPrograms
             double vocalGap = configuration.GetDoubleOrNull("VOCAL_GAP") ?? 0;
             double minVocalLength = configuration.GetDoubleOrNull("MIN_VOCAL_DURATION") ?? 0;
 
-            //bool DRAW_SONOGRAMS = (bool?)configuration.DrawSonograms ?? true;    //options to draw sonogram
-
-            //double intensityThreshold = Acoustics.AED.Default.intensityThreshold;
-            //if (dict.ContainsKey(key_AED_INTENSITY_THRESHOLD)) intensityThreshold = Double.Parse(dict[key_AED_INTENSITY_THRESHOLD]);
-            //int smallAreaThreshold = Acoustics.AED.Default.smallAreaThreshold;
-            //if( dict.ContainsKey(key_AED_SMALL_AREA_THRESHOLD))   smallAreaThreshold = Int32.Parse(dict[key_AED_SMALL_AREA_THRESHOLD]);
-
             // COnvert input recording into wav
             var convertParameters = new AudioUtilityRequest { TargetSampleRate = 17640 };
             var fileToAnalyse = new FileInfo(Path.Combine(outputDir.FullName, "temp.wav"));
@@ -117,6 +110,7 @@ namespace AnalysisPrograms
             // Calling this method will set the default FFT window.
             var dspOutput = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
+                false,
                 sonoConfig.WindowSize,
                 sonoConfig.WindowOverlap);
 

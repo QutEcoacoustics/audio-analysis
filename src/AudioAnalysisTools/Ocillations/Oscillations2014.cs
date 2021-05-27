@@ -275,8 +275,10 @@ namespace AudioAnalysisTools
 
             // AT: Switched to below method of extracting the spectrogram because BaseSonogram
             // does not allow small spectrograms (less than 0.2s) to calculated.
+            // set default value for preemphasis. Only used when dealing with human speech.
+            bool doPreemphasis = false;
 
-            var fft = DSP_Frames.ExtractEnvelopeAndFfts(recordingSegment, frameLength, frameLength);
+            var fft = DSP_Frames.ExtractEnvelopeAndFfts(recordingSegment, doPreemphasis, frameLength, frameLength);
             return fft.AmplitudeSpectrogram;
         }
 

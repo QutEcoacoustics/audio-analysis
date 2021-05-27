@@ -137,27 +137,28 @@ namespace AudioAnalysisTools.DSP
         /// Calling this method will set default FFT window if windowName is null.
         /// Otherwise sets the FFT window specified in the config file.
         /// </summary>
-        public static EnvelopeAndFft ExtractEnvelopeAndFfts(AudioRecording recording, int frameSize, double overlap, string windowName = null)
+        public static EnvelopeAndFft ExtractEnvelopeAndFfts(AudioRecording recording, bool doPreemphasis, int frameSize, double overlap, string windowName = null)
         {
             int frameStep = (int)(frameSize * (1 - overlap));
-            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep, windowName);
+            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, doPreemphasis, frameSize, frameStep, windowName);
         }
 
         /// <summary>
         /// Calling this method sets the default FFT window, currently HANNING - see FFT.cs line 22.
         /// </summary>
-        public static EnvelopeAndFft ExtractEnvelopeAndFfts(AudioRecording recording, int frameSize, int frameStep)
+        public static EnvelopeAndFft ExtractEnvelopeAndFfts(AudioRecording recording, bool doPreemphasis, int frameSize, int frameStep)
         {
-            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep, FFT.DefaultFftWindow);
+            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, doPreemphasis, frameSize, frameStep, FFT.DefaultFftWindow);
         }
 
         /// <summary>
         /// Calling this method sets the default FFT window, currently HANNING - see FFT.cs line 22.
+        /// Same as previous method but use frame overlap (a double) as an argument rather than framestep (an integer).
         /// </summary>
-        public static EnvelopeAndFft ExtractEnvelopeAndAmplSpectrogram(double[] signal, int sampleRate, double epsilon, int frameSize, double overlap)
+        public static EnvelopeAndFft ExtractEnvelopeAndAmplSpectrogram(double[] signal, int sampleRate, double epsilon, bool doPreemphasis, int frameSize, double overlap)
         {
             int frameStep = (int)(frameSize * (1 - overlap));
-            return ExtractEnvelopeAndAmplSpectrogram(signal, sampleRate, epsilon, frameSize, frameStep, FFT.DefaultFftWindow);
+            return ExtractEnvelopeAndAmplSpectrogram(signal, sampleRate, epsilon, doPreemphasis, frameSize, frameStep, FFT.DefaultFftWindow);
         }
 
         /// <summary>
@@ -183,16 +184,17 @@ namespace AudioAnalysisTools.DSP
             double[] signal,
             int sampleRate,
             double epsilon,
+            bool doPreemphasis,
             int frameSize,
             int frameStep,
             string windowName = null)
         {
-            // SIGNAL PRE-EMPHASIS helps with speech signals
+            // SIGNAL PRE-EMPHASIS helps with speech signals.
             // Do not use this for environmental audio
-            //if (config.DoPreemphasis)
-            //{
-            //    signal = DSP_Filters.PreEmphasis(signal, 0.96);
-            //}
+            if (doPreemphasis)
+            {
+                signal = DspFilters.PreEmphasis(signal, 0.96);
+            }
 
             int[,] frameIDs = FrameStartEnds(signal.Length, frameSize, frameStep);
             if (frameIDs == null)
@@ -218,7 +220,11 @@ namespace AudioAnalysisTools.DSP
             double[] minValues = new double[frameCount];
             double[] maxValues = new double[frameCount];
             double[] envelope = new double[frameCount];
+
+            // The average sample energy in a frame. Energy = sample value squared.
             double[] frameEnergy = new double[frameCount];
+
+            // The log base 10 of the frame energy.
             double[] frameDecibels = new double[frameCount];
 
             // for all frames
