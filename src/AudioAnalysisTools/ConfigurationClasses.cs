@@ -116,6 +116,15 @@ namespace AudioAnalysisTools
     [Serializable]
     public class MfccConfiguration
     {
+        public MfccConfiguration(bool doMelScale, int filterBankCount, int coeffCount, bool includeDelta, bool includeDoubleDelta)
+        {
+            this.DoMelScale = doMelScale;
+            this.FilterbankCount = filterBankCount;
+            this.CcCount = coeffCount;
+            this.IncludeDelta = includeDelta;
+            this.IncludeDoubleDelta = includeDoubleDelta;
+        }
+
         public MfccConfiguration(ConfigDictionary config)
         {
             this.FilterbankCount = config.GetInt(ConfigKeys.Mfcc.Key_FilterbankCount);
@@ -124,12 +133,6 @@ namespace AudioAnalysisTools
             this.IncludeDelta = config.GetBoolean(ConfigKeys.Mfcc.Key_IncludeDelta);
             this.IncludeDoubleDelta = config.GetBoolean(ConfigKeys.Mfcc.Key_IncludeDoubleDelta);
         }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to do pre-emphasis.
-        /// Do pre-emphasis prior to FFT.
-        /// </summary>
-        public bool DoPreemphasis { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the size of the Mel-scale filter bank.
