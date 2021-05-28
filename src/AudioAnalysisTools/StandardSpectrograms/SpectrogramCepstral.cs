@@ -76,7 +76,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             if (bandCount > fftBinCount)
             {
                 throw new Exception(
-                    "## FATAL ERROR in BaseSonogram.MakeCepstrogram():- Can't calculate cepstral coefficients. Filterbank Count > number of FFT bins. (" +
+                    "## FATAL ERROR in BaseSonogram.MakeCepstrogram():- Cannot prepare filterbank. Filter count > number of FFT bins. (" +
                     bandCount + " > " + fftBinCount + ")\n\n");
             }
 

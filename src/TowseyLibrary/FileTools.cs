@@ -565,6 +565,12 @@ namespace TowseyLibrary
             WriteTextFile(fName, lines); //write matrix to file
         } //end of WriteMatrix2File\
 
+        /// <summary>
+        /// The format string should be as follows: "0.00" for two decimal places,
+        /// where number of zeros after the point is the number of decimal places.
+        /// For more detail on custom numeric format string,
+        /// see https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings.
+        /// </summary>
         public static void WriteMatrix2File_Formatted(double[,] matrix, string fName, string formatString)
         {
             int rowCount = matrix.GetLength(0); //height
@@ -590,6 +596,12 @@ namespace TowseyLibrary
             WriteTextFile(fName, lines); //write matrix to file
         } //end of WriteMatrix2File
 
+        /// <summary>
+        /// The format string should be as follows: "0.00" for two decimal places,
+        /// where number of zeros after the point is the number of decimal places.
+        /// For more detail on custom numeric format string,
+        /// see https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings.
+        /// </summary>
         public static void WriteArray2File_Formatted(double[] array, string path, string formatString)
         {
             int length = array.Length;
@@ -604,6 +616,12 @@ namespace TowseyLibrary
             WriteTextFile(path, lines); //write matrix to file
         } //end of WriteArray2File_Formatted
 
+        /// <summary>
+        /// The format string should be as follows: "0.00" for two decimal places,
+        /// where number of zeros after the point is the number of decimal places.
+        /// For more detail on custom numeric format string,
+        /// see https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings.
+        /// </summary>
         public static void WriteArray2File_Formatted(int[] array, string path, string formatString)
         {
             int length = array.Length;

@@ -1664,6 +1664,13 @@ namespace TowseyLibrary
             }
         }
 
+        /// <summary>
+        /// The format string should be as follows: "0.00" for two decimal places.
+        /// For more detail on custom numeric format string,
+        /// see https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings.
+        /// </summary>
+        /// <param name="array">an array of double.</param>
+        /// <param name="format">format string.</param>
         public static string WriteArrayAsCsvLine(double[] array, string format)
         {
             var sb = new StringBuilder(array[0].ToString(format));
