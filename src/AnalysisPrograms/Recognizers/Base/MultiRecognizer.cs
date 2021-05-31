@@ -208,7 +208,7 @@ namespace AnalysisPrograms.Recognizers.Base
             return trackImage;
         }
 
-        public class MultiRecognizerConfig : AnalyzerConfig
+        public class MultiRecognizerConfig : RecognizerConfig
         {
             public MultiRecognizerConfig()
             {
