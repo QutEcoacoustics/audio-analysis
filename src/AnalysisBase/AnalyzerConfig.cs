@@ -15,7 +15,7 @@ namespace AnalysisBase
         [Obsolete("The AnalysisName property is no longer used")]
         public string AnalysisName { get; set; }
 
-        public double EventThreshold { get; set; } = EventThresholdDefault;
+        public virtual double EventThreshold { get; set; } = EventThresholdDefault;
 
         /// <summary>
         /// Gets or sets the length of audio block to process.

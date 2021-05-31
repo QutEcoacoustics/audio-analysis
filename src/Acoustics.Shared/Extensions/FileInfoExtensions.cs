@@ -187,6 +187,13 @@ namespace System
             return info;
         }
 
+        public static FileInfo CopyTo(this FileInfo source, DirectoryInfo dest)
+        {
+            var result = Path.Combine(dest.FullName, source.Name);
+            source.CopyTo(result);
+            return result.ToFileInfo();
+        }
+
         public static string BaseName(this FileInfo file)
         {
             return Path.GetFileNameWithoutExtension(file.Name);

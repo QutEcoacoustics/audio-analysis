@@ -27,6 +27,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using AnalysisPrograms.AnalyseLongRecordings;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -39,14 +40,11 @@ namespace AnalysisPrograms.Recognizers.Base
 
     public class MultiRecognizer : RecognizerBase
     {
-        public class MultiRecognizerConfig : RecognizerConfig
-        {
-            public string[] SpeciesList { get; set; }
-        }
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public override string Description => "[BETA] A method to run multiple event/species recognisers, depending on entries in config file.";
 
-        public override string Author => "Ecosounds";
+        public override string Author => "QUT";
 
         public override string SpeciesName => "MultiRecognizer";
 
@@ -54,11 +52,10 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public override Status Status => Status.Unmaintained;
 
-        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {
-            return ConfigFile.Deserialize<MultiRecognizerConfig>(file);
+            var config = ConfigFile.Deserialize<MultiRecognizerConfig>(file);
+            return config;
         }
 
         public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
@@ -79,24 +76,17 @@ namespace AnalysisPrograms.Recognizers.Base
             var scoreTracks = new List<Image<Rgb24>>();
             var plots = new List<Plot>();
             var events = new List<AcousticEvent>();
+            var newEvents = new List<EventCommon>();
 
             // Get list of ID names from config file
             // Loop through recognizers and accumulate the output
-            foreach (string name in multiRecognizerConfig.SpeciesList)
+            foreach (var pair in multiRecognizerConfig.Analyses)
             {
-                // AT: Fixed this... the following should not be needed. If it happens, let me know.
-                // SEEM TO HAVE LOST SAMPLES
-                //if (audioRecording.WavReader.Samples == null)
-                //{
-                //    Log.Error("audioRecording's samples are null - an inefficient disk operation is now needed");
-                //    audioRecording = new AudioRecording(audioRecording.FilePath);
-                //}
-
-                var output = DoCallRecognition(name, segmentStartOffset, audioRecording, getSpectralIndexes, outputDirectory, imageWidth.Value);
+                var output = DoCallRecognition(pair.Recognizer, pair.Configuration, segmentStartOffset, audioRecording, getSpectralIndexes, outputDirectory, imageWidth);
 
                 if (output == null)
                 {
-                    Log.Warn($"Recognizer for {name} returned a null output");
+                    Log.Warn($"Recognizer for {pair.Recognizer.DisplayName} returned a null output");
                 }
                 else
                 {
@@ -111,6 +101,8 @@ namespace AnalysisPrograms.Recognizers.Base
                         events.AddRange(output.Events);
                     }
 
+                    newEvents.AddRange(output.NewEvents);
+
                     // rescale scale of plots
                     output.Plots.ForEach(p => p.ScaleDataArray(sonogram.FrameCount));
 
@@ -123,6 +115,7 @@ namespace AnalysisPrograms.Recognizers.Base
             return new RecognizerResults()
             {
                 Events = events,
+                NewEvents = newEvents,
                 ScoreTrack = scoreTrackImage,
                 Sonogram = sonogram,
                 Plots = plots,
@@ -141,17 +134,8 @@ namespace AnalysisPrograms.Recognizers.Base
             // no-op
         }
 
-        public static RecognizerResults DoCallRecognition(string name, TimeSpan segmentStartOffset, AudioRecording recording, Lazy<IndexCalculateResult[]> indices, DirectoryInfo outputDirectory, int imageWidth)
+        private static RecognizerResults DoCallRecognition(IEventRecognizer recognizer, RecognizerConfig configuration, TimeSpan segmentStartOffset, AudioRecording recording, Lazy<IndexCalculateResult[]> indices, DirectoryInfo outputDirectory, int? imageWidth)
         {
-            Log.Debug("Looking for recognizer and config files for " + name);
-
-            // find an appropriate event recognizer
-            var recognizer = AnalyseLongRecording.FindAndCheckAnalyzer<IEventRecognizer>(name, name + ".yml");
-
-            // load up the standard config file for this species
-            var configurationFile = ConfigFile.Resolve(name + ".yml");
-            var configuration = recognizer.ParseConfig(configurationFile);
-
             // TODO: adapt sample rate to required rate
             int? resampleRate = configuration.ResampleRate;
             if (resampleRate.HasValue && recording.WavReader.SampleRate != resampleRate.Value)
@@ -160,7 +144,7 @@ namespace AnalysisPrograms.Recognizers.Base
             }
 
             // execute it
-            Log.Info("MultiRecognizer: Executing single recognizer " + name);
+            Log.Info("MultiRecognizer: Executing single recognizer " + recognizer.DisplayName);
             RecognizerResults result = recognizer.Recognize(
                 recording,
                 configuration,
@@ -168,9 +152,9 @@ namespace AnalysisPrograms.Recognizers.Base
                 indices,
                 outputDirectory,
                 imageWidth);
-            Log.Debug("MultiRecognizer: Completed single recognizer" + name);
+            Log.Debug("MultiRecognizer: Completed single recognizer" + recognizer.DisplayName);
 
-            var scoreTracks = result.Plots.Select(p => GenerateScoreTrackImage(name, p?.data, imageWidth)).ToList();
+            var scoreTracks = result.Plots.Select(p => GenerateScoreTrackImage(recognizer.DisplayName, p?.data, imageWidth ?? result.Sonogram.FrameCount)).ToList();
             if (scoreTracks.Count != 0)
             {
                 result.ScoreTrack = ImageTools.CombineImagesVertically(scoreTracks);
@@ -179,7 +163,7 @@ namespace AnalysisPrograms.Recognizers.Base
             return result;
         }
 
-        public static Image<Rgb24> GenerateScoreTrackImage(string name, double[] scores, int imageWidth)
+        private static Image<Rgb24> GenerateScoreTrackImage(string name, double[] scores, int imageWidth)
         {
             Log.Info("MultiRecognizer.GenerateScoreTrackImage(): " + name);
             if (scores == null)
@@ -223,5 +207,48 @@ namespace AnalysisPrograms.Recognizers.Base
             });
             return trackImage;
         }
+
+        public class MultiRecognizerConfig : AnalyzerConfig
+        {
+            public MultiRecognizerConfig()
+            {
+                void OnLoaded(IConfig eventConfig)
+                {
+                    MultiRecognizerConfig config = (MultiRecognizerConfig)eventConfig;
+
+                    // load the other config files
+                    this.Analyses =
+                        config
+                        .AnalysisNames
+                        .Select(x => x.EndsWith(".yml") ? x : x + ".yml")
+                        .Select(lookup =>
+                        {
+                            Log.Debug("Looking for config files for " + lookup);
+                            var configurationFile = ConfigFile.Resolve(lookup, config.ConfigDirectory.ToDirectoryInfo());
+
+                            // find an appropriate event recognizer
+                            var recognizer = AnalyseLongRecording.FindAndCheckAnalyzer<IEventRecognizer>(null, configurationFile.Name);
+
+                            // load up the standard config file for this species
+                            var configuration = (RecognizerConfig)recognizer.ParseConfig(configurationFile);
+
+                            return (recognizer, configuration);
+                        }).ToArray();
+                }
+
+                this.Loaded += OnLoaded;
+            }
+
+            public string[] AnalysisNames { get; set; }
+
+            /// <summary>
+            /// Gets or sets the threshold for which to filter events.
+            /// Defaults to 0.0 for the multi recogniser as we want the base recogniser's filters to be used.
+            /// </summary>
+            public override double EventThreshold { get; set; } = 0.0;
+
+            internal (IEventRecognizer Recognizer, RecognizerConfig Configuration)[] Analyses { get; set; }
+        }
     }
+
 }

@@ -119,7 +119,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
             bool filenameDate = configuration.RequireDateInFilename;
 
-            if (configuration[AnalysisKeys.AnalysisName].IsNotWhitespace())
+            if (configuration.AnalysisName.IsNotWhitespace())
             {
                 Log.Warn("Your config file has `AnalysisName` set - this property is deprecated and ignored");
             }

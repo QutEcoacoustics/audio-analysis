@@ -402,6 +402,16 @@ namespace System
             return !string.IsNullOrWhiteSpace(str);
         }
 
+        public static string StripEnd(this string str, string suffix, StringComparison comparison = default)
+        {
+            if (suffix != null && str.EndsWith(suffix, comparison))
+            {
+                return str.Substring(0, str.Length - suffix.Length);
+            }
+
+            return str;
+        }
+
         public static string NormalizeToCrLf(this string str)
         {
             string normalized = Regex.Replace(str, @"\r\n|\n\r|\n|\r", "\r\n");

@@ -7,6 +7,7 @@ namespace Acoustics.Shared.ConfigFile
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.IO;
     using Acoustics.Shared.Contracts;
 
     public class Config : IConfig
@@ -46,6 +47,8 @@ namespace Acoustics.Shared.ConfigFile
         }
 
         public string ConfigPath { get; set; }
+
+        public string ConfigDirectory => Path.GetDirectoryName(this.ConfigPath);
 
         /// <summary>
         /// Gets or sets the generic object graph that mirrors the configuration.

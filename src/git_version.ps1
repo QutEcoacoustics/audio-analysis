@@ -5,6 +5,7 @@ param(
     [string]$configuration,
     [string]$self_contained,
     [string]$runtime_identifier,
+    [string]$target_framework,
     [switch]$set_ci = $false,
     [switch]$json = $false,
     [switch]$env_vars = $false,
@@ -144,7 +145,7 @@ elseif ($json) {
 }
 elseif ($env_vars) {
     # https://github.com/PowerShell/PowerShell/issues/5543
-    # Due to a bug with set-content, it cna't bind to the property for a value in
+    # Due to a bug with set-content, it can't bind to the property for a value in
     # an object, which makes the pipeline version rather intolerable.
     # Hence we're adding a toString() to our pscustomobject that ensures only
     # the value is represented when Set-Content calls toString

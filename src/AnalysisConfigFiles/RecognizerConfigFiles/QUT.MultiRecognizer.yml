@@ -8,7 +8,7 @@
 # LIST OF REQUIRED SPECIES RECOGNISERS
 # The items in this list need to match the value for `AnalysisName` in each of the individual species config files.
 # Note also, that the config file paths are resolved by appending '.yml' to the end of each item in the species list.
-SpeciesList:
+AnalysisNames:
 #  - Towsey.CriniaRemota
   - Towsey.LimnodynastesConvex
 #  - Towsey.LitoriaBicolor
@@ -24,9 +24,6 @@ SpeciesList:
 #  - Towsey.UperoleiaInundata
 #  - Towsey.UperoleiaLithomoda
 
-# Standard settings
-EventThreshold: 0.2
-
 
 ## Specifically for AnalyzeLongRecording
 # SegmentDuration: units=seconds;
@@ -35,7 +32,7 @@ SegmentDuration: 60
 SegmentOverlap: 0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
-# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
+# If `true` saves a data into a separate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: True

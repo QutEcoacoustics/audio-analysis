@@ -17,10 +17,24 @@ namespace Acoustics.Test.TestHelpers
     {
         private static TestContext testContext;
 
+        /// <value>
+        /// e.g. C:\Work\Github\audio-analysis\src\AnalysisPrograms\bin\Debug\net5.0 .
+        /// </value>
         public static string AnalysisProgramsBuild { get; private set; }
 
+        /// <value>
+        /// e.g. C:\Work\Github\audio-analysis\tests\Acoustics.Test\bin\Debug\net5.0 .
+        /// </value>
+        public static string TestBuild { get; private set; }
+
+        /// <value>
+        /// e.g. C:\Work\Github\audio-analysis\tests\Acoustics.Test\bin\Debug\net5.0 .
+        /// </value>
         public static string SolutionRoot { get; private set; }
 
+        /// <value>
+        /// e.g. C:\Work\Github\audio-analysis .
+        /// </value>
         public static string TestResources { get; private set; }
 
         /// <summary>
@@ -37,6 +51,12 @@ namespace Acoustics.Test.TestHelpers
         public static FileInfo ResolveConfigFile(params string[] pathComponents)
         {
             pathComponents = new[] { SolutionRoot, "src", "AnalysisConfigFiles" }.Concat(pathComponents).ToArray();
+            return new FileInfo(Path.Combine(pathComponents));
+        }
+
+        public static FileInfo ResolveConfigFileFromBuildDirectory(params string[] pathComponents)
+        {
+            pathComponents = new[] { AnalysisProgramsBuild, "ConfigFiles" }.Concat(pathComponents).ToArray();
             return new FileInfo(Path.Combine(pathComponents));
         }
 
@@ -153,7 +173,15 @@ namespace Acoustics.Test.TestHelpers
                 Meta.ProjectName,
                 "bin",
                 BuildMetadata.CompiledConfiguration,
-                "netcoreapp3.1",
+                BuildMetadata.CompiledTargetFramework,
+                BuildMetadata.CompiledAsSelfContained ? BuildMetadata.CompiledRuntimeIdentifer : string.Empty);
+            TestBuild = Path.Combine(
+                SolutionRoot,
+                "tests",
+                "Acoustics.Test",
+                "bin",
+                BuildMetadata.CompiledConfiguration,
+                BuildMetadata.CompiledTargetFramework,
                 BuildMetadata.CompiledAsSelfContained ? BuildMetadata.CompiledRuntimeIdentifer : string.Empty);
 
             testContext = context;
