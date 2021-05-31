@@ -81,6 +81,23 @@ AnalysisNames:
         }
 
         [TestMethod]
+        public void MultiRecogniserDeserializationValidatesAnalysisNamesArePresent()
+        {
+            var literalConfig = $@"
+AnalysisNames: ~
+";
+            var configFile = this.TestOutputDirectory.CombineFile("QUT.MultiRecognizer.yml");
+
+            File.WriteAllText(configFile.FullName, literalConfig);
+
+            var exception = Assert.ThrowsException<ConfigFileException>(
+                () => ConfigFile.Deserialize<MultiRecognizer.MultiRecognizerConfig>(configFile));
+            StringAssert.Contains(
+                exception.Message,
+                "AnalysisNames cannot be null or empty. It should be a list with at least one config file in it");
+        }
+
+        [TestMethod]
         public void MultiRecogniserWorks()
         {
             var literalConfig = $@"

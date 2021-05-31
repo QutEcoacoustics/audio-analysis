@@ -216,6 +216,13 @@ namespace AnalysisPrograms.Recognizers.Base
                 {
                     MultiRecognizerConfig config = (MultiRecognizerConfig)eventConfig;
 
+                    if (config.AnalysisNames is null or { Length: 0 })
+                    {
+                        throw new ConfigFileException(
+                            $"{ nameof(this.AnalysisNames)} cannot be null or empty. It should be a list with at least one config file in it.",
+                            config.ConfigPath);
+                    }
+
                     // load the other config files
                     this.Analyses =
                         config
