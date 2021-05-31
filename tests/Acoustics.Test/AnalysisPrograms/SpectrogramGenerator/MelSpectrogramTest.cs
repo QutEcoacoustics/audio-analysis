@@ -16,7 +16,10 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
 
+    [TestClass]
+    [TestCategory("Spectrograms")]
     public class MelSpectrogramTest
     {
         public const double Delta = 0.000_000_001;
@@ -36,15 +39,71 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
         }
 
         /// <summary>
-        /// Test the output from EnvelopeAndFft.
-        /// Only test those variables that are used to construct sonograms
-        /// The remaining output variables are tested in TestEnvelopeAndFft2().
+        /// Test the output from generating a Mel-frequency Spectrogram.
         /// </summary>
         [TestMethod]
         public void TestMelSpectrogram()
         {
-            bool doPreemphasis = false;
+            bool doMelScale = true;
+            int filterbankCount = 64;
 
+            //int ccCount = 12;
+            //bool includeDelta = true;
+            //bool includeDoubleDelta = true;
+
+            var mfccConfig = new MfccConfiguration(doMelScale, filterbankCount, 0, false, false);
+
+            // This constructor initializes default values for Melscale and Mfcc spectrograms and other parameters.
+            var config = new SonogramConfig()
+            {
+                SampleRate = this.recording.WavReader.SampleRate,
+                DoPreemphasis = true,
+                epsilon = this.recording.Epsilon,
+                WindowSize = 512,
+                WindowStep = 512,
+                WindowOverlap = 0.0,
+                Duration = this.recording.Duration,
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.0,
+                mfccConfig = mfccConfig,
+            };
+
+            // Get the Mel-frequency Spectrogram
+            var melSpectrogram = new SpectrogramMelScale(config, this.recording.WavReader);
+            var data = melSpectrogram.Data;
+
+            // DO THE TESTS
+            Assert.AreEqual(11025, melSpectrogram.NyquistFrequency);
+            Assert.AreEqual(2594, melSpectrogram.FrameCount);
+            Assert.AreEqual(2594, data.GetLength(0));
+
+            // Test sonogram data matrix by comparing the vector of column sums.
+            double[] columnSums = MatrixTools.SumColumns(data);
+            int frBinCount = columnSums.Length;
+            Assert.AreEqual(64, frBinCount);
+
+            var sumFile = PathHelper.ResolveAsset("SpectrogramTestResults", "BAC2_20071008-085040_MelSpectrogramDataColumnSums_WithPreemphasis.bin");
+
+            // uncomment this to update the binary data. Should be rarely needed
+            Binary.Serialize(sumFile, columnSums);
+
+            var expectedColSums = Binary.Deserialize<double[]>(sumFile);
+            var totalDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Sum();
+            var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
+            Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
+            CollectionAssert.That.AreEqual(expectedColSums, columnSums, Delta);
+
+            // check that the image is something like you expect.
+            var image = melSpectrogram.GetImage();
+            image.Save("C:\\temp\\melScaleimage_preemphasis.png");
+        }
+
+        /// <summary>
+        /// Test the output from generating a cepstrogram.
+        /// </summary>
+        [TestMethod]
+        public void TestCepstrogram()
+        {
             bool doMelScale = true;
             int filterbankCount = 64;
             int ccCount = 12;
@@ -57,7 +116,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             var config = new SonogramConfig()
             {
                 SampleRate = this.recording.WavReader.SampleRate,
-                DoPreemphasis = false,
+                DoPreemphasis = true,
                 epsilon = this.recording.Epsilon,
                 WindowSize = 512,
                 WindowStep = 512,
@@ -70,37 +129,21 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
 
             // Get the cepstrogram
             var cepstrogram = new SpectrogramCepstral(config, this.recording.WavReader);
-
-            // Now recover the data
-            var duration = this.recording.WavReader.Time;
-            var sr = this.recording.SampleRate;
-            var nyquist = cepstrogram.NyquistFrequency;
-            var frameCount = cepstrogram.FrameCount;
-            var epislon = cepstrogram.Configuration.epsilon;
-            var windowPower = cepstrogram.Configuration.WindowPower;
             var data = cepstrogram.Data;
 
-            //FIX THE BELOWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
             // DO THE TESTS
-            int expectedSR = 22050;
-            Assert.AreEqual(expectedSR, sr);
-            Assert.AreEqual(60.244535147392290249433106575964M, this.recording.WavReader.ExactDurationSeconds);
-            Assert.AreEqual(2594, frameCount);
-            int expectedBitsPerSample = 16;
-            double expectedEpsilon = Math.Pow(0.5, expectedBitsPerSample - 1);
-            Assert.AreEqual(expectedEpsilon, epislon);
-            double expectedWindowPower = 203.0778;
-            Assert.AreEqual(expectedWindowPower, windowPower, 0.0001);
-
-            // test timeframes and frequency bin
+            Assert.AreEqual(11025, cepstrogram.NyquistFrequency);
+            Assert.AreEqual(2594, cepstrogram.FrameCount);
+            Assert.AreEqual(2594, data.GetLength(0));
 
             // Test sonogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(data);
+            int frBinCount = columnSums.Length;
+            Assert.AreEqual(39, frBinCount);
 
-            var sumFile = PathHelper.ResolveAsset("EnvelopeAndFft", "BAC2_20071008-085040_DataColumnSums.bin");
+            var sumFile = PathHelper.ResolveAsset("SpectrogramTestResults", "BAC2_20071008-085040_CeptrogramDataColumnSums_WithPreemphasis.bin");
 
             // uncomment this to update the binary data. Should be rarely needed
-            // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c
             //Binary.Serialize(sumFile, columnSums);
 
             var expectedColSums = Binary.Deserialize<double[]>(sumFile);
@@ -109,7 +152,9 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
             CollectionAssert.That.AreEqual(expectedColSums, columnSums, Delta);
 
-            //FileTools.WriteArray2File_Formatted(expectedColSums, "C:\\temp\\array.txt", "0.00");
+            // check that the image is something like you expect.
+            var image = cepstrogram.GetImage();
+            image.Save("C:\\temp\\image_preemphasis.png");
         }
     }
 }
