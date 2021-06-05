@@ -89,10 +89,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
             Log.WriteIfVerbose("\tDim after filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
 
             // (iv) TAKE LOG OF THE ENERGY VALUES AFTER FILTERBANK
-            m = MFCCStuff.GetLogOfEnergySpectrogram(m, config.WindowPower, sampleRate, epsilon); //from spectrogram
+            m = MFCCStuff.GetLogEnergySpectrogram(m, config.WindowPower, sampleRate, epsilon); //from spectrogram
 
             // (v) SQUARE THE MEL VALUES BEFORE DOING DCT
-            // This reduces the smaller values wrt the higher energy values. It is supposed to increase the accuracy of ASR.
+            // This reduces the smaller values wrt the higher energy values.
+            // Some mfcc references state that it is supposed to increase the accuracy of ASR.
             m = MatrixTools.SquareValues(m);
 
             // (vi) calculate cepstral coefficients
