@@ -630,6 +630,27 @@ namespace TowseyLibrary
             return newM;
         }
 
+        /// <summary>
+        /// Multiplies the values in a matrix by a factor.
+        /// Used to convert log-energy values to decibels.
+        /// </summary>
+        public static double[,] MultiplyMatrixByFactor(double[,] matrix, int factor)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            double[,] newM = new double[rows, cols];
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    newM[i, j] = matrix[i, j] * factor;
+                }
+            }
+
+            return newM;
+        }
+
         public static double[,] LogTransform(double[,] matrix)
         {
             int rows = matrix.GetLength(0);
