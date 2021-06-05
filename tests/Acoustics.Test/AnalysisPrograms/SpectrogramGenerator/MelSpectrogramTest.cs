@@ -44,9 +44,16 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
         [TestMethod]
         public void TestMelSpectrogram()
         {
+            int windowSize = 512;
+            // The following frame step yields 50 frames/s which can make spectrogram interpretation easier.
+            int windowStep = 441;
+            // must set the window overlap as this is actually used.
+            double windowOverlap = (windowSize - windowStep) / (double)windowSize;
+
             bool doMelScale = true;
             int filterbankCount = 64;
 
+            // the following are not required - they are for cepstral coefficients.
             //int ccCount = 12;
             //bool includeDelta = true;
             //bool includeDoubleDelta = true;
@@ -59,9 +66,9 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
                 SampleRate = this.recording.WavReader.SampleRate,
                 DoPreemphasis = true,
                 epsilon = this.recording.Epsilon,
-                WindowSize = 512,
-                WindowStep = 512,
-                WindowOverlap = 0.0,
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = windowOverlap,
                 Duration = this.recording.Duration,
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.0,
@@ -74,36 +81,43 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
 
             // DO THE TESTS
             Assert.AreEqual(11025, melSpectrogram.NyquistFrequency);
-            Assert.AreEqual(2594, melSpectrogram.FrameCount);
-            Assert.AreEqual(2594, data.GetLength(0));
+            Assert.AreEqual(3012, melSpectrogram.FrameCount);
+            Assert.AreEqual(3012, data.GetLength(0));
 
             // Test sonogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(data);
             int frBinCount = columnSums.Length;
             Assert.AreEqual(64, frBinCount);
 
+            // check that the image is what you expect.
+            //var image = melSpectrogram.GetImage();
+            //image.Save("C:\\temp\\melScaleimage_preemphasisTEST.png");
+
             var sumFile = PathHelper.ResolveAsset("SpectrogramTestResults", "BAC2_20071008-085040_MelSpectrogramDataColumnSums_WithPreemphasis.bin");
 
             // uncomment this to update the binary data. Should be rarely needed
-            Binary.Serialize(sumFile, columnSums);
+            //Binary.Serialize(sumFile, columnSums);
 
             var expectedColSums = Binary.Deserialize<double[]>(sumFile);
             var totalDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Sum();
             var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
             Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
             CollectionAssert.That.AreEqual(expectedColSums, columnSums, Delta);
-
-            // check that the image is something like you expect.
-            var image = melSpectrogram.GetImage();
-            image.Save("C:\\temp\\melScaleimage_preemphasis.png");
         }
 
         /// <summary>
         /// Test the output from generating a cepstrogram.
+        /// Delta and DoubleDelta both true.
         /// </summary>
         [TestMethod]
         public void TestCepstrogram()
         {
+            int windowSize = 512;
+            // The following frame step yields 50 frames/s which can make spectrogram interpretation easier.
+            int windowStep = 441;
+            // must set the window overlap as this is actually used.
+            double windowOverlap = (windowSize - windowStep) / (double)windowSize;
+
             bool doMelScale = true;
             int filterbankCount = 64;
             int ccCount = 12;
@@ -118,9 +132,9 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
                 SampleRate = this.recording.WavReader.SampleRate,
                 DoPreemphasis = true,
                 epsilon = this.recording.Epsilon,
-                WindowSize = 512,
-                WindowStep = 512,
-                WindowOverlap = 0.0,
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = windowOverlap,
                 Duration = this.recording.Duration,
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.0,
@@ -133,13 +147,17 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
 
             // DO THE TESTS
             Assert.AreEqual(11025, cepstrogram.NyquistFrequency);
-            Assert.AreEqual(2594, cepstrogram.FrameCount);
-            Assert.AreEqual(2594, data.GetLength(0));
+            Assert.AreEqual(3012, cepstrogram.FrameCount);
+            Assert.AreEqual(3012, data.GetLength(0));
 
             // Test sonogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(data);
             int frBinCount = columnSums.Length;
             Assert.AreEqual(39, frBinCount);
+
+            // check that the image is something like you expect.
+            //var image = cepstrogram.GetImage();
+            //image.Save("C:\\temp\\mfccimage_preemphasisTEST.png");
 
             var sumFile = PathHelper.ResolveAsset("SpectrogramTestResults", "BAC2_20071008-085040_CeptrogramDataColumnSums_WithPreemphasis.bin");
 
@@ -151,10 +169,51 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
             Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
             CollectionAssert.That.AreEqual(expectedColSums, columnSums, Delta);
+        }
 
-            // check that the image is something like you expect.
-            var image = cepstrogram.GetImage();
-            image.Save("C:\\temp\\image_preemphasis.png");
+        /// <summary>
+        /// Test the output from generating a cepstrogram.
+        /// </summary>
+        [TestMethod]
+        public void TestCepstrogramMiinusDoubleDeltas()
+        {
+            int windowSize = 512;
+            // The following frame step yields 50 frames/s which can make spectrogram interpretation easier.
+            int windowStep = 441;
+            // must set the window overlap as this is actually used.
+            double windowOverlap = (windowSize - windowStep) / (double)windowSize;
+
+            bool doMelScale = true;
+            int filterbankCount = 64;
+            int ccCount = 12;
+            bool includeDelta = true;
+            bool includeDoubleDelta = false;
+
+            var mfccConfig = new MfccConfiguration(doMelScale, filterbankCount, ccCount, includeDelta, includeDoubleDelta);
+
+            // This constructor initializes default values for Melscale and Mfcc spectrograms and other parameters.
+            var config = new SonogramConfig()
+            {
+                SampleRate = this.recording.WavReader.SampleRate,
+                DoPreemphasis = true,
+                epsilon = this.recording.Epsilon,
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = windowOverlap,
+                Duration = this.recording.Duration,
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.0,
+                mfccConfig = mfccConfig,
+            };
+
+            // Get the cepstrogram
+            var cepstrogram = new SpectrogramCepstral(config, this.recording.WavReader);
+            var data = cepstrogram.Data;
+
+            // DO THE TESTS
+            Assert.AreEqual(3012, cepstrogram.FrameCount);
+            Assert.AreEqual(3012, data.GetLength(0));
+            Assert.AreEqual(26, data.GetLength(1));
         }
     }
 }
