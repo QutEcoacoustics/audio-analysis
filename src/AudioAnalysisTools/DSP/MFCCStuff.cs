@@ -368,79 +368,6 @@ namespace AudioAnalysisTools.DSP
             return binBounds;
         }
 
-        /*
-        /// <summary>
-        /// Calculates the MelFilterBank for passed sonogram matrix.
-        /// IMPORTANT !!!!! Assumes that min freq of passed sonogram matrix = 0 Hz and maxFreq = Nyquist.
-        /// Uses Greg's MelIntegral.
-        /// </summary>
-        /// <param name="matrix">the sonogram.</param>
-        /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist.</param>
-        /// <param name="nyquist">max frequency in original spectra.</param>
-        public static double[,] MelFilterBank(double[,] matrix, int filterBankCount, double nyquist)
-        {
-            int rowCount = matrix.GetLength(0); //number of spectra or time steps
-            int colCount = matrix.GetLength(1); //number of Hz bands = 2^N +1
-
-            double[,] outData = new double[rowCount, filterBankCount];
-            double linBinWidth = nyquist / colCount;
-            double melBinWidth = Mel(nyquist) / filterBankCount;  //width of single mel bin
-
-            //for all spectra or frames
-            for (int i = 0; i < rowCount; i++)
-            {
-                //for all mel bands
-                for (int j = 0; j < filterBankCount; j++)
-                {
-                    double fa = InverseMel(j * melBinWidth) / linBinWidth;       //lower f in Hz units
-                    double fb = InverseMel((j + 1) * melBinWidth) / linBinWidth; //upper f in Hz units
-                    int ai = (int)Math.Ceiling(fa);
-                    int bi = (int)Math.Floor(fb);
-
-                    double sum = 0.0;
-
-                    if (bi < ai)
-                    {
-                        //a and b are in same Hz band
-                        ai = (int)Math.Floor(fa);
-                        bi = (int)Math.Ceiling(fb);
-                        double ya = LinearInterpolate(ai, bi, matrix[i, ai], matrix[i, bi], fa);
-                        double yb = LinearInterpolate(ai, bi, matrix[i, ai], matrix[i, bi], fb);
-                        sum = MelIntegral(fa * linBinWidth, fb * linBinWidth, ya, yb);
-                    }
-                    else
-                    {
-                        if (ai > 0)
-                        {
-                            double ya = LinearInterpolate(ai - 1, ai, matrix[i, ai - 1], matrix[i, ai], fa);
-                            sum += MelIntegral(fa * linBinWidth, ai * linBinWidth, ya, matrix[i, ai]);
-                        }
-
-                        for (int k = ai; k < bi; k++)
-                        {
-                            if (k + 1 >= colCount)
-                            {
-                                break; //to prevent out of range index
-                            }
-
-                            sum += MelIntegral(k * linBinWidth, (k + 1) * linBinWidth, matrix[i, k], matrix[i, k + 1]);
-                        }
-
-                        if (bi < colCount)
-                        {
-                            double yb = LinearInterpolate(bi, bi + 1, matrix[i, bi], matrix[i, bi + 1], fb);
-                            sum += MelIntegral(bi * linBinWidth, fb * linBinWidth, matrix[i, bi], yb);
-                        }
-                    }
-
-                    outData[i, j] = sum / melBinWidth; //to obtain power per mel
-                } //end of mel bins
-            }
-
-            return outData;
-        }
-        */
-
         /// <summary>
         /// Does conversion from linear frequency scale to mel-scale for any frequency band given by minFreq and maxFreq.
         /// Uses Greg's MelIntegral
@@ -594,12 +521,6 @@ namespace AudioAnalysisTools.DSP
             return op;
         }
 
-        //public static double[,] DCT_2D(double[,] spectra, int coeffCount)
-        //{
-        //    double[,] op = Cepstra(spectra, coeffCount);
-        //    return op;
-        //}
-
         /// <summary>
         /// cosines.
         /// </summary>
@@ -654,7 +575,8 @@ namespace AudioAnalysisTools.DSP
             return cepstrum;
         }
 
-        public static int[,] Zigzag12X12 =
+        /*
+        private static int[,] Zigzag12X12 =
         {
         {
             1,  2,  6,  7, 15, 16, 28, 29, 45, 46, 66, 67,
@@ -693,6 +615,7 @@ namespace AudioAnalysisTools.DSP
             78, 79, 99, 100, 116, 117, 129, 130, 138, 139, 143, 144,
         },
         };
+        */
 
         //********************************************************************************************************************
         //********************************************************************************************************************
@@ -843,168 +766,5 @@ namespace AudioAnalysisTools.DSP
 
             return fv;
         }
-
-        // ##################### The below methods are older and no longer referenced. Keeping just in case?!
-        /*
-        public static double[] AcousticVector(int index, double[,] mfcc, double[] dB, bool includeDelta, bool includeDoubleDelta)
-        {
-            //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
-            int mfccCount = mfcc.GetLength(1); //number of MFCCs
-            int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
-            int dim = coeffcount;
-            if (includeDelta)
-            {
-                dim += coeffcount;
-            }
-
-            if (includeDoubleDelta)
-            {
-                dim += coeffcount;
-            }
-
-            //LoggedConsole.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
-
-            double[] acousticV = new double[dim];
-            double[] fv = GetFeatureVector(dB, mfcc, index, includeDelta, includeDoubleDelta); //get feature vector for frame (t)
-            for (int i = 0; i < dim; i++)
-            {
-                acousticV[i] = fv[i];  //transfer feature vector to acoustic Vector.
-            }
-
-            return acousticV;
-        } //AcousticVectors()
-
-        /// <summary>
-        /// returns full feature vector from the passed matrix of energy+cepstral+delta+deltaDelta coefficients.
-        /// </summary>
-        public static double[] GetTriAcousticVector(double[,] cepstralM, int timeId, int deltaT)
-        {
-            int coeffcount = cepstralM.GetLength(1); //number of MFCC deltas etcs
-            int featureCount = coeffcount;
-            if (deltaT > 0)
-            {
-                featureCount *= 3;
-            }
-
-            //LoggedConsole.WriteLine("frameCount=" + frameCount + " coeffcount=" + coeffcount + " featureCount=" + featureCount + " deltaT=" + deltaT);
-            double[] fv = new double[featureCount];
-
-            if (deltaT == 0)
-            {
-                for (int i = 0; i < coeffcount; i++)
-                {
-                    fv[i] = cepstralM[timeId, i];
-                }
-
-                return fv;
-            }
-
-            //else extract tri-acoustic vector
-            for (int i = 0; i < coeffcount; i++)
-            {
-                fv[i] = cepstralM[timeId - deltaT, i];
-            }
-
-            for (int i = 0; i < coeffcount; i++)
-            {
-                fv[coeffcount + i] = cepstralM[timeId, i];
-            }
-
-            for (int i = 0; i < coeffcount; i++)
-            {
-                fv[coeffcount + coeffcount + i] = cepstralM[timeId + deltaT, i];
-            }
-
-            return fv;
-        }
-        */
-
-        /*
-        public static double[] GetFeatureVector(double[,] matrix, int timeId, bool includeDelta, bool includeDoubleDelta)
-        {
-            int frameCount = matrix.GetLength(0); //number of frames
-            int coeffcount = matrix.GetLength(1); //number of MFCCs + 1 for energy
-            int dim = coeffcount;
-            if (includeDelta)
-            {
-                dim += coeffcount;
-            }
-
-            if (includeDoubleDelta)
-            {
-                dim += coeffcount;
-            }
-
-            double[] fv = new double[dim];
-
-            //add in the CEPSTRAL coefficients
-            for (int i = 0; i < coeffcount; i++)
-            {
-                fv[i] = matrix[timeId, i];
-            }
-
-            //add in the DELTA coefficients
-            int offset = coeffcount;
-            if (includeDelta)
-            {
-                //deal with edge effects
-                if (timeId + 1 >= frameCount || timeId - 1 < 0)
-                {
-                    for (int i = offset; i < dim; i++)
-                    {
-                        fv[i] = 0.5;
-                    }
-
-                    return fv;
-                }
-
-                for (int i = 0; i < coeffcount; i++)
-                {
-                    fv[offset + i] = matrix[timeId + 1, i] - matrix[timeId - 1, i];
-                }
-
-                for (int i = offset; i < offset + coeffcount; i++)
-                {
-                    fv[i] = (fv[i] + 1) / 2;   //NormaliseMatrixValues values that potentially range from -1 to +1
-
-                    //if (fv[i] < 0.0) fv[i] = 0.0;
-                    //if (fv[i] > 1.0) fv[i] = 1.0;
-                }
-            }
-
-            //add in the DOUBLE DELTA coefficients
-            if (includeDoubleDelta)
-            {
-                offset += coeffcount;
-
-                //deal with edge effects
-                if (timeId + 2 >= frameCount || timeId - 2 < 0)
-                {
-                    for (int i = offset; i < dim; i++)
-                    {
-                        fv[i] = 0.5;
-                    }
-
-                    return fv;
-                }
-
-                for (int i = 0; i < coeffcount; i++)
-                {
-                    fv[offset + i] = matrix[timeId + 2, i] - matrix[timeId, i] - (matrix[timeId, i] - matrix[timeId - 2, i]);
-                }
-
-                for (int i = offset; i < offset + coeffcount; i++)
-                {
-                    //NormaliseMatrixValues values that potentially range from -2 to +2
-                    fv[i] = (fv[i] + 2) / 4;
-
-                    //if (fv[i] < 0.0) fv[i] = 0.0;
-                    //if (fv[i] > 1.0) fv[i] = 1.0;
-                }
-            }
-
-            return fv;
-        }
-        */
     }
 }
