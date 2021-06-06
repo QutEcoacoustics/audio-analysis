@@ -27,7 +27,7 @@ namespace AudioAnalysisTools.DSP
             double[,] energyM = MatrixTools.SquareValues(amplitudeM);
 
             // take log of power values and multiply by 10 to convert to decibels.
-            double[,] decibelM = GetLogEnergySpectrogram(energyM, windowPower, sampleRate, epsilon * epsilon);
+            double[,] decibelM = GetLogEnergySpectrogram(energyM, windowPower, sampleRate, epsilon);
             decibelM = MatrixTools.MultiplyMatrixByFactor(decibelM, 10);
             return decibelM;
         }
@@ -37,8 +37,8 @@ namespace AudioAnalysisTools.DSP
         /// This method is used when calculating standard, mel-freq and mfcc spectrograms.
         /// In the case of mel-scale, the passed energy spectrogram is output from the mel-frequency filter bank,
         /// and the energy values are converted directly to log-energy, normalising for window power and sample rate.
-        /// Note that the output is log-energy, not decibels: decibels =  10 * log-energy
-        /// NOTE 1: THIS METHOD ASSUMES THAT THE LAST FREQ BIN (ie the last matrix column) IS THE NYQUIST FREQ BIN
+        /// Note that the output is log-energy, not decibels: decibels =  10 * log-energy.
+        /// NOTE 1: THIS METHOD ASSUMES THAT THE LAST FREQ BIN (ie the last matrix column) IS THE NYQUIST FREQ BIN.
         /// NOTE 2: THIS METHOD ASSUMES THAT THE FIRST FREQ BIN (ie the first matrix column) IS THE MEAN or DC FREQ BIN.
         /// NOTE 3: The window contributes power to the signal which must subsequently be removed from the spectral power.
         /// NOTE 4: Spectral power must be normalised for sample rate. Effectively calculate freq power per sample.
@@ -52,17 +52,19 @@ namespace AudioAnalysisTools.DSP
         /// <returns>a spectrogram of decibel values.</returns>
         public static double[,] GetLogEnergySpectrogram(double[,] energyM, double windowPower, int sampleRate, double epsilon)
         {
+            // must square epsilon because epsilon is a minimum amplitude value but we want epsilon as minimum energy.
+            double epsilonSq = epsilon * epsilon;
             int frameCount = energyM.GetLength(0);
             int binCount = energyM.GetLength(1);
-            double minLogEnergy = Math.Log10(epsilon / windowPower / sampleRate);
-            double minLogEnergy2 = Math.Log10(epsilon * 2 / windowPower / sampleRate);
+            double minLogEnergy = Math.Log10(epsilonSq / windowPower / sampleRate);
+            double minLogEnergy2 = Math.Log10(epsilonSq * 2 / windowPower / sampleRate);
 
             double[,] decibelM = new double[frameCount, binCount];
 
             //calculate power of the DC value - first column of matrix
             for (int i = 0; i < frameCount; i++)
             {
-                if (energyM[i, 0] < epsilon)
+                if (energyM[i, 0] < epsilonSq)
                 {
                     decibelM[i, 0] = minLogEnergy;
                 }
@@ -78,7 +80,7 @@ namespace AudioAnalysisTools.DSP
                 // foreach time step or frame
                 for (int i = 0; i < frameCount; i++)
                 {
-                    if (energyM[i, j] < epsilon)
+                    if (energyM[i, j] < epsilonSq)
                     {
                         decibelM[i, j] = minLogEnergy2;
                     }
@@ -93,7 +95,7 @@ namespace AudioAnalysisTools.DSP
             for (int i = 0; i < frameCount; i++)
             {
                 //calculate power of the DC value
-                if (energyM[i, binCount - 1] < epsilon)
+                if (energyM[i, binCount - 1] < epsilonSq)
                 {
                     decibelM[i, binCount - 1] = minLogEnergy;
                 }
@@ -478,11 +480,11 @@ namespace AudioAnalysisTools.DSP
             double[,] cosines = Cosines(binCount, coeffCount + 1);
 
             //following two lines write matrix of cos values for checking.
-            //string fPath = @"C:\SensorNetworks\Sonograms\cosines.txt";
+            //string fPath = @"path\cosines.txt";
             //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");
 
             //following two lines write bmp image of cos values for checking.
-            //string fPath = @"C:\SensorNetworks\Sonograms\cosines.bmp";
+            //string fPath = @"path\cosines.bmp";
             //ImageTools.DrawMatrix(cosines, fPath);
 
             double[,] op = new double[frameCount, coeffCount];
@@ -574,48 +576,6 @@ namespace AudioAnalysisTools.DSP
 
             return cepstrum;
         }
-
-        /*
-        private static int[,] Zigzag12X12 =
-        {
-        {
-            1,  2,  6,  7, 15, 16, 28, 29, 45, 46, 66, 67,
-        },
-        {
-            3,  5,  8, 14, 17, 27, 30, 44, 47, 65, 68, 89,
-        },
-        {
-            4,  9, 13, 18, 26, 31, 43, 48, 64, 69, 88, 90,
-        },
-        {
-            10, 12, 19, 25, 32, 42, 49, 63, 70, 87, 91, 108,
-        },
-        {
-            11, 20, 24, 33, 41, 50, 62, 71, 86, 92, 107, 109,
-        },
-        {
-            21, 23, 34, 40, 51, 61, 72, 85, 93, 106, 110, 123,
-        },
-        {
-            22, 35, 39, 52, 60, 73, 84, 94, 105, 111, 122, 124,
-        },
-        {
-            36, 38, 53, 59, 74, 83, 95, 104, 112, 121, 125, 134,
-        },
-        {
-            37, 54, 58, 75, 82, 96, 103, 113, 120, 126, 133, 135,
-        },
-        {
-            55, 57, 76, 81, 97, 102, 114, 119, 127, 132, 136, 141,
-        },
-        {
-            56, 77, 80, 98, 101, 115, 118, 128, 131, 137, 140, 142,
-        },
-        {
-            78, 79, 99, 100, 116, 117, 129, 130, 138, 139, 143, 144,
-        },
-        };
-        */
 
         //********************************************************************************************************************
         //********************************************************************************************************************
