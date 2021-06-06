@@ -206,7 +206,9 @@ namespace AnalysisPrograms.SpectrogramGenerator
             // The default spectrogram has 64 frequency bands.
             if (@do.Contains(MelScaleSpectrogram))
             {
+                sonoConfig.DoPreemphasis = config.DoPreemphasis;
                 sonoConfig.mfccConfig.DoMelScale = true;
+                sonoConfig.mfccConfig.FilterbankCount = config.FilterbankCount;
                 images.Add(
                     MelScaleSpectrogram,
                     GetMelScaleSpectrogram(sonoConfig, recordingSegment, sourceRecordingName));
