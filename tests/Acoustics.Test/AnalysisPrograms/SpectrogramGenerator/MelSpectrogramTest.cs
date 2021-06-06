@@ -45,22 +45,21 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
         public void TestMelSpectrogram()
         {
             int windowSize = 512;
+
             // The following frame step yields 50 frames/s which can make spectrogram interpretation easier.
             int windowStep = 441;
+
             // must set the window overlap as this is actually used.
             double windowOverlap = (windowSize - windowStep) / (double)windowSize;
 
             bool doMelScale = true;
             int filterbankCount = 64;
 
-            // the following are not required - they are for cepstral coefficients.
-            //int ccCount = 12;
-            //bool includeDelta = true;
-            //bool includeDoubleDelta = true;
-
+            // the following are not required - they are only for cepstral coefficients.
+            //int ccCount = 12; bool includeDelta = true; bool includeDoubleDelta = true;
             var mfccConfig = new MfccConfiguration(doMelScale, filterbankCount, 0, false, false);
 
-            // This constructor initializes default values for Melscale and Mfcc spectrograms and other parameters.
+            // This constructor initializes default values for Melscale spectrograms.
             var config = new SonogramConfig()
             {
                 SampleRate = this.recording.WavReader.SampleRate,
@@ -78,6 +77,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             // Get the Mel-frequency Spectrogram
             var melSpectrogram = new SpectrogramMelScale(config, this.recording.WavReader);
             var data = melSpectrogram.Data;
+            data = DataTools.normalise(data);
 
             // DO THE TESTS
             Assert.AreEqual(11025, melSpectrogram.NyquistFrequency);
@@ -113,8 +113,10 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
         public void TestCepstrogram()
         {
             int windowSize = 512;
+
             // The following frame step yields 50 frames/s which can make spectrogram interpretation easier.
             int windowStep = 441;
+
             // must set the window overlap as this is actually used.
             double windowOverlap = (windowSize - windowStep) / (double)windowSize;
 
@@ -126,7 +128,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
 
             var mfccConfig = new MfccConfiguration(doMelScale, filterbankCount, ccCount, includeDelta, includeDoubleDelta);
 
-            // This constructor initializes default values for Melscale and Mfcc spectrograms and other parameters.
+            // This constructor initializes default values for Mfcc spectrograms.
             var config = new SonogramConfig()
             {
                 SampleRate = this.recording.WavReader.SampleRate,
@@ -136,7 +138,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
                 WindowStep = windowStep,
                 WindowOverlap = windowOverlap,
                 Duration = this.recording.Duration,
-                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
                 mfccConfig = mfccConfig,
             };
@@ -157,7 +159,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
 
             // check that the image is something like you expect.
             //var image = cepstrogram.GetImage();
-            //image.Save("C:\\temp\\mfccimage_preemphasisTEST.png");
+            //image.Save("C:\\temp\\mfccimage_WithPreemphasisTEST.png");
 
             var sumFile = PathHelper.ResolveAsset("SpectrogramTestResults", "BAC2_20071008-085040_CeptrogramDataColumnSums_WithPreemphasis.bin");
 
@@ -172,19 +174,23 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
         }
 
         /// <summary>
-        /// Test the output from generating a cepstrogram.
+        /// This test first generates a mel-scale spectrogram and then goes through
+        /// the individual steps to create a cepstrogram, testing the intermediate data structures on the way.
+        /// Also do not do pre-emphasis, nor double-deltas.
         /// </summary>
         [TestMethod]
-        public void TestCepstrogramMiinusDoubleDeltas()
+        public void TestCepstrogramMinusDoubleDeltas()
         {
             int windowSize = 512;
+
             // The following frame step yields 50 frames/s which can make spectrogram interpretation easier.
             int windowStep = 441;
+
             // must set the window overlap as this is actually used.
             double windowOverlap = (windowSize - windowStep) / (double)windowSize;
 
-            bool doMelScale = true;
-            int filterbankCount = 64;
+            bool doMelScale = false;
+            int filterbankCount = 32;
             int ccCount = 12;
             bool includeDelta = true;
             bool includeDoubleDelta = false;
@@ -195,25 +201,78 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             var config = new SonogramConfig()
             {
                 SampleRate = this.recording.WavReader.SampleRate,
-                DoPreemphasis = true,
+                DoPreemphasis = false,
                 epsilon = this.recording.Epsilon,
                 WindowSize = windowSize,
                 WindowStep = windowStep,
                 WindowOverlap = windowOverlap,
                 Duration = this.recording.Duration,
-                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
                 mfccConfig = mfccConfig,
             };
 
-            // Get the cepstrogram
+            // Get the mel Spectrogram
+            var melSpectrogram = new SpectrogramMelScale(config, this.recording.WavReader);
+
+            // Convert the decibel values to log-energy values
+            var melM = MatrixTools.MultiplyMatrixByFactor(melSpectrogram.Data, 0.1);
+
+            Assert.AreEqual(3012, melM.GetLength(0));
+            Assert.AreEqual(32, melM.GetLength(1));
+
+            //normalise log values and square. Supposed to help.
+            melM = MatrixTools.NormaliseMatrixValues(melM);
+            melM = MatrixTools.SquareValues(melM);
+
+            // Calculate cepstral coefficients
+            var cepM = MFCCStuff.Cepstra(melM, ccCount);
+            cepM = MatrixTools.NormaliseMatrixValues(cepM);
+
+            Assert.AreEqual(3012, cepM.GetLength(0));
+            Assert.AreEqual(12, cepM.GetLength(1));
+
+            // (vii) Calculate the full range of MFCC coefficients ie including decibel and deltas, etc
+            // normalise the array of frame log-energy values. These will later be added into the mfcc feature vectors.
+            var frameLogEnergyNormed = DataTools.normalise(melSpectrogram.DecibelsPerFrame);
+            Assert.AreEqual(3012, frameLogEnergyNormed.Length);
+
+            cepM = MFCCStuff.AcousticVectors(cepM, frameLogEnergyNormed, includeDelta, includeDoubleDelta);
+            Assert.AreEqual(26, cepM.GetLength(1));
+
+            melSpectrogram.Data = cepM;
+            //var image1 = melSpectrogram.GetImage();
+            //image1.Save("C:\\temp\\mfccimage_no-preemphasisTEST1.png");
+
+          // Test sonogram data matrix by comparing the vector of column sums.
+            double[] columnSums = MatrixTools.SumColumns(cepM);
+
+            var sumFile = PathHelper.ResolveAsset("SpectrogramTestResults", "BAC2_20071008-085040_CeptrogramDataColumnSums_WithoutPreemphasis.bin");
+
+            // uncomment this to update the binary data. Should be rarely needed
+            //Binary.Serialize(sumFile, columnSums);
+
+            var expectedColSums = Binary.Deserialize<double[]>(sumFile);
+            var totalDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Sum();
+            var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
+            Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
+            CollectionAssert.That.AreEqual(expectedColSums, columnSums, Delta);
+
+            // Do the test again but going directly to a cepstrogram.
             var cepstrogram = new SpectrogramCepstral(config, this.recording.WavReader);
             var data = cepstrogram.Data;
+
+            // check that the image is something like you expect.
+            //var image = cepstrogram.GetImage();
+            //image.Save("C:\\temp\\mfccimage_no-preemphasisTEST2.png");
 
             // DO THE TESTS
             Assert.AreEqual(3012, cepstrogram.FrameCount);
             Assert.AreEqual(3012, data.GetLength(0));
             Assert.AreEqual(26, data.GetLength(1));
+            double[] columnSums2 = MatrixTools.SumColumns(data);
+            Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
+            CollectionAssert.That.AreEqual(expectedColSums, columnSums2, Delta);
         }
     }
 }
