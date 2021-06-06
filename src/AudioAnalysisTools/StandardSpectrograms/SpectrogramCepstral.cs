@@ -52,11 +52,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// Returns a cepstrogram matrix of mfcc values from a spectrogram matrix of amplitude values.
-        /// This was revised May 2021 in light of more recent literature on mfcc's.
+        /// This was revised May/June 2021 in light of more recent literature on mfcc's.
         /// </summary>
         protected static double[,] MakeCepstrogram(SonogramConfig config, double[,] matrix, double[] frameLogEnergy, int sampleRate)
         {
-            double[,] m = matrix;
             int nyquist = sampleRate / 2;
             double epsilon = config.epsilon;
             bool includeDelta = config.mfccConfig.IncludeDelta;
@@ -64,11 +63,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //(i) MAKE THE FILTER BANK
             int bandCount = config.mfccConfig.FilterbankCount;
-            bool doMelScale = config.mfccConfig.DoMelScale;
             int ccCount = config.mfccConfig.CcCount;
             int fftBinCount = config.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
-            int minHz = config.MinFreqBand ?? 0;
-            int maxHz = config.MaxFreqBand ?? nyquist;
 
             Log.WriteIfVerbose("ApplyFilterBank(): Dim prior to filter bank  =" + matrix.GetLength(1));
 
@@ -81,35 +77,30 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
 
             // (ii) CONVERT AMPLITUDES TO ENERGY
-            m = MatrixTools.SquareValues(m);
+            double[,] m = MatrixTools.SquareValues(matrix);
 
-            // (iii) Do the filter-bank.
-            // The filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth.
-            m = doMelScale ? MFCCStuff.MelFilterBank(m, bandCount, nyquist, minHz, maxHz) : MFCCStuff.LinearFilterBank(m, bandCount, nyquist, minHz, maxHz);
+            // (iii) Do MEL-FILTERBANK.
+            // The filter count for full bandwidth 0-Nyquist.
+            m = MFCCStuff.MelFilterBank(m, bandCount, nyquist, 0, nyquist);
             Log.WriteIfVerbose("\tDim after filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
 
             // (iv) TAKE LOG OF THE ENERGY VALUES AFTER FILTERBANK
             m = MFCCStuff.GetLogEnergySpectrogram(m, config.WindowPower, sampleRate, epsilon); //from spectrogram
 
-            // (v) SQUARE THE MEL VALUES BEFORE DOING DCT
+            // (v) NORMALISE AND SQUARE THE MEL VALUES BEFORE DOING DCT
             // This reduces the smaller values wrt the higher energy values.
-            // Some mfcc references state that it is supposed to increase the accuracy of ASR.
+            // Some mfcc references state that it helps to increase the accuracy of ASR.
+            m = MatrixTools.NormaliseMatrixValues(m);
             m = MatrixTools.SquareValues(m);
 
-            // (vi) calculate cepstral coefficients
+            // (vi) calculate cepstral coefficients and normalise
             m = MFCCStuff.Cepstra(m, ccCount);
+            m = MatrixTools.NormaliseMatrixValues(m);
 
             // (vii) Calculate the full range of MFCC coefficients ie including decibel and deltas, etc
-            // normalise the array of frame log-energy values. These will later be added into the mfcc feature vectors.
+            // normalise the array of frame log-energy values before adding into the mfcc feature vectors.
             var frameLogEnergyNormed = DataTools.normalise(frameLogEnergy);
-
-            // Normalise the mfcc values and the other deltas etc.
-            m = MatrixTools.NormaliseMatrixValues(m);
             m = MFCCStuff.AcousticVectors(m, frameLogEnergyNormed, includeDelta, includeDoubleDelta);
-
-            // (viii) Normalize Matrix columns, i.e. weight coefficients so that all have similar range.
-            //       Tried this because said to be effective but the resulting cepstrograms are very noisy.
-            //m = MatrixTools.NormaliseMatrixColumns(m);
 
             return m;
         }
