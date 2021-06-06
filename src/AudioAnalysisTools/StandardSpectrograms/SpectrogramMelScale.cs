@@ -76,22 +76,22 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //store the full bandwidth modal noise profile
             this.ModalNoiseProfile = tuple1.Item2;
-            this.Data = DataTools.normalise(tuple1.Item1);
+            this.Data = tuple1.Item1;
         }
 
         //##################################################################################################################################
 
         /// <summary>
         /// Converts an amplitude spectrogram to mel-scale spectrogram.
-        /// NOTE!!!! The decibel array has been normalised in 0 - 1.
+        /// NOTE 1: This method assumes that the entire spectrum ispassed to filter bank.
+        /// NOTE 2: The decibel array has been normalised in 0 - 1.
         /// </summary>
         public static double[,] MakeMelScaleSpectrogram(SonogramConfig config, double[,] amplitudeM, int sampleRate)
         {
-            double[,] m = amplitudeM;
             int nyquist = sampleRate / 2;
             double epsilon = config.epsilon;
 
-            //(i) APPLY FILTER BANK
+            //(i) Calculate the bounds of the filter bajnk for the given frequency band.
             //number of Hz bands = 2^N +1. Subtract DC bin
             int fftBinCount = config.FreqBinCount;
 
@@ -109,15 +109,20 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     bandCount + " > " + fftBinCount + ")\n\n");
             }
 
-            //this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth.
-            // The last two arguments set the frequency band.
+            // (ii) CONVERT SPECTRAL AMPLITUDES TO ENERGY
+            double[,] m = MatrixTools.SquareValues(amplitudeM);
+
+            // (iii) Pass energy matrix to filter bank.
+            // The last two arguments set the full frequency band by default.
             m = MFCCStuff.MelFilterBank(m, bandCount, nyquist, 0, nyquist);
 
             Log.WriteIfVerbose("\tDim after filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
 
-            //(ii) CONVERT AMPLITUDES TO DECIBELS
-            m = MFCCStuff.DecibelSpectra(m, config.WindowPower, sampleRate, epsilon);
-            return m;
+            //(ii) CONVERT ENERGY values TO Log-POWER and Log-POWER to DECIBELS
+            double[,] decibelM = MFCCStuff.GetLogEnergySpectrogram(m, config.WindowPower, sampleRate, epsilon);
+            decibelM = MatrixTools.MultiplyMatrixByFactor(decibelM, 10);
+
+            return decibelM;
         }
 
         /// <summary>
