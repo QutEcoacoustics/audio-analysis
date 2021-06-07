@@ -6,6 +6,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
@@ -715,6 +716,18 @@ namespace AudioAnalysisTools.StandardSpectrograms
             });
 
             return bmp;
+        }
+
+        /// <summary>
+        /// This method is called by unit tests that want to draw simple spectorgram images.
+        /// It can be modified to do something non-standard with the output spectrogram.
+        /// </summary>
+        public static string SaveDebugSpectrogram(Image image, DirectoryInfo outputDirectory, string baseName)
+        {
+            var path = Path.Combine(outputDirectory.FullName, baseName + ".png");
+            image.Save(path);
+
+            return path;
         }
     }
 }

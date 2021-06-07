@@ -20,9 +20,8 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
 
     [TestClass]
     [TestCategory("Spectrograms")]
-    public class MelSpectrogramTest
+    public class MelSpectrogramTest : OutputDirectoryTest
     {
-        public const double Delta = 0.000_000_001;
         private readonly AudioRecording recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
         private DirectoryInfo outputDirectory;
 
@@ -79,6 +78,10 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             var data = melSpectrogram.Data;
             data = DataTools.normalise(data);
 
+            // check that the image is what you expect.
+            var image = melSpectrogram.GetImage();
+            this.SaveTestOutput(outputDirectory => BaseSonogram.SaveDebugSpectrogram(image, outputDirectory, "melScaleImage_preemphasis_TEST"));
+
             // DO THE TESTS
             Assert.AreEqual(11025, melSpectrogram.NyquistFrequency);
             Assert.AreEqual(3012, melSpectrogram.FrameCount);
@@ -88,21 +91,10 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             double[] columnSums = MatrixTools.SumColumns(data);
             int frBinCount = columnSums.Length;
             Assert.AreEqual(64, frBinCount);
-
-            // check that the image is what you expect.
-            //var image = melSpectrogram.GetImage();
-            //image.Save("C:\\temp\\melScaleimage_preemphasisTEST.png");
-
-            var sumFile = PathHelper.ResolveAsset("SpectrogramTestResults", "BAC2_20071008-085040_MelSpectrogramDataColumnSums_WithPreemphasis.bin");
-
-            // uncomment this to update the binary data. Should be rarely needed
-            //Binary.Serialize(sumFile, columnSums);
-
-            var expectedColSums = Binary.Deserialize<double[]>(sumFile);
-            var totalDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Sum();
-            var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
-            Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
-            CollectionAssert.That.AreEqual(expectedColSums, columnSums, Delta);
+            Assert.AreEqual(48.648309222211026, columnSums[0], TestHelper.AllowedDelta);
+            Assert.AreEqual(50.465126583997368, columnSums[15], TestHelper.AllowedDelta);
+            Assert.AreEqual(118.8046866543946, columnSums[31], TestHelper.AllowedDelta);
+            Assert.AreEqual(7.5001092063873793, columnSums[63], TestHelper.AllowedDelta);
         }
 
         /// <summary>
@@ -169,8 +161,8 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             var expectedColSums = Binary.Deserialize<double[]>(sumFile);
             var totalDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Sum();
             var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
-            Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
-            CollectionAssert.That.AreEqual(expectedColSums, columnSums, Delta);
+            Assert.AreEqual(expectedColSums[0], columnSums[0], TestHelper.AllowedDelta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
+            CollectionAssert.That.AreEqual(expectedColSums, columnSums, TestHelper.AllowedDelta);
         }
 
         /// <summary>
@@ -255,8 +247,8 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             var expectedColSums = Binary.Deserialize<double[]>(sumFile);
             var totalDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Sum();
             var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
-            Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
-            CollectionAssert.That.AreEqual(expectedColSums, columnSums, Delta);
+            Assert.AreEqual(expectedColSums[0], columnSums[0], TestHelper.AllowedDelta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
+            CollectionAssert.That.AreEqual(expectedColSums, columnSums, TestHelper.AllowedDelta);
 
             // Do the test again but going directly to a cepstrogram.
             var cepstrogram = new SpectrogramCepstral(config, this.recording.WavReader);
@@ -271,8 +263,8 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             Assert.AreEqual(3012, data.GetLength(0));
             Assert.AreEqual(26, data.GetLength(1));
             double[] columnSums2 = MatrixTools.SumColumns(data);
-            Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
-            CollectionAssert.That.AreEqual(expectedColSums, columnSums2, Delta);
+            Assert.AreEqual(expectedColSums[0], columnSums[0], TestHelper.AllowedDelta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
+            CollectionAssert.That.AreEqual(expectedColSums, columnSums2, TestHelper.AllowedDelta);
         }
     }
 }
