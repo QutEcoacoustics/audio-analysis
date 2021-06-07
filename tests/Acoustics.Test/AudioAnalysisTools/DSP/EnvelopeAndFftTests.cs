@@ -103,7 +103,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Test sonogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(amplSpectrogram);
 
-            var sumFile = PathHelper.ResolveAsset("EnvelopeAndFft", "BAC2_20071008-085040_DataColumnSums.bin");
+            var sumFile = PathHelper.ResolveAsset("EnvelopeAndFft", "BAC2_20071008-085040_DataColumnSumsTest1.bin");
 
             // uncomment this to update the binary data. Should be rarely needed
             // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c
@@ -268,7 +268,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Test sonogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(amplSpectrogram);
 
-            var sumFile = PathHelper.ResolveAsset("EnvelopeAndFft", "BAC2_20071008-085040_DataColumnSums.bin");
+            var sumFile = PathHelper.ResolveAsset("EnvelopeAndFft", "BAC2_20071008-085040_DataColumnSumsTest3.bin");
 
             // uncomment this to update the binary data. Should be rarely needed
             //Binary.Serialize(sumFile, columnSums);
@@ -281,7 +281,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             //FileTools.WriteArray2File_Formatted(expectedColSums, "C:\\temp\\array.txt", "0.00");
 
-            // The effect of pre-emphasis on the first 10 signal samples.
+            // The effect of pre-emphasis on the first 10 column sums.
             //ID   -preE  +preE
             // 0  105.43  10.23
             // 1  160.10  10.25
