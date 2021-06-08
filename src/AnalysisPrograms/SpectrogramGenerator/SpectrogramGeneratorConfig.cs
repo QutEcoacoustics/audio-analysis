@@ -12,6 +12,11 @@ namespace AnalysisPrograms.SpectrogramGenerator
 #pragma warning disable SA1623 // Property summary documentation should match accessors
         public int WaveformHeight { get; set; } = 100;
 
+        /// <summary>
+        /// The default threshold = zero decibels.
+        /// This removes the least background noise.
+        /// Values up to 4 decibels are possibly effective.
+        /// </summary>
         public double BgNoiseThreshold { get; set; } = 0.0;
 
         /// <summary>
