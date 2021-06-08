@@ -87,11 +87,12 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             Assert.AreEqual(3012, melSpectrogram.FrameCount);
             Assert.AreEqual(3012, data.GetLength(0));
 
-            // Test sonogram data matrix by comparing the vector of column sums.
+            // Test spectrogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(data);
             int frBinCount = columnSums.Length;
             Assert.AreEqual(64, frBinCount);
             Assert.AreEqual(48.648309222211026, columnSums[0], TestHelper.AllowedDelta);
+            Assert.AreEqual(93.49997884080535, columnSums[1], TestHelper.AllowedDelta);
             Assert.AreEqual(50.465126583997368, columnSums[15], TestHelper.AllowedDelta);
             Assert.AreEqual(118.8046866543946, columnSums[31], TestHelper.AllowedDelta);
             Assert.AreEqual(7.5001092063873793, columnSums[63], TestHelper.AllowedDelta);
@@ -139,30 +140,28 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             var cepstrogram = new SpectrogramCepstral(config, this.recording.WavReader);
             var data = cepstrogram.Data;
 
+            // check that the image is what you expect.
+            var image = cepstrogram.GetImage();
+            this.SaveTestOutput(outputDirectory => BaseSonogram.SaveDebugSpectrogram(image, outputDirectory, "mfccimage_WithPreemphasisTEST"));
+
             // DO THE TESTS
             Assert.AreEqual(11025, cepstrogram.NyquistFrequency);
             Assert.AreEqual(3012, cepstrogram.FrameCount);
             Assert.AreEqual(3012, data.GetLength(0));
 
-            // Test sonogram data matrix by comparing the vector of column sums.
+            // Test spectrogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(data);
             int frBinCount = columnSums.Length;
             Assert.AreEqual(39, frBinCount);
-
-            // check that the image is something like you expect.
-            //var image = cepstrogram.GetImage();
-            //image.Save("C:\\temp\\mfccimage_WithPreemphasisTEST.png");
-
-            var sumFile = PathHelper.ResolveAsset("SpectrogramTestResults", "BAC2_20071008-085040_CeptrogramDataColumnSums_WithPreemphasis.bin");
-
-            // uncomment this to update the binary data. Should be rarely needed
-            //Binary.Serialize(sumFile, columnSums);
-
-            var expectedColSums = Binary.Deserialize<double[]>(sumFile);
-            var totalDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Sum();
-            var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
-            Assert.AreEqual(expectedColSums[0], columnSums[0], TestHelper.AllowedDelta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
-            CollectionAssert.That.AreEqual(expectedColSums, columnSums, TestHelper.AllowedDelta);
+            Assert.AreEqual(851.9554620620411, columnSums[0], TestHelper.AllowedDelta);
+            Assert.AreEqual(1381.875961657845, columnSums[1], TestHelper.AllowedDelta);
+            Assert.AreEqual(1938.8434781109502, columnSums[12], TestHelper.AllowedDelta);
+            Assert.AreEqual(1505.9283619924238, columnSums[13], TestHelper.AllowedDelta);
+            Assert.AreEqual(1506.07944927851, columnSums[14], TestHelper.AllowedDelta);
+            Assert.AreEqual(1505.9960186256506, columnSums[25], TestHelper.AllowedDelta);
+            Assert.AreEqual(1506.0307897275595, columnSums[26], TestHelper.AllowedDelta);
+            Assert.AreEqual(1505.9953976547922, columnSums[27], TestHelper.AllowedDelta);
+            Assert.AreEqual(1506.0039343217934, columnSums[38], TestHelper.AllowedDelta);
         }
 
         /// <summary>
@@ -224,47 +223,53 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             Assert.AreEqual(3012, cepM.GetLength(0));
             Assert.AreEqual(12, cepM.GetLength(1));
 
-            // (vii) Calculate the full range of MFCC coefficients ie including decibel and deltas, etc
+            // Calculate the full range of MFCC coefficients ie including decibel and deltas, etc
             // normalise the array of frame log-energy values. These will later be added into the mfcc feature vectors.
             var frameLogEnergyNormed = DataTools.normalise(melSpectrogram.DecibelsPerFrame);
             Assert.AreEqual(3012, frameLogEnergyNormed.Length);
-
             cepM = MFCCStuff.AcousticVectors(cepM, frameLogEnergyNormed, includeDelta, includeDoubleDelta);
             Assert.AreEqual(26, cepM.GetLength(1));
 
             melSpectrogram.Data = cepM;
-            //var image1 = melSpectrogram.GetImage();
-            //image1.Save("C:\\temp\\mfccimage_no-preemphasisTEST1.png");
 
-          // Test sonogram data matrix by comparing the vector of column sums.
+            // check that the image is what you expect.
+            var image = melSpectrogram.GetImage();
+            this.SaveTestOutput(outputDirectory => BaseSonogram.SaveDebugSpectrogram(image, outputDirectory, "mfccimage_no-preemphasisTEST1"));
+
+            // Test cepstrogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(cepM);
+            int frBinCount = columnSums.Length;
+            Assert.AreEqual(26, frBinCount);
+            Assert.AreEqual(733.5221023203834, columnSums[0], TestHelper.AllowedDelta);
+            Assert.AreEqual(1874.8811842724304, columnSums[1], TestHelper.AllowedDelta);
+            Assert.AreEqual(1389.16766148194, columnSums[12], TestHelper.AllowedDelta);
+            Assert.AreEqual(1505.9720853599465, columnSums[13], TestHelper.AllowedDelta);
+            Assert.AreEqual(1506.0965820877702, columnSums[14], TestHelper.AllowedDelta);
+            Assert.AreEqual(1506.0089293490105, columnSums[25], TestHelper.AllowedDelta);
 
-            var sumFile = PathHelper.ResolveAsset("SpectrogramTestResults", "BAC2_20071008-085040_CeptrogramDataColumnSums_WithoutPreemphasis.bin");
-
-            // uncomment this to update the binary data. Should be rarely needed
-            //Binary.Serialize(sumFile, columnSums);
-
-            var expectedColSums = Binary.Deserialize<double[]>(sumFile);
-            var totalDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Sum();
-            var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
-            Assert.AreEqual(expectedColSums[0], columnSums[0], TestHelper.AllowedDelta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
-            CollectionAssert.That.AreEqual(expectedColSums, columnSums, TestHelper.AllowedDelta);
-
-            // Do the test again but going directly to a cepstrogram.
+            // Do the test again but start directly with a cepstrogram.
+            //The test results should be same as above.
             var cepstrogram = new SpectrogramCepstral(config, this.recording.WavReader);
             var data = cepstrogram.Data;
 
-            // check that the image is something like you expect.
-            //var image = cepstrogram.GetImage();
-            //image.Save("C:\\temp\\mfccimage_no-preemphasisTEST2.png");
+            // check that the image is what you expect.
+            image = melSpectrogram.GetImage();
+            this.SaveTestOutput(outputDirectory => BaseSonogram.SaveDebugSpectrogram(image, outputDirectory, "mfccimage_no-preemphasisTEST2"));
 
-            // DO THE TESTS
+            // DO TESTS on CEPSTROGRAM
             Assert.AreEqual(3012, cepstrogram.FrameCount);
             Assert.AreEqual(3012, data.GetLength(0));
             Assert.AreEqual(26, data.GetLength(1));
-            double[] columnSums2 = MatrixTools.SumColumns(data);
-            Assert.AreEqual(expectedColSums[0], columnSums[0], TestHelper.AllowedDelta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
-            CollectionAssert.That.AreEqual(expectedColSums, columnSums2, TestHelper.AllowedDelta);
+
+            // Test spectrogram data matrix by comparing the vector of column sums.
+            double[] columnSums2 = MatrixTools.SumColumns(cepstrogram.Data);
+            Assert.AreEqual(26, columnSums2.Length);
+            Assert.AreEqual(733.5221023203834, columnSums2[0], TestHelper.AllowedDelta);
+            Assert.AreEqual(1874.8811842724304, columnSums2[1], TestHelper.AllowedDelta);
+            Assert.AreEqual(1389.16766148194, columnSums2[12], TestHelper.AllowedDelta);
+            Assert.AreEqual(1505.9720853599465, columnSums2[13], TestHelper.AllowedDelta);
+            Assert.AreEqual(1506.0965820877702, columnSums2[14], TestHelper.AllowedDelta);
+            Assert.AreEqual(1506.0089293490105, columnSums2[25], TestHelper.AllowedDelta);
         }
     }
 }
