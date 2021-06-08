@@ -29,7 +29,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
     /// See this commit for dealing with BLOBs: https://github.com/QutBioacoustics/audio-analysis/commit/55142089c8eb65d46e2f96f1d2f9a30d89b62710.
     /// </summary>
     [TestClass]
-    public class SonogramTests
+    public class SonogramTests : OutputDirectoryTest
     {
         private const double AllowedDelta = 0.000001;
         private DirectoryInfo outputDirectory;
@@ -116,40 +116,33 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         {
             // DO EQUALITY TEST on the AMPLITUDE SONGOGRAM DATA
             // Do not bother with the image because this is only an amplitude spectrogram.
-            var sonogram = new AmplitudeSonogram(this.sonoConfig, this.recording.WavReader);
-            var expectedFile = PathHelper.ResolveAsset("StandardSonograms", "BAC2_20071008_AmplSonogramData.EXPECTED.bin");
+            var spectrogram = new AmplitudeSonogram(this.sonoConfig, this.recording.WavReader);
 
-            // run this once to generate expected test data
-            // uncomment this to update the binary data. Should be rarely needed
-            // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c
-            //Binary.Serialize(expectedFile, sonogram.Data);
-
-            var expected = Binary.Deserialize<double[,]>(expectedFile);
-
-            CollectionAssert.That.AreEqual(expected, sonogram.Data, TestHelper.AllowedDelta);
+            // Test spectrogram data matrix by comparing the vector of column sums.
+            double[] columnSums = MatrixTools.SumColumns(spectrogram.Data);
+            Assert.AreEqual(512, columnSums.Length);
+            Assert.AreEqual(39.060622221789323, columnSums[0], TestHelper.AllowedDelta);
+            Assert.AreEqual(66.607759731106825, columnSums[1], TestHelper.AllowedDelta);
+            Assert.AreEqual(158.63015599662759, columnSums[127], TestHelper.AllowedDelta);
+            Assert.AreEqual(123.03479657693498, columnSums[255], TestHelper.AllowedDelta);
+            Assert.AreEqual(1.8051504882600575, columnSums[511], TestHelper.AllowedDelta);
         }
 
         [TestMethod]
         public void TestDecibelSpectrogram()
         {
-            // DO EQUALITY TEST on the AMPLITUDE SONGOGRAM DATA
-            // Do not bother with the image because this is only an amplitude spectrogram.
-            var sonogram = new AmplitudeSonogram(this.sonoConfig, this.recording.WavReader);
+            // Produce an ampllitude spectrogram and then convert to decibels
+            var spectrogram = new AmplitudeSonogram(this.sonoConfig, this.recording.WavReader);
+            var decibelMatrix = MFCCStuff.DecibelSpectra(spectrogram.Data, spectrogram.Configuration.WindowPower, spectrogram.SampleRate, spectrogram.Configuration.epsilon);
 
-            // DO FILE EQUALITY TEST on the DECIBEL SONGOGRAM DATA
-            // Do not bother with the image because this has been tested elsewhere.
-            var decibelSonogram = MFCCStuff.DecibelSpectra(sonogram.Data, sonogram.Configuration.WindowPower, sonogram.SampleRate, sonogram.Configuration.epsilon);
-
-            var expectedFile = PathHelper.ResolveAsset("StandardSonograms", "BAC2_20071008_DecibelSonogramData.EXPECTED.bin");
-
-            // run this once to generate expected test data
-            // uncomment this to update the binary data. Should be rarely needed
-            // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c
-            //Binary.Serialize(expectedFile, decibelSonogram);
-
-            var expected = Binary.Deserialize<double[,]>(expectedFile);
-
-            CollectionAssert.That.AreEqual(expected, decibelSonogram, TestHelper.AllowedDelta);
+            // Test spectrogram data matrix by comparing the vector of column sums.
+            double[] columnSums = MatrixTools.SumColumns(decibelMatrix);
+            Assert.AreEqual(512, columnSums.Length);
+            Assert.AreEqual(-166818.90211294816, columnSums[0], TestHelper.AllowedDelta);
+            Assert.AreEqual(-154336.80598725122, columnSums[1], TestHelper.AllowedDelta);
+            Assert.AreEqual(-146742.38008515659, columnSums[127], TestHelper.AllowedDelta);
+            Assert.AreEqual(-150328.6447096896, columnSums[255], TestHelper.AllowedDelta);
+            Assert.AreEqual(-215697.79141538762, columnSums[511], TestHelper.AllowedDelta);
         }
 
         [TestMethod]

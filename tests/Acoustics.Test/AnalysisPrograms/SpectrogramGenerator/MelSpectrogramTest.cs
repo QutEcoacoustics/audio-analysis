@@ -31,12 +31,6 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             this.outputDirectory = PathHelper.GetTempDir();
         }
 
-        [TestCleanup]
-        public void Cleanup()
-        {
-            PathHelper.DeleteTempDir(this.outputDirectory);
-        }
-
         /// <summary>
         /// Test the output from generating a Mel-frequency Spectrogram.
         /// </summary>

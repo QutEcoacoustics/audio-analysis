@@ -15,7 +15,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
-    //using static global::TowseyLibrary.FFT;
     using Path = System.IO.Path;
 
     /// <summary>
