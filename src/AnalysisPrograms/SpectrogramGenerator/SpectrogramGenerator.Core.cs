@@ -43,7 +43,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
         /// DecibelSpectrogram.
         /// DecibelSpectrogramNoiseReduced.
         /// MelScaleSpectrogram
-        /// CepstralSpectrogram.
+        /// Cepstrogram.
         /// OctaveScaleSpectrogram
         /// RibbonSpectrogram.
         /// DifferenceSpectrogram.
