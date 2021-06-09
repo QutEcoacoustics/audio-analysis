@@ -116,19 +116,7 @@ namespace Acoustics.Test.TestHelpers
         {
             var extra = this.ExtraName.IsNullOrEmpty() ? string.Empty : "_" + this.ExtraName;
 
-            var outName = $"{this.TestContext.TestName}{extra}_{typeToken}.png";
-            if (image == null)
-            {
-                this.TestContext.WriteLine($"Skipping writing expected image `{outName}` because it is null");
-                return;
-            }
-
-            this.SaveTestOutput(output =>
-            {
-                var path = output.CombinePath(outName);
-                image.Save(path);
-                return path;
-            });
+            this.SaveImage(image, $"{extra}_{typeToken}");
         }
 
         private bool ShouldWrite(WriteTestOutput should) =>

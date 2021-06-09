@@ -315,12 +315,11 @@ namespace System
             var result = new StringBuilder();
             foreach (var item in items)
             {
-                result.Append(item);
-                result.Append(delimiter);
+                result.AppendJoin(string.Empty, prefix, item, suffix, delimiter);
             }
 
             // return one delimiter length less because we always add a delimiter on the end
-            return result.ToString(0, result.Length - delimiter.Length);
+            return result.ToString(0, Math.Max(0, result.Length - delimiter.Length));
         }
 
         public static string JoinFormatted(this IEnumerable<double> items, string formatString = "{0:f2}", string delimiter = " ") =>

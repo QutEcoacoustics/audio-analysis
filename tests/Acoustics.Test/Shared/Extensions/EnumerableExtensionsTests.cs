@@ -29,6 +29,15 @@ namespace Acoustics.Test.Shared.Extensions
         }
 
         [TestMethod]
+        public void TestJoinCustomDelimiterWithPrefixAndSuffix()
+        {
+            var items = new[] { 0, 1, 2, 3, 4 };
+            var actual = items.Join("/", "`", "~");
+
+            Assert.AreEqual("`0~/`1~/`2~/`3~/`4~", actual);
+        }
+
+        [TestMethod]
         public void TestJoinNonGeneric()
         {
             var items = Enum.GetValues(typeof(MidpointRounding));
