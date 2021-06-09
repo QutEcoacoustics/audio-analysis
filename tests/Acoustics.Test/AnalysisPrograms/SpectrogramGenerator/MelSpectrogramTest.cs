@@ -23,13 +23,6 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
     public class MelSpectrogramTest : OutputDirectoryTest
     {
         private readonly AudioRecording recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
-        private DirectoryInfo outputDirectory;
-
-        [TestInitialize]
-        public void Setup()
-        {
-            this.outputDirectory = PathHelper.GetTempDir();
-        }
 
         /// <summary>
         /// Test the output from generating a Mel-frequency Spectrogram.

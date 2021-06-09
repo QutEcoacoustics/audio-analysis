@@ -32,7 +32,6 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
     public class SonogramTests : OutputDirectoryTest
     {
         private const double AllowedDelta = 0.000001;
-        private DirectoryInfo outputDirectory;
         private AudioRecording recording;
         private FrequencyScale freqScale;
         private SonogramConfig sonoConfig;
@@ -60,7 +59,6 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         [TestInitialize]
         public void Setup()
         {
-            this.outputDirectory = PathHelper.GetTempDir();
             this.recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
 
             // specified linear scale
@@ -80,11 +78,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         [TestCleanup]
         public void Cleanup()
         {
-            PathHelper.DeleteTempDir(this.outputDirectory);
             this.recording.Dispose();
-
-            //this.freqScale.();
-            //this.sonoConfig.Dispose();
         }
 
         /// <summary>
@@ -97,10 +91,6 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         {
             var decibelArray1 = new[] { 96.0, 100.0, 90.0, 97.0 };
             var decibelArray2 = new[] { -96.0, -100.0, -90.0, -97.0 };
-
-            // run this once to generate expected test data
-            // uncomment this to update the binary data. Should be rarely needed
-
             var average = SpectrogramTools.AverageAnArrayOfDecibelValues(decibelArray1);
             Assert.AreEqual(96.98816759, average, AllowedDelta);
             average = SpectrogramTools.AverageAnArrayOfDecibelValues(decibelArray2);
@@ -131,7 +121,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         [TestMethod]
         public void TestDecibelSpectrogram()
         {
-            // Produce an ampllitude spectrogram and then convert to decibels
+            // Produce an amplitude spectrogram and then convert to decibels
             var spectrogram = new AmplitudeSonogram(this.sonoConfig, this.recording.WavReader);
             var decibelMatrix = MFCCStuff.DecibelSpectra(spectrogram.Data, spectrogram.Configuration.WindowPower, spectrogram.SampleRate, spectrogram.Configuration.epsilon);
 
@@ -207,7 +197,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
             var image = SpectrogramTools.GetSonogramPlusCharts(actualDecibelSpectrogram, events, plots, null);
 
             // create the image for visual confirmation
-            image.Save(this.outputDirectory.CombineFile(this.recording.BaseName + ".png"));
+            this.SaveTestOutput(outputDirectory => BaseSonogram.SaveDebugSpectrogram(image, outputDirectory, this.recording.BaseName));
 
             Assert.AreEqual(1621, image.Width);
             Assert.AreEqual(656, image.Height);
