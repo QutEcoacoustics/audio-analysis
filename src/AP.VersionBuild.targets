@@ -5,7 +5,7 @@
   <!-- Register our task that as something to run before standard build target -->
   <Target Name="APVersionBeforeBuild" BeforeTargets="PrepareForBuild">
     <!-- <Message Text="[APVersionBeforeBuild] Debug: $(RuntimeIdentifier)" Importance="High" /> -->
-    <Exec Command="pwsh –NonInteractive -noprofile $(ProjectDir)../git_version.ps1 -configuration $(Configuration) -self_contained $(SelfContained) -runtime_identifier '$(RuntimeIdentifier)'" ConsoleToMSBuild="True" EchoOff="false" StandardOutputImportance="low">
+    <Exec Command="pwsh –NonInteractive -noprofile $(ProjectDir)../git_version.ps1 -configuration $(Configuration) -self_contained $(SelfContained) -runtime_identifier &quot;$(RuntimeIdentifier)&quot; -target_framework &quot;$(TargetFramework.ToLowerInvariant())&quot;" ConsoleToMSBuild="True" EchoOff="false" StandardOutputImportance="low">
       <Output TaskParameter="ConsoleOutput" ItemName="VersionMetadata" />
     </Exec>
     <!-- <Message Text="[APVersionBeforeBuild] %(VersionMetadata.Identity)" Importance="High" /> -->
