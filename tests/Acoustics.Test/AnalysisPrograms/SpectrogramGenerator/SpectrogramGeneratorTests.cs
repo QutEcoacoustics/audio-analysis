@@ -21,7 +21,10 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
     public class SpectrogramGeneratorTests : GeneratedImageTest<Rgb24>
     {
         // There are currently eight spectrogram types plus the waveform.
+        // all of them have the same width
         private const int Width = 1096;
+
+        // These are the heights.
         private const int Waveform = 154;
         private const int Spectrogram = 310;
         private const int SpectrogramNoiseRemoved = 310;
@@ -79,6 +82,11 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             return $"AllCombinations:{comboTag}";
         }
 
+        /// <summary>
+        /// Note that in this test, the config file is Towsey.SpectrogramGenerator.yml.
+        /// This config sets the cepstrogram to have both deltas and double-deltas added to the mfccs.
+        /// Therefore need to increase the expected height by 26.
+        /// </summary>
         [TestMethod]
         public void TestAudio2Sonogram()
         {
@@ -91,9 +99,14 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             this.ActualImage = result.CompositeImage;
 
             // by default all visualizations are enabled
-            Assert.That.ImageIsSize(Width, All.Sum(x => x.Value), result.CompositeImage);
+            var expectedHeight = All.Sum(x => x.Value) + 26;
+            Assert.That.ImageIsSize(Width, expectedHeight, result.CompositeImage);
         }
 
+        /// <summary>
+        /// Note that in this test the SpectrogramGeneratorConfig constructor is called.
+        /// It sets the default values for both deltas and double-deltas to false.
+        /// </summary>
         [DataTestMethod]
         [DynamicData(nameof(AllCombinations), DynamicDataDisplayName = nameof(AllCombinationsTestName))]
         public void TestAudio2SonogramCombinations(SpectrogramImageType[] images)
@@ -126,7 +139,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
                     .Finish();
                 this.SaveExtraImage("expected_" + spectrogramImageType, expected);
 
-                Assert.That.ImageContainsExpected(expected, new Point(0, y), this.ActualImage);
+               Assert.That.ImageContainsExpected(expected, new Point(0, y), this.ActualImage);
 
                 // jump up expected width of image
                 y += All[spectrogramImageType];

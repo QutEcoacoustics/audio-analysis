@@ -514,7 +514,7 @@ namespace AudioAnalysisTools
             int frameStep = frameSize;
 
             // get amplitude spectrogram and remove the DC column ie column zero.
-            var results = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep);
+            var results = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, false, frameSize, frameStep);
 
             // remove background noise from the full amplitude spectrogram
             const double sdCount = 0.1;
@@ -530,7 +530,7 @@ namespace AudioAnalysisTools
             int frameStep = frameSize;
 
             // get decibel spectrogram
-            var results = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep);
+            var results = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, false, frameSize, frameStep);
             var spectrogram = MFCCStuff.DecibelSpectra(results.AmplitudeSpectrogram, results.WindowPower, recording.SampleRate, recording.Epsilon);
 
             // remove background noise from spectrogram

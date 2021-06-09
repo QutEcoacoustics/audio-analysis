@@ -101,7 +101,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
     }
 
     /// <summary>
-    /// In line class used to return results from the static method Audio2Sonogram.GenerateFourSpectrogramImages().
+    /// In line class used to return results from the static method SpectrogramGenerator.GenerateSpectrogramImages().
     /// </summary>
     public class AudioToSonogramResult
     {

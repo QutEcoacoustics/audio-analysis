@@ -37,13 +37,26 @@ Images:
 WaveformHeight: 100
 
 # NOISE REDUCTION PARAMETERS
-# NoiseReductionType: Standard  # use the standard by defulat.
-BgNoiseThreshold: 3.0
+NoiseReductionType: Standard
+BgNoiseThreshold: 0.0
 
 # DIFFERENCE SPECTROGRAM - PARAMETER (in decibels)
 DifferenceThreshold: 3.0 
 
+# CEPSTROGRAM
+DoPreemphasis: false
+# The number of filters in the Mel-scale filter bank.
+#Typical values range over 64 (the default), 32, 26 (the minimum value I have come across).
+FilterbankCount: 64
+IncludeDelta: true
+IncludeDoubleDelta: true
+
 # LOCAL CONTRAST NORMALISATION PARAMETERS
+#   A low contrastLevel = 0.1 gives a more grey image.
+#   A high contrastLevel = 1.0 gives mostly white, high contrast image.
+#   The algorithm is not overly sensitive to the neighbourhood size.
+#NeighborhoodSeconds: 1.0 #DEFAULT
+#LcnContrastLevel: 0.2 #DEFAULT
 NeighbourhoodSeconds: 1.0
 LcnContrastLevel: 0.2
 

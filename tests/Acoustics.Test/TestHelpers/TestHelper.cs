@@ -628,7 +628,9 @@ namespace Acoustics.Test.TestHelpers
 
         public static void AssertFrequencyInSignal(WavReader wavReader, double[] signal, int[] frequencies, int variance = 1)
         {
-            var fft = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(signal, wavReader.SampleRate, wavReader.Epsilon, 512, 0.0);
+            // set default value for preemphasis
+            bool doPreemphasis = false;
+            var fft = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(signal, wavReader.SampleRate, wavReader.Epsilon, doPreemphasis, 512, 0.0);
 
             var histogram = SpectrogramTools.CalculateAvgSpectrumFromEnergySpectrogram(fft.AmplitudeSpectrogram);
 

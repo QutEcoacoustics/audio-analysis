@@ -60,10 +60,13 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// Converts amplitude matrix to mel-frequency scale spectrogram.
+        /// IMPORTANT NOTE: The conversion to Mel-scale is done BEFORE noise reduction.
+        ///                 And conversion to decibels is done after noise reduction.
         /// </summary>
         /// <param name="amplitudeM">Matrix of amplitude values.</param>
         public override void Make(double[,] amplitudeM)
         {
+            // call static method to convert amplitude spectrogram to melscale.
             var m = MakeMelScaleSpectrogram(this.Configuration, amplitudeM, this.SampleRate);
 
             //(iii) NOISE REDUCTION
@@ -73,27 +76,30 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //store the full bandwidth modal noise profile
             this.ModalNoiseProfile = tuple1.Item2;
-            this.Data = DataTools.normalise(tuple1.Item1);
+            this.Data = tuple1.Item1;
         }
 
         //##################################################################################################################################
 
         /// <summary>
-        /// NOTE!!!! The decibel array has been normalised in 0 - 1.
+        /// Converts an amplitude spectrogram to mel-scale spectrogram.
+        /// NOTE 1: This method assumes that the entire spectrum ispassed to filter bank.
+        /// NOTE 2: The decibel array has been normalised in 0 - 1.
         /// </summary>
-        public static double[,] MakeMelScaleSpectrogram(SonogramConfig config, double[,] matrix, int sampleRate)
+        public static double[,] MakeMelScaleSpectrogram(SonogramConfig config, double[,] amplitudeM, int sampleRate)
         {
-            double[,] m = matrix;
             int nyquist = sampleRate / 2;
             double epsilon = config.epsilon;
 
-            //(i) APPLY FILTER BANK
+            //(i) Calculate the bounds of the filter bajnk for the given frequency band.
             //number of Hz bands = 2^N +1. Subtract DC bin
             int fftBinCount = config.FreqBinCount;
 
+            // This config has the default values set for calculating MFCCs.
             // Mel band count is set to 64 by default in BaseSonogramConfig class at line 158.
+            // Coefficient count is set to 12 by default.
             int bandCount = config.mfccConfig.FilterbankCount;
-            Log.WriteIfVerbose("ApplyFilterBank(): Dim prior to filter bank  =" + matrix.GetLength(1));
+            Log.WriteIfVerbose("ApplyFilterBank(): Dim prior to filter bank  =" + amplitudeM.GetLength(1));
 
             //error check that filterBankCount < Number of FFT bins
             if (bandCount > fftBinCount)
@@ -103,14 +109,20 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     bandCount + " > " + fftBinCount + ")\n\n");
             }
 
-            //this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth.
+            // (ii) CONVERT SPECTRAL AMPLITUDES TO ENERGY
+            double[,] m = MatrixTools.SquareValues(amplitudeM);
+
+            // (iii) Pass energy matrix to filter bank.
+            // The last two arguments set the full frequency band by default.
             m = MFCCStuff.MelFilterBank(m, bandCount, nyquist, 0, nyquist);
 
             Log.WriteIfVerbose("\tDim after filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
 
-            //(ii) CONVERT AMPLITUDES TO DECIBELS
-            m = MFCCStuff.DecibelSpectra(m, config.WindowPower, sampleRate, epsilon); //from spectrogram
-            return m;
+            //(ii) CONVERT ENERGY values TO Log-POWER and Log-POWER to DECIBELS
+            double[,] decibelM = MFCCStuff.GetLogEnergySpectrogram(m, config.WindowPower, sampleRate, epsilon);
+            decibelM = MatrixTools.MultiplyMatrixByFactor(decibelM, 10);
+
+            return decibelM;
         }
 
         /// <summary>

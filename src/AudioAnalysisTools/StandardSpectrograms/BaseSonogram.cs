@@ -6,6 +6,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
@@ -64,10 +65,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public SNR SnrData { get; set; }
 
         /// <summary>
-        /// Gets or sets decibels per signal frame.
+        /// Gets or sets decibels per signal frame. i.e. log frame energy.
         /// </summary>
         public double[] DecibelsPerFrame { get; set; }
 
+        /// <summary>
+        /// Gets or sets the array of frame log-energy values normalised 0,1.
+        /// This is derived from the array variable DecibelsPerFrame[].
+        /// </summary>
         public double[] DecibelsNormalised { get; set; }
 
         /// <summary>
@@ -185,6 +190,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             var recording = new AudioRecording(wav);
             var fftData = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
+                this.Configuration.DoPreemphasis,
                 this.Configuration.WindowSize,
                 this.Configuration.WindowOverlap,
                 this.Configuration.WindowFunction);
@@ -710,6 +716,18 @@ namespace AudioAnalysisTools.StandardSpectrograms
             });
 
             return bmp;
+        }
+
+        /// <summary>
+        /// This method is called by unit tests that want to draw simple spectorgram images.
+        /// It can be modified to do something non-standard with the output spectrogram.
+        /// </summary>
+        public static string SaveDebugSpectrogram(Image image, DirectoryInfo outputDirectory, string baseName)
+        {
+            var path = Path.Combine(outputDirectory.FullName, baseName + ".png");
+            image.Save(path);
+
+            return path;
         }
     }
 }

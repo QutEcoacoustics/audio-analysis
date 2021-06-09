@@ -111,13 +111,14 @@ namespace AudioAnalysisTools
             int frameStep = 512;
             frameSize *= 16; // take longer window to get low freq
             frameStep *= 16;
+            bool doPreemphasis = false;
 
-            var dspOutputL = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelL, sampleRate, epsilon, frameSize, frameStep);
+            var dspOutputL = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelL, sampleRate, epsilon, doPreemphasis, frameSize, frameStep);
             var avSpectrumL = MatrixTools.GetColumnAverages(dspOutputL.AmplitudeSpectrogram);
 
             //var medianSpectrumL = MatrixTools.GetColumnMedians(dspOutputL.amplitudeSpectrogram);
 
-            var dspOutputR = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelR, sampleRate, epsilon, frameSize, frameStep);
+            var dspOutputR = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelR, sampleRate, epsilon, doPreemphasis, frameSize, frameStep);
             var avSpectrumR = MatrixTools.GetColumnAverages(dspOutputR.AmplitudeSpectrogram);
 
             //var medianSpectrumR = MatrixTools.GetColumnMedians(dspOutputR.amplitudeSpectrogram);
@@ -193,11 +194,12 @@ namespace AudioAnalysisTools
             //var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFFTs(subsegmentRecording, frameSize, frameStep);
             int frameSize = 512;
             int frameStep = 512;
+            bool doPreemphasis = false;
 
-            var dspOutputL = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelL, sampleRate, epsilon, frameSize, frameStep);
+            var dspOutputL = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelL, sampleRate, epsilon, doPreemphasis, frameSize, frameStep);
             var spgrmL = dspOutputL.AmplitudeSpectrogram;
 
-            var dspOutputR = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelR, sampleRate, epsilon, frameSize, frameStep);
+            var dspOutputR = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(channelR, sampleRate, epsilon, doPreemphasis, frameSize, frameStep);
             var spgrmR = dspOutputR.AmplitudeSpectrogram;
 
             double similarityIndex = 0;

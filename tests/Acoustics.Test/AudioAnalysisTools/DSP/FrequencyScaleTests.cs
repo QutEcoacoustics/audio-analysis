@@ -15,7 +15,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
-    //using static global::TowseyLibrary.FFT;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -262,11 +261,12 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             Assert.AreEqual(frameCount, spectrogramMatrix.GetLength(0));
             Assert.AreEqual(defaultMelBinCount, spectrogramMatrix.GetLength(1));
 
-            Assert.AreEqual(-73.784157442630288, spectrogramMatrix[0, 0], 0.0001);
+            Assert.AreEqual(-72.15547149521359, spectrogramMatrix[0, 0], 0.0001);
             Assert.AreEqual(-157.82548429035143, spectrogramMatrix[0, 1], 0.0001);
             Assert.AreEqual(-157.82548429035143, spectrogramMatrix[0, 32], 0.0001);
+            Assert.AreEqual(-75.543977604537076, spectrogramMatrix[0, 49], 0.0001);
             Assert.AreEqual(-157.82548429035143, spectrogramMatrix[0, 62], 0.0001);
-            Assert.AreEqual(-98.078506874942121, spectrogramMatrix[0, 63], 0.0001);
+            Assert.AreEqual(-84.3026462113695, spectrogramMatrix[0, 63], 0.0001);
         }
 
         /// <summary>

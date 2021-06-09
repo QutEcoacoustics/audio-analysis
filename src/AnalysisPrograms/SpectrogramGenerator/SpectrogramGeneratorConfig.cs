@@ -12,12 +12,43 @@ namespace AnalysisPrograms.SpectrogramGenerator
 #pragma warning disable SA1623 // Property summary documentation should match accessors
         public int WaveformHeight { get; set; } = 100;
 
-        public double BgNoiseThreshold { get; set; } = 3.0;
+        /// <summary>
+        /// The default threshold = zero decibels.
+        /// This removes the least background noise.
+        /// Values up to 4 decibels are possibly effective.
+        /// </summary>
+        public double BgNoiseThreshold { get; set; } = 0.0;
 
         /// <summary>
         /// DIFFERENCE SPECTROGRAM - PARAMETER (in decibels).
         /// </summary>
         public double DifferenceThreshold { get; set; } = 3.0;
+
+        /// <summary>
+        /// CEPSTROGRAM - PARAMETER.
+        /// Do pre-emphasis prior to FFT.
+        /// </summary>
+        public bool DoPreemphasis { get; set; } = false;
+
+        /// <summary>
+        /// CEPSTROGRAM - PARAMETER
+        /// The size of the Mel-scale filter bank.
+        /// The default value is 64.
+        /// THe minimum I have seen referenced = 26.
+        /// </summary>
+        public int FilterbankCount { get; set; } = 64;
+
+        /// <summary>
+        /// CEPSTROGRAM - PARAMETER.
+        /// Include the delta features in the returned MFCC feature vector.
+        /// </summary>
+        public bool IncludeDelta { get; set; } = false;
+
+        /// <summary>
+        /// CEPSTROGRAM - PARAMETER.
+        /// Include the delta-delta or acceleration features in the returned MFCC feature vector.
+        /// </summary>
+        public bool IncludeDoubleDelta { get; set; } = false;
 
         /// <summary>
         /// LOCAL CONTRAST NORMALIZATION PARAMETERS.

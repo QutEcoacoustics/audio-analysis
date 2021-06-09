@@ -24,6 +24,8 @@ namespace AnalysisPrograms
     using Path = System.IO.Path;
 
     /// <summary>
+    /// TODO: THIS CLASS NOW OBSOLETE. CAN REMOVE.
+    ///       REPLACED BY SPECTROGRAM GENERATOR CLASS.
     /// Call this class by using the activity (first command line argument) "Create4Sonograms".
     /// </summary>
     public static class Create4Sonograms
@@ -113,7 +115,7 @@ namespace AnalysisPrograms
             var recording = new AudioRecording(fiOutputSegment.FullName);
 
             // EXTRACT ENVELOPE and SPECTROGRAM// This call uses the default FFT window.
-            var dspOutput = DSP_Frames.ExtractEnvelopeAndFfts(recording, frameSize, windowOverlap);
+            var dspOutput = DSP_Frames.ExtractEnvelopeAndFfts(recording, false, frameSize, windowOverlap);
 
             // average absolute value over the minute recording
             ////double[] avAbsolute = dspOutput.Average;

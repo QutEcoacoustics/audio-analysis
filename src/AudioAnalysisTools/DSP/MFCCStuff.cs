@@ -10,15 +10,11 @@ namespace AudioAnalysisTools.DSP
     public class MFCCStuff
     {
         /// <summary>
-        /// Converts spectral amplitudes directly to dB, normalising for window power and sample rate.
-        /// NOTE 1: The window contributes power to the signal which must subsequently be removed from the spectral power.
-        /// NOTE 2: Spectral power must be normalised for sample rate. Effectively calculate freq power per sample.
-        /// NOTE 3: The power in all freq bins except f=0 must be doubled because the power spectrum is an even function about f=0;
-        ///         This is due to the fact that the spectrum actually consists of 512 + 1 values, the centre value being for f=0.
-        /// NOTE 4: The decibels value is a ratio. Here the ratio is implied.
+        /// Converts amplitude spectra (in a spectrogram) to dB spectra, normalising for window power and sample rate.
+        /// NOTE 1: This calculation is done in three separate steps in order to avoid duplicating the tricky
+        ///         calculations in the method GetLogEnergySpectrogram().
+        /// NOTE 2: The decibels value is a ratio. Here the ratio is implied.
         ///         dB = 10*log(amplitude ^2) but in this method adjust power to account for power of Hamming window and SR.
-        /// NOTE 5: THIS METHOD ASSUMES THAT THE LAST BIN IS THE NYQUIST FREQ BIN
-        ///  NOTE 6: THIS METHOD ASSUMES THAT THE FIRST BIN IS THE MEAN or DC FREQ BIN.
         /// </summary>
         /// <param name="amplitudeM"> the amplitude spectra. </param>
         /// <param name="windowPower">value for window power normalisation.</param>
@@ -27,23 +23,54 @@ namespace AudioAnalysisTools.DSP
         /// <returns>a spectrogram of decibel values.</returns>
         public static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon)
         {
-            int frameCount = amplitudeM.GetLength(0);
-            int binCount = amplitudeM.GetLength(1);
-            double minDb = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
-            double min2Db = 10 * Math.Log10(epsilon * epsilon * 2 / windowPower / sampleRate);
+            //conver amplitude values to energy
+            double[,] energyM = MatrixTools.SquareValues(amplitudeM);
 
-            double[,] spectra = new double[frameCount, binCount];
+            // take log of power values and multiply by 10 to convert to decibels.
+            double[,] decibelM = GetLogEnergySpectrogram(energyM, windowPower, sampleRate, epsilon);
+            decibelM = MatrixTools.MultiplyMatrixByFactor(decibelM, 10);
+            return decibelM;
+        }
+
+        /// <summary>
+        /// This method converts the passed matrix of spectrogram energy values, (i.e. squared amplitude values) to log-energy values.
+        /// This method is used when calculating standard, mel-freq and mfcc spectrograms.
+        /// In the case of mel-scale, the passed energy spectrogram is output from the mel-frequency filter bank,
+        /// and the energy values are converted directly to log-energy, normalising for window power and sample rate.
+        /// Note that the output is log-energy, not decibels: decibels =  10 * log-energy.
+        /// NOTE 1: THIS METHOD ASSUMES THAT THE LAST FREQ BIN (ie the last matrix column) IS THE NYQUIST FREQ BIN.
+        /// NOTE 2: THIS METHOD ASSUMES THAT THE FIRST FREQ BIN (ie the first matrix column) IS THE MEAN or DC FREQ BIN.
+        /// NOTE 3: The window contributes power to the signal which must subsequently be removed from the spectral power.
+        /// NOTE 4: Spectral power must be normalised for sample rate. Effectively calculate freq power per sample.
+        /// NOTE 5: The power in all freq bins except f=0 must be doubled because the power spectrum is an even function about f=0;
+        ///         This is due to the fact that the spectrum actually consists of 512 + 1 values, the centre value being for f=0.
+        /// </summary>
+        /// <param name="energyM"> the amplitude spectra. </param>
+        /// <param name="windowPower">value for window power normalisation.</param>
+        /// <param name="sampleRate">to NormaliseMatrixValues for the sampling rate.</param>
+        /// <param name="epsilon">small value to avoid log of zero.</param>
+        /// <returns>a spectrogram of decibel values.</returns>
+        public static double[,] GetLogEnergySpectrogram(double[,] energyM, double windowPower, int sampleRate, double epsilon)
+        {
+            // must square epsilon because epsilon is a minimum amplitude value but we want epsilon as minimum energy.
+            double epsilonSq = epsilon * epsilon;
+            int frameCount = energyM.GetLength(0);
+            int binCount = energyM.GetLength(1);
+            double minLogEnergy = Math.Log10(epsilonSq / windowPower / sampleRate);
+            double minLogEnergy2 = Math.Log10(epsilonSq * 2 / windowPower / sampleRate);
+
+            double[,] decibelM = new double[frameCount, binCount];
 
             //calculate power of the DC value - first column of matrix
             for (int i = 0; i < frameCount; i++)
             {
-                if (amplitudeM[i, 0] < epsilon)
+                if (energyM[i, 0] < epsilonSq)
                 {
-                    spectra[i, 0] = minDb;
+                    decibelM[i, 0] = minLogEnergy;
                 }
                 else
                 {
-                    spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
+                    decibelM[i, 0] = Math.Log10(energyM[i, 0] / windowPower / sampleRate);
                 }
             }
 
@@ -53,13 +80,13 @@ namespace AudioAnalysisTools.DSP
                 // foreach time step or frame
                 for (int i = 0; i < frameCount; i++)
                 {
-                    if (amplitudeM[i, j] < epsilon)
+                    if (energyM[i, j] < epsilonSq)
                     {
-                        spectra[i, j] = min2Db;
+                        decibelM[i, j] = minLogEnergy2;
                     }
                     else
                     {
-                        spectra[i, j] = 10 * Math.Log10(amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower / sampleRate);
+                        decibelM[i, j] = Math.Log10(energyM[i, j] * 2 / windowPower / sampleRate);
                     }
                 }
             } //end of all freq bins
@@ -68,17 +95,17 @@ namespace AudioAnalysisTools.DSP
             for (int i = 0; i < frameCount; i++)
             {
                 //calculate power of the DC value
-                if (amplitudeM[i, binCount - 1] < epsilon)
+                if (energyM[i, binCount - 1] < epsilonSq)
                 {
-                    spectra[i, binCount - 1] = minDb;
+                    decibelM[i, binCount - 1] = minLogEnergy;
                 }
                 else
                 {
-                    spectra[i, binCount - 1] = 10 * Math.Log10(amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate);
+                    decibelM[i, binCount - 1] = Math.Log10(energyM[i, binCount - 1] / windowPower / sampleRate);
                 }
             }
 
-            return spectra;
+            return decibelM;
         }
 
         public static int[] VocalizationDetection(double[] decibels, double lowerDbThreshold, double upperDbThreshold, int k1k2delay, int syllableGap, int minPulse, int[] zeroCrossings)
@@ -344,82 +371,11 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Does MelFilterBank for passed sonogram matrix.
-        /// IMPORTANT !!!!! Assumes that min freq of passed sonogram matrix = 0 Hz and maxFreq = Nyquist.
-        /// Uses Greg's MelIntegral.
-        /// </summary>
-        /// <param name="matrix">the sonogram.</param>
-        /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist.</param>
-        /// <param name="nyquist">max frequency in original spectra.</param>
-        public static double[,] MelFilterBank(double[,] matrix, int filterBankCount, double nyquist)
-        {
-            int rowCount = matrix.GetLength(0); //number of spectra or time steps
-            int colCount = matrix.GetLength(1); //number of Hz bands = 2^N +1
-
-            double[,] outData = new double[rowCount, filterBankCount];
-            double linBinWidth = nyquist / colCount;
-            double melBinWidth = Mel(nyquist) / filterBankCount;  //width of single mel bin
-
-            //for all spectra or frames
-            for (int i = 0; i < rowCount; i++)
-            {
-                //for all mel bands
-                for (int j = 0; j < filterBankCount; j++)
-                {
-                    double fa = InverseMel(j * melBinWidth) / linBinWidth;       //lower f in Hz units
-                    double fb = InverseMel((j + 1) * melBinWidth) / linBinWidth; //upper f in Hz units
-                    int ai = (int)Math.Ceiling(fa);
-                    int bi = (int)Math.Floor(fb);
-
-                    double sum = 0.0;
-
-                    if (bi < ai)
-                    {
-                        //a and b are in same Hz band
-                        ai = (int)Math.Floor(fa);
-                        bi = (int)Math.Ceiling(fb);
-                        double ya = LinearInterpolate(ai, bi, matrix[i, ai], matrix[i, bi], fa);
-                        double yb = LinearInterpolate(ai, bi, matrix[i, ai], matrix[i, bi], fb);
-                        sum = MelIntegral(fa * linBinWidth, fb * linBinWidth, ya, yb);
-                    }
-                    else
-                    {
-                        if (ai > 0)
-                        {
-                            double ya = LinearInterpolate(ai - 1, ai, matrix[i, ai - 1], matrix[i, ai], fa);
-                            sum += MelIntegral(fa * linBinWidth, ai * linBinWidth, ya, matrix[i, ai]);
-                        }
-
-                        for (int k = ai; k < bi; k++)
-                        {
-                            if (k + 1 >= colCount)
-                            {
-                                break; //to prevent out of range index
-                            }
-
-                            sum += MelIntegral(k * linBinWidth, (k + 1) * linBinWidth, matrix[i, k], matrix[i, k + 1]);
-                        }
-
-                        if (bi < colCount)
-                        {
-                            double yb = LinearInterpolate(bi, bi + 1, matrix[i, bi], matrix[i, bi + 1], fb);
-                            sum += MelIntegral(bi * linBinWidth, fb * linBinWidth, matrix[i, bi], yb);
-                        }
-                    }
-
-                    outData[i, j] = sum / melBinWidth; //to obtain power per mel
-                } //end of mel bins
-            }
-
-            return outData;
-        }
-
-        /// <summary>
-        /// Does mel conversion for sonogram for any frequency band given by minFreq and maxFreq.
+        /// Does conversion from linear frequency scale to mel-scale for any frequency band given by minFreq and maxFreq.
         /// Uses Greg's MelIntegral
         /// The first step is to calculate the number of filters for the required frequency sub-band.
         /// </summary>
-        /// <param name="matrix">the sonogram.</param>
+        /// <param name="matrix">the spectrogram.</param>
         /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist.</param>
         /// <param name="nyquist">max frequency in original spectra.</param>
         /// <param name="minFreq">min freq in the passed sonogram matrix.</param>
@@ -429,8 +385,7 @@ namespace AudioAnalysisTools.DSP
             double freqRange = maxFreq - minFreq;
             if (freqRange <= 0)
             {
-                Log.WriteLine("Speech.MelFilterBank(): WARNING!!!! Freq range = zero");
-                throw new Exception("Speech.LinearFilterBank(): WARNING!!!! Freq range = zero. Check values of min & max freq.");
+                throw new Exception("FATAL ERROR: Speech.LinearFilterBank(): Freq range = zero. Check values of min & max freq.");
             }
 
             double melNyquist = Mel(nyquist);
@@ -514,7 +469,7 @@ namespace AudioAnalysisTools.DSP
         //********************************************************************************************************************
         //********************************************************************************************************************
         //********************************************************************************************************************
-        //******************************* CEPTRA COEFFICIENTS USING DCT AND COSINES
+        //******************************* CALCULATION OF CEPTRAL COEFFICIENTS USING DCT AND COSINES
 
         public static double[,] Cepstra(double[,] spectra, int coeffCount)
         {
@@ -525,11 +480,11 @@ namespace AudioAnalysisTools.DSP
             double[,] cosines = Cosines(binCount, coeffCount + 1);
 
             //following two lines write matrix of cos values for checking.
-            //string fPath = @"C:\SensorNetworks\Sonograms\cosines.txt";
+            //string fPath = @"path\cosines.txt";
             //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");
 
             //following two lines write bmp image of cos values for checking.
-            //string fPath = @"C:\SensorNetworks\Sonograms\cosines.bmp";
+            //string fPath = @"path\cosines.bmp";
             //ImageTools.DrawMatrix(cosines, fPath);
 
             double[,] op = new double[frameCount, coeffCount];
@@ -567,12 +522,6 @@ namespace AudioAnalysisTools.DSP
 
             return op;
         }
-
-        //public static double[,] DCT_2D(double[,] spectra, int coeffCount)
-        //{
-        //    double[,] op = Cepstra(spectra, coeffCount);
-        //    return op;
-        //}
 
         /// <summary>
         /// cosines.
@@ -628,61 +577,26 @@ namespace AudioAnalysisTools.DSP
             return cepstrum;
         }
 
-        public static int[,] Zigzag12X12 =
-        {
-        {
-            1,  2,  6,  7, 15, 16, 28, 29, 45, 46, 66, 67,
-        },
-        {
-            3,  5,  8, 14, 17, 27, 30, 44, 47, 65, 68, 89,
-        },
-        {
-            4,  9, 13, 18, 26, 31, 43, 48, 64, 69, 88, 90,
-        },
-        {
-            10, 12, 19, 25, 32, 42, 49, 63, 70, 87, 91, 108,
-        },
-        {
-            11, 20, 24, 33, 41, 50, 62, 71, 86, 92, 107, 109,
-        },
-        {
-            21, 23, 34, 40, 51, 61, 72, 85, 93, 106, 110, 123,
-        },
-        {
-            22, 35, 39, 52, 60, 73, 84, 94, 105, 111, 122, 124,
-        },
-        {
-            36, 38, 53, 59, 74, 83, 95, 104, 112, 121, 125, 134,
-        },
-        {
-            37, 54, 58, 75, 82, 96, 103, 113, 120, 126, 133, 135,
-        },
-        {
-            55, 57, 76, 81, 97, 102, 114, 119, 127, 132, 136, 141,
-        },
-        {
-            56, 77, 80, 98, 101, 115, 118, 128, 131, 137, 140, 142,
-        },
-        {
-            78, 79, 99, 100, 116, 117, 129, 130, 138, 139, 143, 144,
-        },
-        };
-
         //********************************************************************************************************************
         //********************************************************************************************************************
         //********************************************************************************************************************
         //*********************************************** GET ACOUSTIC VECTORS
 
         /// <summary>
-        /// This method assumes that the supplied mfcc matrix DOES NOT contain dB values in column one.
-        /// These are added in from the supplied dB array.
+        /// This method assumes that the supplied mfcc matrix DOES NOT contain frame dB (log energy) values in column zero.
+        /// These are added in from the supplied array of frame log-energies.
         /// </summary>
-        public static double[,] AcousticVectors(double[,] mfcc, double[] dBNormed, bool includeDelta, bool includeDoubleDelta)
+        /// <param name="mfcc">A matrix of mfcc coefficients. Column zero is empty.</param>
+        /// <param name="frameDbNormed">log-energy values for the frames.</param>
+        /// <param name="includeDelta">Whether or not to add delta features.</param>
+        /// <param name="includeDoubleDelta">Whether or not to add double delta features.</param>
+        /// <returns>A matrix of complete mfcc values with additional deltas, frame energies etc.</returns>
+        public static double[,] AcousticVectors(double[,] mfcc, double[] frameDbNormed, bool includeDelta, bool includeDoubleDelta)
         {
             //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
-            int frameCount = mfcc.GetLength(0); //number of frames
-            int mfccCount = mfcc.GetLength(1); //number of MFCCs
-            int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
+            int frameCount = mfcc.GetLength(0); //number of time frames
+            int mfccCount = mfcc.GetLength(1);  //number of MFCC coefficients
+            int coeffcount = mfccCount + 1;     //number of MFCCs + 1 for energy
             int dim = coeffcount;
             if (includeDelta)
             {
@@ -694,183 +608,38 @@ namespace AudioAnalysisTools.DSP
                 dim += coeffcount;
             }
 
+            // create matrix to take the required set of features, mfccs, deltas and double deltas.
             double[,] acousticM = new double[frameCount, dim];
+
+            // loop through the time frames and create feature vector for each frame.
             for (int t = 0; t < frameCount; t++)
             {
-                double[] fv = GetFeatureVector(dBNormed, mfcc, t, includeDelta, includeDoubleDelta); //get feature vector for frame (t)
+                double[] fv = GetMfccFeatureVector(frameDbNormed, mfcc, t, includeDelta, includeDoubleDelta); //get feature vector for frame (t)
+
+                //transfer feature vector to the matrix of acoustic features.
                 for (int i = 0; i < dim; i++)
                 {
-                    acousticM[t, i] = fv[i];  //transfer feature vector to acoustic matrix.
+                    acousticM[t, i] = fv[i];
                 }
             }
 
             return acousticM;
         }
 
-        public static double[] AcousticVector(int index, double[,] mfcc, double[] dB, bool includeDelta, bool includeDoubleDelta)
-        {
-            //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
-            int mfccCount = mfcc.GetLength(1); //number of MFCCs
-            int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
-            int dim = coeffcount;
-            if (includeDelta)
-            {
-                dim += coeffcount;
-            }
-
-            if (includeDoubleDelta)
-            {
-                dim += coeffcount;
-            }
-
-            //LoggedConsole.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
-
-            double[] acousticV = new double[dim];
-            double[] fv = GetFeatureVector(dB, mfcc, index, includeDelta, includeDoubleDelta); //get feature vector for frame (t)
-            for (int i = 0; i < dim; i++)
-            {
-                acousticV[i] = fv[i];  //transfer feature vector to acoustic Vector.
-            }
-
-            return acousticV;
-        } //AcousticVectors()
-
         /// <summary>
-        /// returns full feature vector from the passed matrix of energy+cepstral+delta+deltaDelta coefficients.
+        /// Constructs a feature vector of MFCCs including deltas and double deltas as requested by user.
+        /// The dB array has been normalised in 0-1.
         /// </summary>
-        public static double[] GetTriAcousticVector(double[,] cepstralM, int timeId, int deltaT)
+        /// <param name="dB">log-energy values for the frames.</param>
+        /// <param name="matrix">A matrix of mfcc coefficients. Column zero is empty.</param>
+        /// <param name="timeId">index for the required timeframe.</param>
+        /// <param name="includeDelta">Whether or not to add delta features.</param>
+        /// <param name="includeDoubleDelta">Whether or not to add double-delta features.</param>
+        /// <returns>a mfcc feature vector for a single time-frame.</returns>
+        public static double[] GetMfccFeatureVector(double[] dB, double[,] matrix, int timeId, bool includeDelta, bool includeDoubleDelta)
         {
-            int coeffcount = cepstralM.GetLength(1); //number of MFCC deltas etcs
-            int featureCount = coeffcount;
-            if (deltaT > 0)
-            {
-                featureCount *= 3;
-            }
-
-            //LoggedConsole.WriteLine("frameCount=" + frameCount + " coeffcount=" + coeffcount + " featureCount=" + featureCount + " deltaT=" + deltaT);
-            double[] fv = new double[featureCount];
-
-            if (deltaT == 0)
-            {
-                for (int i = 0; i < coeffcount; i++)
-                {
-                    fv[i] = cepstralM[timeId, i];
-                }
-
-                return fv;
-            }
-
-            //else extract tri-acoustic vector
-            for (int i = 0; i < coeffcount; i++)
-            {
-                fv[i] = cepstralM[timeId - deltaT, i];
-            }
-
-            for (int i = 0; i < coeffcount; i++)
-            {
-                fv[coeffcount + i] = cepstralM[timeId, i];
-            }
-
-            for (int i = 0; i < coeffcount; i++)
-            {
-                fv[coeffcount + coeffcount + i] = cepstralM[timeId + deltaT, i];
-            }
-
-            return fv;
-        }
-
-        public static double[] GetFeatureVector(double[,] matrix, int timeId, bool includeDelta, bool includeDoubleDelta)
-        {
-            int frameCount = matrix.GetLength(0); //number of frames
-            int coeffcount = matrix.GetLength(1); //number of MFCCs + 1 for energy
-            int dim = coeffcount;
-            if (includeDelta)
-            {
-                dim += coeffcount;
-            }
-
-            if (includeDoubleDelta)
-            {
-                dim += coeffcount;
-            }
-
-            double[] fv = new double[dim];
-
-            //add in the CEPSTRAL coefficients
-            for (int i = 0; i < coeffcount; i++)
-            {
-                fv[i] = matrix[timeId, i];
-            }
-
-            //add in the DELTA coefficients
-            int offset = coeffcount;
-            if (includeDelta)
-            {
-                //deal with edge effects
-                if (timeId + 1 >= frameCount || timeId - 1 < 0)
-                {
-                    for (int i = offset; i < dim; i++)
-                    {
-                        fv[i] = 0.5;
-                    }
-
-                    return fv;
-                }
-
-                for (int i = 0; i < coeffcount; i++)
-                {
-                    fv[offset + i] = matrix[timeId + 1, i] - matrix[timeId - 1, i];
-                }
-
-                for (int i = offset; i < offset + coeffcount; i++)
-                {
-                    fv[i] = (fv[i] + 1) / 2;   //NormaliseMatrixValues values that potentially range from -1 to +1
-
-                    //if (fv[i] < 0.0) fv[i] = 0.0;
-                    //if (fv[i] > 1.0) fv[i] = 1.0;
-                }
-            }
-
-            //add in the DOUBLE DELTA coefficients
-            if (includeDoubleDelta)
-            {
-                offset += coeffcount;
-
-                //deal with edge effects
-                if (timeId + 2 >= frameCount || timeId - 2 < 0)
-                {
-                    for (int i = offset; i < dim; i++)
-                    {
-                        fv[i] = 0.5;
-                    }
-
-                    return fv;
-                }
-
-                for (int i = 0; i < coeffcount; i++)
-                {
-                    fv[offset + i] = matrix[timeId + 2, i] - matrix[timeId, i] - (matrix[timeId, i] - matrix[timeId - 2, i]);
-                }
-
-                for (int i = offset; i < offset + coeffcount; i++)
-                {
-                    //NormaliseMatrixValues values that potentially range from -2 to +2
-                    fv[i] = (fv[i] + 2) / 4;
-
-                    //if (fv[i] < 0.0) fv[i] = 0.0;
-                    //if (fv[i] > 1.0) fv[i] = 1.0;
-                }
-            }
-
-            return fv;
-        }
-
-        public static double[] GetFeatureVector(double[] dB, double[,] matrix, int timeId, bool includeDelta, bool includeDoubleDelta)
-        {
-            //the dB array has been normalised in 0-1.
-            int frameCount = matrix.GetLength(0); //number of frames
             int mfccCount = matrix.GetLength(1);  //number of MFCCs
-            int coeffcount = mfccCount + 1;  //number of MFCCs + 1 for energy
+            int coeffcount = mfccCount + 1;       //number of MFCCs + 1 for frame energy
             int dim = coeffcount;
             if (includeDelta)
             {
@@ -884,8 +653,10 @@ namespace AudioAnalysisTools.DSP
 
             double[] fv = new double[dim];
 
-            //add in the CEPSTRAL coefficients
+            // add in the log-energy value for the time-frame.
             fv[0] = dB[timeId];
+
+            //add in the CEPSTRAL coefficients
             for (int i = 0; i < mfccCount; i++)
             {
                 fv[1 + i] = matrix[timeId, i];
@@ -895,7 +666,8 @@ namespace AudioAnalysisTools.DSP
             int offset = coeffcount;
             if (includeDelta)
             {
-                if (timeId + 1 >= frameCount || timeId - 1 < 0) //deal with edge effects
+                // First deal with edge effects
+                if (timeId <= 0)
                 {
                     for (int i = offset; i < dim; i++)
                     {
@@ -905,15 +677,19 @@ namespace AudioAnalysisTools.DSP
                     return fv;
                 }
 
-                fv[offset] = dB[timeId + 1] - dB[timeId - 1];
+                // add in DELTA of the log-energy value for the time-frame.
+                fv[offset] = dB[timeId] - dB[timeId - 1];
+
+                // add in DELTAs of the cepstral coefficients.
                 for (int i = 0; i < mfccCount; i++)
                 {
-                    fv[1 + offset + i] = matrix[timeId + 1, i] - matrix[timeId - 1, i];
+                    fv[1 + offset + i] = matrix[timeId, i] - matrix[timeId - 1, i];
                 }
 
+                //Normalise Values that potentially range from -1 to +1
                 for (int i = offset; i < offset + mfccCount + 1; i++)
                 {
-                    fv[i] = (fv[i] + 1) / 2;    //NormaliseMatrixValues values that potentially range from -1 to +1
+                    fv[i] = (fv[i] + 1) / 2;
                 }
             }
 
@@ -922,7 +698,7 @@ namespace AudioAnalysisTools.DSP
             {
                 //deal with edge effects
                 offset += coeffcount;
-                if (timeId + 2 >= frameCount || timeId - 2 < 0)
+                if (timeId <= 1)
                 {
                     for (int i = offset; i < dim; i++)
                     {
@@ -932,18 +708,19 @@ namespace AudioAnalysisTools.DSP
                     return fv;
                 }
 
-                fv[offset] = dB[timeId + 2] - dB[timeId] - (dB[timeId] - dB[timeId - 2]);
+                // add in DELTA-DELTAs of the log-energy value for the time-frame.
+                fv[offset] = (dB[timeId] - dB[timeId - 1]) - (dB[timeId - 1] - dB[timeId - 2]);
+
+                // add in DELTA-DELTAs of the cepstral coefficients.
                 for (int i = 0; i < mfccCount; i++)
                 {
-                    fv[1 + offset + i] = matrix[timeId + 2, i] - matrix[timeId, i] - (matrix[timeId, i] - matrix[timeId - 2, i]);
+                    fv[1 + offset + i] = matrix[timeId, i] - matrix[timeId - 1, i] - (matrix[timeId - 1, i] - matrix[timeId - 2, i]);
                 }
 
+                //Normalise Matrix Values values that potentially range from -2 to +2
                 for (int i = offset; i < offset + mfccCount + 1; i++)
                 {
-                    fv[i] = (fv[i] + 2) / 4;   //NormaliseMatrixValues values that potentially range from -2 to +2
-
-                    //if (fv[i] < 0.0) fv[i] = 0.0;
-                    //if (fv[i] > 1.0) fv[i] = 1.0;
+                    fv[i] = (fv[i] + 2) / 4;
                 }
             }
 

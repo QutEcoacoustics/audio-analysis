@@ -90,9 +90,10 @@ namespace AudioAnalysisTools.EventStatistics
             // convert recording to spectrogram
             int sampleRate = recording.SampleRate;
             double epsilon = recording.Epsilon;
+            bool doPreemphasis = false; // default value
 
             // extract the spectrogram
-            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recording, config.FrameSize, config.FrameStep);
+            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recording, doPreemphasis, config.FrameSize, config.FrameStep);
 
             double hertzBinWidth = dspOutput1.FreqBinWidth;
             var stepDurationInSeconds = config.FrameStep / (double)sampleRate;

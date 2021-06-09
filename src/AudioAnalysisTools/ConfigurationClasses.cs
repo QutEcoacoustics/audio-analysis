@@ -24,11 +24,12 @@ namespace AudioAnalysisTools
         {
             Amplitude,
             Spectral,
-            Cepsral,
+            Cepstral,
             AcousticVectors,
             SobelEdge,
         }
 
+        /*
         // ReSharper disable InconsistentNaming
         public enum FeatureType
         {
@@ -37,6 +38,7 @@ namespace AudioAnalysisTools
             CC_AUTO,
             DCT_2D,
         }
+        */
 
         // ReSharper restore InconsistentNaming
         public struct Recording
@@ -87,6 +89,7 @@ namespace AudioAnalysisTools
             public const string Key_SonogramType = "SONOGRAM_TYPE";
         }
 
+        /*
         public struct Template
         {
             public const string Key_ExtractInterval = "EXTRACTION_INTERVAL"; //determines complexity of language model
@@ -99,6 +102,7 @@ namespace AudioAnalysisTools
             public const string Key_WordCount = "NUMBER_OF_WORDS";  // in the language model
             public const string Key_WordNames = "WORD_NAMES";       // in the language model
         }
+        */
 
         public struct ImageSave
         {
@@ -106,18 +110,20 @@ namespace AudioAnalysisTools
         }
     }
 
+    /// <summary>
+    /// CEPSTROGRAM - PARAMETERs.
+    /// </summary>
     [Serializable]
     public class MfccConfiguration
     {
-        public int FilterbankCount { get; set; }
-
-        public bool DoMelScale { get; set; }
-
-        public int CcCount { get; set; } //number of cepstral coefficients
-
-        public bool IncludeDelta { get; set; }
-
-        public bool IncludeDoubleDelta { get; set; }
+        public MfccConfiguration(bool doMelScale, int filterBankCount, int coeffCount, bool includeDelta, bool includeDoubleDelta)
+        {
+            this.DoMelScale = doMelScale;
+            this.FilterbankCount = filterBankCount;
+            this.CcCount = coeffCount;
+            this.IncludeDelta = includeDelta;
+            this.IncludeDoubleDelta = includeDoubleDelta;
+        }
 
         public MfccConfiguration(ConfigDictionary config)
         {
@@ -127,6 +133,37 @@ namespace AudioAnalysisTools
             this.IncludeDelta = config.GetBoolean(ConfigKeys.Mfcc.Key_IncludeDelta);
             this.IncludeDoubleDelta = config.GetBoolean(ConfigKeys.Mfcc.Key_IncludeDoubleDelta);
         }
+
+        /// <summary>
+        /// Gets or sets the size of the Mel-scale filter bank.
+        /// The default value is 64.
+        /// THe minimum I have seen referenced = 26.
+        /// </summary>
+        public int FilterbankCount { get; set; } = 64;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to convert linear frequency scale to melscale.
+        /// Default = true.
+        /// </summary>
+        public bool DoMelScale { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the number of cepstral coefficients.
+        /// The default value is 12.
+        /// </summary>
+        public int CcCount { get; set; } = 12;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to include
+        /// the delta features in the returned MFCC feature vector.
+        /// </summary>
+        public bool IncludeDelta { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to include
+        /// the delta-delta or acceleration features in the returned MFCC feature vector.
+        /// </summary>
+        public bool IncludeDoubleDelta { get; set; }
 
         public void Save(TextWriter writer)
         {
@@ -140,6 +177,18 @@ namespace AudioAnalysisTools
     [Serializable]
     public static class EndpointDetectionConfiguration
     {
+        //these should be the same for all threads and processes
+        //these k1 and k2 thresholds are dB above the base line minimum value.
+        public static double K1Threshold { get; set; } // dB threshold for recognition of vocalisations
+
+        public static double K2Threshold { get; set; } // dB threshold for recognition of vocalisations
+
+        public static double K1K2Latency { get; set; } // Seconds delay between signal reaching k1 and k2 thresholds
+
+        public static double VocalGap { get; set; } // Seconds gap required to separate vocalisations
+
+        public static double MinPulseDuration { get; set; } // Minimum length of energy pulse - do not use this
+
         public static void SetDefaultSegmentationConfig()
         {
             K1Threshold = 1.0;   // dB threshold for recognition of vocalisations
@@ -199,17 +248,5 @@ namespace AudioAnalysisTools
             var minPulse = (int)(MinPulseDuration / frameStep); //=2  frames is min vocal length
             return MFCCStuff.VocalizationDetection(dbArray, K1Threshold, K2Threshold, k1k2Delay, frameGap, minPulse, null);
         }
-
-        //these should be the same for all threads and processes
-        //these k1 and k2 thresholds are dB above the base line minimum value.
-        public static double K1Threshold { get; set; } // dB threshold for recognition of vocalisations
-
-        public static double K2Threshold { get; set; } // dB threshold for recognition of vocalisations
-
-        public static double K1K2Latency { get; set; } // Seconds delay between signal reaching k1 and k2 thresholds
-
-        public static double VocalGap { get; set; } // Seconds gap required to separate vocalisations
-
-        public static double MinPulseDuration { get; set; } // Minimum length of energy pulse - do not use this
     }
 }

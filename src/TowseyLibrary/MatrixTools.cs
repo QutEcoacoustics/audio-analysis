@@ -630,6 +630,27 @@ namespace TowseyLibrary
             return newM;
         }
 
+        /// <summary>
+        /// Multiplies the values in a matrix by a factor.
+        /// Used to convert log-energy values to decibels.
+        /// </summary>
+        public static double[,] MultiplyMatrixByFactor(double[,] matrix, double factor)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            double[,] newM = new double[rows, cols];
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    newM[i, j] = matrix[i, j] * factor;
+                }
+            }
+
+            return newM;
+        }
+
         public static double[,] LogTransform(double[,] matrix)
         {
             int rows = matrix.GetLength(0);
@@ -2091,6 +2112,30 @@ namespace TowseyLibrary
                         m2Return[r, c] = 0.0;
                     }
                 }
+            }
+
+            return m2Return;
+        }
+
+        /// <summary>
+        /// Normalises a matrix so that the values in each column lie between 0 and 1.
+        /// This method is used in producing mfcc's where all the coefficients are weighted so has to have similar range.
+        /// </summary>
+        public static double[,] NormaliseMatrixColumns(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+
+            double[,] m2Return = new double[rows, cols];
+
+            // extract each column in turn, normalise and return.
+            for (int c = 0; c < cols; c++)
+            {
+                var column = MatrixTools.GetColumn(m, c);
+                var colNormalised = DataTools.normalise(column);
+
+                // return the column.
+                MatrixTools.SetColumn(m2Return, c, colNormalised);
             }
 
             return m2Return;

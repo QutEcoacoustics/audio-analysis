@@ -382,7 +382,8 @@ namespace AudioAnalysisTools
             int ridgeBuffer = frameSize * bufferFrameCount;
             var ridgeRecording = AudioRecording.GetRecordingSubsegment(recording, sampleStart, sampleEnd, ridgeBuffer);
             int frameStep = frameSize;
-            var dspOutput = DSP_Frames.ExtractEnvelopeAndFfts(ridgeRecording, frameSize, frameStep);
+            bool doPreemphasis = false; // default value
+            var dspOutput = DSP_Frames.ExtractEnvelopeAndFfts(ridgeRecording, doPreemphasis, frameSize, frameStep);
 
             // Generate the ridge SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
             // i: generate the SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
