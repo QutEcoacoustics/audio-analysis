@@ -11,6 +11,7 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
     using global::AnalysisPrograms.Recognizers.Base;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
+    using global::AudioAnalysisTools.Events;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,6 +22,12 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
         private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("harmonic.wav");
         private readonly SpectrogramStandard spectrogram;
 
+        private readonly double threshold = 6.0;
+        private readonly NoiseReductionType noiseReductionType = NoiseReductionType.Standard;
+
+        //private double threshold = -80;
+        //private readonly NoiseReductionType noiseReductionType = NoiseReductionType.None;
+
         public HarmonicAlgorithmTests()
         {
             var recording = new AudioRecording(TestAsset);
@@ -30,7 +37,7 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
                     WindowSize = 512,
                     WindowStep = 512,
                     WindowOverlap = 0,
-                    NoiseReductionType = NoiseReductionType.None,
+                    NoiseReductionType = this.noiseReductionType,
                     NoiseReductionParameter = 0.0,
                     Duration = recording.Duration,
                     SampleRate = recording.SampleRate,
@@ -41,18 +48,15 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
         [TestMethod]
         public void TestHarmonicsAlgorithmOn440HertzHarmonic()
         {
-            var threshold = -80;
             var parameters = new HarmonicParameters
             {
                 MinHertz = 400,
-                MaxHertz = 5500,
-                // expected value
-                //MaxFormantGap = 480, 
-                MaxFormantGap = 3500,// this is the lowest value that would produce a result, 3400 does not
-                MinFormantGap = 400,
+                MaxHertz = 6000,
+                MaxFormantGap = 550,
+                MinFormantGap = 300,
                 MinDuration = 0.9,
                 MaxDuration = 1.1,
-                DecibelThresholds = new double?[] { threshold },
+                DecibelThresholds = new double?[] { this.threshold },
                 DctThreshold = 0.5,
             };
             Assert.That.IsValid(parameters);
@@ -60,7 +64,7 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
             var (events, plots) = HarmonicParameters.GetComponentsWithHarmonics(
                 this.spectrogram,
                 parameters,
-                threshold,
+                this.threshold,
                 TimeSpan.Zero,
                 "440_harmonic");
 
@@ -68,14 +72,18 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
                 SpectrogramTools.GetSonogramPlusCharts(this.spectrogram, events, plots, null));
 
             Assert.AreEqual(1, events.Count);
-            Assert.IsInstanceOfType(events.First(), typeof(HarmonicEvent));
+            Assert.IsInstanceOfType(events.First(), typeof(SpectralEvent));
+            //Assert.IsInstanceOfType(events.First(), typeof(HarmonicEvent));
 
             // first harmonic is 440Hz fundamental, with 12 harmonics, stopping at 5280 Hz
-            var actual = events.First() as HarmonicEvent;
-            Assert.AreEqual(1.0, actual.EventStartSeconds);
-            Assert.AreEqual(2.0, actual.EventEndSeconds);
+            var actual = events.First() as SpectralEvent;
+            //var actual = events.First() as HarmonicEvent;
+
+            //The actual bounds are not exact due to smoothing of the score array.
+            Assert.AreEqual(1.0, actual.EventStartSeconds, 0.1);
+            Assert.AreEqual(2.0, actual.EventEndSeconds, 0.1);
             Assert.AreEqual(400, actual.LowFrequencyHertz);
-            Assert.AreEqual(5400, actual.HighFrequencyHertz);
+            Assert.AreEqual(6000, actual.HighFrequencyHertz);
 
             Assert.Fail("intentionally faulty test");
         }
@@ -83,26 +91,23 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
         [TestMethod]
         public void TestHarmonicsAlgorithmOn1000HertzHarmonic()
         {
-            var threshold = -80;
             var parameters = new HarmonicParameters
             {
-                MinHertz = 800,
-                MaxHertz = 5500,
-                // expected values
-                //MaxFormantGap = 1050,
-                MaxFormantGap = 3200, // this is the lowest value that would produce a result, 3100 does not
+                MinHertz = 400,
+                MaxHertz = 6000,
+                MaxFormantGap = 1100,
                 MinFormantGap = 950,
                 MinDuration = 0.9,
                 MaxDuration = 1.1,
-                DecibelThresholds = new double?[] { threshold },
-                DctThreshold = 0.5,
+                DecibelThresholds = new double?[] { this.threshold },
+                DctThreshold = 0.3,
             };
             Assert.That.IsValid(parameters);
 
             var (events, plots) = HarmonicParameters.GetComponentsWithHarmonics(
                 this.spectrogram,
                 parameters,
-                threshold,
+                this.threshold,
                 TimeSpan.Zero,
                 "1000_harmonic");
 
@@ -114,13 +119,12 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
 
             // second harmonic is 1000 Hz fundamental, with 4 harmonics, stopping at 5000 Hz
             var actual = events.First() as HarmonicEvent;
-            Assert.AreEqual(3.0, actual.EventStartSeconds);
-            Assert.AreEqual(4.0, actual.EventEndSeconds);
-            Assert.AreEqual(900, actual.LowFrequencyHertz);
-            Assert.AreEqual(5100, actual.HighFrequencyHertz);
+            Assert.AreEqual(3.0, actual.EventStartSeconds, 0.1);
+            Assert.AreEqual(4.0, actual.EventEndSeconds, 0.1);
+            Assert.AreEqual(400, actual.LowFrequencyHertz);
+            Assert.AreEqual(6000, actual.HighFrequencyHertz);
 
             Assert.Fail("intentionally faulty test");
-
         }
     }
 }
