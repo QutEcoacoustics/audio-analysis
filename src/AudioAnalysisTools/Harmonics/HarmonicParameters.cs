@@ -26,12 +26,12 @@ namespace AnalysisPrograms.Recognizers.Base
         public double? DctThreshold { get; set; }
 
         /// <summary>
-        /// Gets or sets the bottom bound of the rectangle. Units are Hertz.
+        /// Gets or sets the bottom bound of the gap between formants. Units are Hertz.
         /// </summary>
         public int? MinFormantGap { get; set; }
 
         /// <summary>
-        /// Gets or sets the the top bound of the rectangle. Units are Hertz.
+        /// Gets or sets the the top bound of gap between formants. Units are Hertz.
         /// </summary>
         public int? MaxFormantGap { get; set; }
 
@@ -51,7 +51,6 @@ namespace AnalysisPrograms.Recognizers.Base
                                 spectrogram,
                                 hp.MinHertz.Value,
                                 hp.MaxHertz.Value,
-                                spectrogram.NyquistFrequency,
                                 decibelThreshold.Value,
                                 hp.DctThreshold.Value,
                                 hp.MinDuration.Value,
@@ -71,7 +70,6 @@ namespace AnalysisPrograms.Recognizers.Base
             SpectrogramStandard spectrogram,
             int minHz,
             int maxHz,
-            int nyquist,
             double decibelThreshold,
             double dctThreshold,
             double minDuration,
@@ -80,15 +78,18 @@ namespace AnalysisPrograms.Recognizers.Base
             int maxFormantGap,
             TimeSpan segmentStartOffset)
         {
+            int nyquist = spectrogram.NyquistFrequency;
             var sonogramData = spectrogram.Data;
             int frameCount = sonogramData.GetLength(0);
             int binCount = sonogramData.GetLength(1);
 
+            // get the min and max bin of the freq-band of interest.
             double freqBinWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(minHz / freqBinWidth);
             int maxBin = (int)Math.Round(maxHz / freqBinWidth);
+            int bandBinCount = maxBin - minBin + 1;
 
-            // extract the sub-band
+            // extract the sub-band of interest
             double[,] subMatrix = MatrixTools.Submatrix(spectrogram.Data, 0, minBin, frameCount - 1, maxBin);
 
             //ii: DETECT HARMONICS
@@ -104,27 +105,46 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 if (harmonicIntensityScores[r] < dctThreshold)
                 {
+                    //ignore frames where DCT coefficient (proxy for formant intensity) is below threshold
                     continue;
                 }
 
-                //ignore locations with incorrect formant gap
+                //ignore frames with incorrect formant gap
+                // first get id of the maximum coefficient.
                 int maxId = maxIndexArray[r];
-                int bandBinCount = maxBin - minBin + 1;
                 double freqBinGap = 2 * bandBinCount / (double)maxId;
                 double formantGap = freqBinGap * freqBinWidth;
+
+                // remove values where formantGap lies outside the expected range.
                 if (formantGap < minFormantGap || formantGap > maxFormantGap)
                 {
                     harmonicIntensityScores[r] = 0.0;
                 }
             }
 
-            // smooth the harmonicIntensityScores array to allow for brief gaps.
-            harmonicIntensityScores = DataTools.filterMovingAverageOdd(harmonicIntensityScores, 3);
+            // fill in brief gaps of one or two frames.
+            var harmonicIntensityScores2 = new double[harmonicIntensityScores.Length];
+            for (int r = 1; r < frameCount - 2; r++)
+            {
+                harmonicIntensityScores2[r] = harmonicIntensityScores[r];
+                if (harmonicIntensityScores[r - 1] > dctThreshold && harmonicIntensityScores[r] < dctThreshold)
+                {
+                    // we have arrived at a possible gap. Fill the gap.
+                    harmonicIntensityScores2[r] = harmonicIntensityScores[r - 1];
+                }
 
-            //extract the events based on length and threshhold.
-            // Note: This method does NOT do prior smoothing of the score array.
-            var harmonicEvents = AcousticEvent.ConvertScoreArray2Events(
-                    harmonicIntensityScores,
+                //now check if the gap is two frames wide
+                if (harmonicIntensityScores[r + 1] < dctThreshold && harmonicIntensityScores[r + 2] > dctThreshold)
+                {
+                    harmonicIntensityScores2[r + 1] = harmonicIntensityScores[r + 2];
+                    r += 1;
+                }
+            }
+
+                //extract the events based on length and threshhold.
+                // Note: This method does NOT do prior smoothing of the score array.
+                var harmonicEvents = AcousticEvent.ConvertScoreArray2Events(
+                    harmonicIntensityScores2,
                     minHz,
                     maxHz,
                     spectrogram.FramesPerSecond,
@@ -134,6 +154,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     maxDuration,
                     segmentStartOffset);
 
+            //var spectralEvents = new List<HarmonicEvent>();
             var spectralEvents = new List<EventCommon>();
 
             // add in temporary names to the events. These can be altered later.
@@ -144,7 +165,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 se.Name = "Harmonics";
             }
 
-            return (spectralEvents, dBArray, harmonicIntensityScores);
+            return (spectralEvents, dBArray, harmonicIntensityScores2);
         }
     }
 }

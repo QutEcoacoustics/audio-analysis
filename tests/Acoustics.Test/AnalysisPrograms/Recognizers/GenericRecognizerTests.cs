@@ -399,7 +399,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 spectrogram,
                 minHertz,
                 maxHertz,
-                spectrogram.NyquistFrequency,
                 decibelThreshold,
                 dctThreshold,
                 minDuration,
