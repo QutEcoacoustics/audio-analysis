@@ -222,7 +222,7 @@ namespace AudioAnalysisTools
             //set up the cosine coefficients
             double[,] cosines = MFCCStuff.Cosines(binCount, binCount);
 
-            // set up arrays to store decibels, formant intensity and max index.
+            // set up time-frame arrays to store decibels, formant intensity and max index.
             var dBArray = new double[rowCount];
             var intensity = new double[rowCount];
             var maxIndexArray = new int[rowCount];
@@ -230,29 +230,32 @@ namespace AudioAnalysisTools
             // for all time frames
             for (int t = 2; t < rowCount - 2; t++)
             {
-                // get average of five adjacent frames
+                // Smooth the frame values by taking the average of five adjacent frames
                 var frame1 = MatrixTools.GetRow(m, t - 2);
                 var frame2 = MatrixTools.GetRow(m, t - 1);
                 var frame3 = MatrixTools.GetRow(m, t);
                 var frame4 = MatrixTools.GetRow(m, t + 1);
                 var frame5 = MatrixTools.GetRow(m, t + 2);
-                var frame = new double[colCount];
+
+                // set up a frame of average db values.
+                var avFrame = new double[colCount];
                 for (int i = 0; i < colCount; i++)
                 {
-                    frame[i] = (frame1[i] + frame2[i] + frame3[i] + frame4[i] + frame5[i]) / 5;
+                    avFrame[i] = (frame1[i] + frame2[i] + frame3[i] + frame4[i] + frame5[i]) / 5;
                 }
 
-                double maxValue = frame.Max();
+                // ignore frame if its maximum decibel value is below the threshold.
+                double maxValue = avFrame.Max();
                 dBArray[t] = maxValue;
                 if (maxValue < dBThreshold)
                 {
                     continue;
                 }
 
-                double[] xr = AutoAndCrossCorrelation.AutoCrossCorr(frame);
+                // do the autocross-correlation prior to doing the DCT.
+                double[] xr = AutoAndCrossCorrelation.AutoCrossCorr(avFrame);
 
-                // xr has twice length of frame and is symmetrical.
-                // Require only first half.
+                // xr has twice length of frame and is symmetrical. Require only first half.
                 double[] normXr = new double[colCount];
                 for (int i = 0; i < colCount; i++)
                 {
@@ -260,6 +263,22 @@ namespace AudioAnalysisTools
                     // But for harmonics, this introduces too much noise - need to give less weight to the less overlapped values.
                     //normXr[i] = xr[i] / (colCount - i);
                     normXr[i] = xr[i];
+                }
+
+                normXr = DataTools.DiffFromMean(normXr);
+                var xValues = new double[normXr.Length];
+                for (int j = 0; j < xValues.Length; j++) { xValues[j] = j; }
+
+                // fit the x-correlation array to a line to remove first order trend.
+                // This should make determining the correct maximum DCT coefficient more likely.
+                Tuple<double, double> values = MathNet.Numerics.Fit.Line(xValues, normXr);
+
+                var intercept = values.Item1;
+                var slope = values.Item2;
+                for (int j = 0; j < xValues.Length; j++)
+                {
+                    var lineValue = (slope * j) + intercept;
+                    normXr[j] -= lineValue;
                 }
 
                 // now do DCT across the auto cross xr
