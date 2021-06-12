@@ -6,6 +6,7 @@ namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Acoustics.Shared;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Events;
@@ -47,7 +48,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             double[] decibelMaxArray;
             double[] harmonicIntensityScores;
-            (spectralEvents, decibelMaxArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
+            (spectralEvents, decibelMaxArray, harmonicIntensityScores) = GetHarmonicEvents(
                                 spectrogram,
                                 hp.MinHertz.Value,
                                 hp.MaxHertz.Value,
@@ -66,7 +67,7 @@ namespace AnalysisPrograms.Recognizers.Base
             return (spectralEvents, plots);
         }
 
-        public static (List<EventCommon> SpectralEvents, double[] AmplitudeArray, double[] HarmonicIntensityScores) GetComponentsWithHarmonics(
+        public static (List<EventCommon> SpectralEvents, double[] AmplitudeArray, double[] HarmonicIntensityScores) GetHarmonicEvents(
             SpectrogramStandard spectrogram,
             int minHz,
             int maxHz,
@@ -97,7 +98,7 @@ namespace AnalysisPrograms.Recognizers.Base
             var results = CrossCorrelation.DetectHarmonicsInSpectrogramData(subMatrix, decibelThreshold);
 
             // set up score arrays
-            double[] dBArray = results.Item1;
+            double[] dBArray = results.Item1; // this is not used currently.
             double[] harmonicIntensityScores = results.Item2; //an array of formant intesnity
             int[] maxIndexArray = results.Item3;
 
@@ -141,31 +142,138 @@ namespace AnalysisPrograms.Recognizers.Base
                 }
             }
 
-                //extract the events based on length and threshhold.
-                // Note: This method does NOT do prior smoothing of the score array.
-                var harmonicEvents = AcousticEvent.ConvertScoreArray2Events(
+            //extract the events based on length and threshhold.
+            // Note: This method does NOT do prior smoothing of the score array.
+            var harmonicEvents = ConvertScoreArray2Events(
+                    spectrogram,
                     harmonicIntensityScores2,
-                    minHz,
-                    maxHz,
-                    spectrogram.FramesPerSecond,
-                    spectrogram.FBinWidth,
-                    dctThreshold,
+                    dBArray,
+                    maxIndexArray,
                     minDuration,
                     maxDuration,
+                    minHz,
+                    maxHz,
+                    bandBinCount,
+                    dctThreshold,
                     segmentStartOffset);
 
-            //var spectralEvents = new List<HarmonicEvent>();
-            var spectralEvents = new List<EventCommon>();
+            return (harmonicEvents, dBArray, harmonicIntensityScores2);
+        }
 
-            // add in temporary names to the events. These can be altered later.
-            foreach (var he in harmonicEvents)
+        /// <summary>
+        /// Finds harmonic events in an array harmonic scores.
+        /// NOTE: The score array is assumed to be temporal i.e. each element of the array is derived from a time frame.
+        /// The method uses the passed scoreThreshold in order to calculate a normalised score.
+        /// Max possible score := threshold * 5.
+        /// normalised score := score / maxPossibleScore.
+        /// </summary>
+        /// <param name="scores">the array of harmonic scores.</param>
+        /// <param name="maxIndexArray">the array of max index values derived from the DCT. Used to calculate the harmonic interval.</param>
+        /// <param name="minDuration">duration of event must exceed this to be a valid event.</param>
+        /// <param name="maxDuration">duration of event must be less than this to be a valid event.</param>
+        /// <param name="minHz">lower freq bound of the event.</param>
+        /// <param name="maxHz">upper freq bound of the event.</param>
+        /// <param name="scoreThreshold">threshold.</param>
+        /// <param name="segmentStartOffset">the time offset from segment start to the recording start.</param>
+        /// <returns>a list of acoustic events.</returns>
+        public static List<EventCommon> ConvertScoreArray2Events(
+            SpectrogramStandard spectrogram,
+            double[] scores,
+            double[] dBArray,
+            int[] maxIndexArray,
+            double minDuration,
+            double maxDuration,
+            int minHz,
+            int maxHz,
+            int bandBinCount,
+            double scoreThreshold,
+            TimeSpan segmentStartOffset)
+        {
+            double framesPerSec = spectrogram.FramesPerSecond;
+            double freqBinWidth = spectrogram.FBinWidth;
+
+            // create a unit converter
+            var converter = new UnitConverters(
+                segmentStartOffset: segmentStartOffset.TotalSeconds,
+                sampleRate: spectrogram.SampleRate,
+                frameSize: spectrogram.Configuration.WindowSize,
+                frameOverlap: spectrogram.Configuration.WindowOverlap);
+
+            // used this to calculate a normalised score between 0 - 1.0
+            double maxPossibleScore = 5 * scoreThreshold;
+            var scoreRange = new Interval<double>(0, maxPossibleScore);
+
+            bool isHit = false;
+            double frameOffset = 1 / framesPerSec;
+            int startFrame = 0;
+            int frameCount = scores.Length;
+
+            var events = new List<EventCommon>();
+
+            // pass over all time frames
+            for (int i = 0; i < frameCount; i++)
             {
-                var se = EventConverters.ConvertAcousticEventToSpectralEvent(he);
-                spectralEvents.Add(se);
-                se.Name = "Harmonics";
+                if (isHit == false && scores[i] >= scoreThreshold)
+                {
+                    //start of an event
+                    isHit = true;
+                    startFrame = i + 2;
+                }
+                else // check for the end of an event
+                if (isHit && scores[i] <= scoreThreshold)
+                {
+                    // this is end of an event, so initialise it
+                    isHit = false;
+                    double duration = (i - 1 - startFrame) * frameOffset;
+
+                    if (duration < minDuration || duration > maxDuration)
+                    {
+                        //skip events with duration shorter than threshold
+                        continue;
+                    }
+
+                    // obtain an average score and harmonic interval for the duration of the potential event.
+                    double avScore = 0.0;
+                    double avIndex = 0;
+                    for (int n = startFrame; n <= i; n++)
+                    {
+                        avScore += scores[n];
+                        avIndex += maxIndexArray[n];
+                    }
+
+                    // calculate average event score
+                    int eventLength = i - startFrame;
+                    avScore /= eventLength;
+                    avIndex /= eventLength;
+                    double freqBinGap = 2 * bandBinCount / avIndex;
+                    double harmonicInterval = freqBinGap * freqBinWidth;
+
+                    // calculate start and end time of this event relative to start of segment.
+                    var eventStartWrtSegment = startFrame * frameOffset;
+                    var eventEndWrtSegment = (i - 1) * frameOffset;
+
+                    // Initialize the event.
+                    var ev = new HarmonicEvent()
+                    {
+                        SegmentStartSeconds = segmentStartOffset.TotalSeconds,
+                        SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
+                        Name = "Stacked harmonics",
+                        ResultStartSeconds = segmentStartOffset.TotalSeconds + eventStartWrtSegment,
+                        EventStartSeconds = segmentStartOffset.TotalSeconds + eventStartWrtSegment,
+                        EventEndSeconds = segmentStartOffset.TotalSeconds + eventEndWrtSegment,
+                        LowFrequencyHertz = minHz,
+                        HighFrequencyHertz = maxHz,
+                        Score = avScore,
+                        ScoreRange = scoreRange,
+                        HarmonicInterval = harmonicInterval,
+                        //DecibelDetectionThreshold,
+                    };
+
+                    events.Add(ev);
+                }
             }
 
-            return (spectralEvents, dBArray, harmonicIntensityScores2);
+            return events;
         }
     }
 }
