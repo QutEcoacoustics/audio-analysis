@@ -548,14 +548,6 @@ namespace AudioAnalysisTools.DSP
                 }
             }
 
-            //following two lines write matrix of cos values for checking.
-            //string txtPath = @"C:\temp\cosines.txt";
-            //FileTools.WriteMatrix2File_Formatted(cosines, txtPath, "F3");
-
-            //following two lines write bmp image of cos values for checking.
-            //string bmpPath = @"C:\temp\cosines.png";
-            //ImageTools.DrawMatrix(cosines, bmpPath, true);
-
             return cosines;
         }
 

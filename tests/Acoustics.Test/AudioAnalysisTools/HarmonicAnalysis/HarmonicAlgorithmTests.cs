@@ -14,6 +14,7 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
     using global::AudioAnalysisTools.Events;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -22,10 +23,11 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
         private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("harmonic.wav");
         private readonly SpectrogramStandard spectrogram;
 
-        private readonly double threshold = 6.0;
+        private readonly double decibelThreshold = 6.0;
         private readonly NoiseReductionType noiseReductionType = NoiseReductionType.Standard;
 
-        //private double threshold = -80;
+        // can also try these parameters when testing.
+        //private readonly double decibelThreshold = -80;
         //private readonly NoiseReductionType noiseReductionType = NoiseReductionType.None;
 
         public HarmonicAlgorithmTests()
@@ -59,7 +61,7 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
                 //because of smoothing of the spectrogram frames prior to the auto-crosscorrelation.
                 MinDuration = 1.0,
                 MaxDuration = 1.16,
-                DecibelThresholds = new double?[] { this.threshold },
+                DecibelThresholds = new double?[] { this.decibelThreshold },
                 DctThreshold = 0.5,
             };
             Assert.That.IsValid(parameters);
@@ -67,7 +69,7 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
             var (events, plots) = HarmonicParameters.GetComponentsWithHarmonics(
                 this.spectrogram,
                 parameters,
-                this.threshold,
+                this.decibelThreshold,
                 TimeSpan.Zero,
                 "440_harmonic");
 
@@ -98,9 +100,9 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
                 MaxHertz = 6000,
                 MaxFormantGap = 1100,
                 MinFormantGap = 950,
-                MinDuration = 1.0,
+                MinDuration = 0.95,
                 MaxDuration = 1.17,
-                DecibelThresholds = new double?[] { this.threshold },
+                DecibelThresholds = new double?[] { this.decibelThreshold },
                 DctThreshold = 0.3,
             };
             Assert.That.IsValid(parameters);
@@ -108,7 +110,7 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
             var (events, plots) = HarmonicParameters.GetComponentsWithHarmonics(
                 this.spectrogram,
                 parameters,
-                this.threshold,
+                this.decibelThreshold,
                 TimeSpan.Zero,
                 "1000_harmonic");
 
@@ -124,7 +126,25 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
             Assert.AreEqual(4.0, actual.EventEndSeconds, 0.15);
             Assert.AreEqual(400, actual.LowFrequencyHertz);
             Assert.AreEqual(6000, actual.HighFrequencyHertz);
-            Assert.AreEqual(1000, actual.HarmonicInterval, 50);
+            Assert.AreEqual(1000, actual.HarmonicInterval, 60);
+        }
+
+        [TestMethod]
+        public void TestCosinesMatrixForDct()
+        {
+            // get an 8 x 8 matrix.
+            double[,] cosineBasisFunctions = MFCCStuff.Cosines(8, 8);
+
+            //following line writes matrix of cos values for checking.
+            FileTools.WriteMatrix2File_Formatted(cosineBasisFunctions, this.TestOutputDirectory.FullName + "Cosines.txt", "F3");
+
+            //following line writes bmp image of cos values for checking.
+            var image = ImageTools.DrawMatrix(cosineBasisFunctions, true);
+            this.SaveImage(image, "Cosines.png");
+
+            Assert.AreEqual(9, cosineBasisFunctions.GetLength(0));
+            Assert.AreEqual(8, cosineBasisFunctions.GetLength(1));
+            Assert.AreEqual(0.70710678118654768, cosineBasisFunctions[4, 4]);
         }
     }
 }
