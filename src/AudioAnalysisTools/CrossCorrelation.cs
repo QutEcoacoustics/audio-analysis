@@ -25,85 +25,6 @@ namespace AudioAnalysisTools
         public const string key_SCORE = "score";
         public const string key_PERIODICITY = "periodicity";
 
-        //public const string key_COUNT = "count";
-
-        /*
-        public static Tuple<double[,], double[,], double[,], double[]> DetectBarsUsingXcorrelation(double[,] m, int rowStep, int rowWidth, int colStep, int colWidth,
-                                                                                                 double intensityThreshold, int zeroBinCount)
-         {
-             bool doNoiseremoval = true;
-
-             //intensityThreshold = 0.3;
-
-             int rowCount = m.GetLength(0);
-             int colCount = m.GetLength(1);
-             int numberOfColSteps = colCount / colStep;
-             int numberOfRowSteps = rowCount / rowStep;
-
-             var intensityMatrix = new double[numberOfRowSteps, numberOfColSteps];
-             var periodicityMatrix = new double[numberOfRowSteps, numberOfColSteps];
-             var hitsMatrix = new double[rowCount, colCount];
-             double[] array2return = null;
-
-             for (int b = 0; b < numberOfColSteps; b++)
-             {
-                 int minCol = b * colStep;
-                 int maxCol = minCol + colWidth - 1;
-
-                 double[,] subMatrix = MatrixTools.Submatrix(m, 0, minCol, rowCount - 1, maxCol);
-                 double[] amplitudeArray = MatrixTools.GetRowAverages(subMatrix);
-
-                 if (doNoiseremoval)
-                 {
-                     double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
-                     SNR.BackgroundNoise bgn = SNR.SubtractBackgroundNoiseFromSignal(amplitudeArray, StandardDeviationCount);
-                     amplitudeArray = bgn.NoiseReducedSignal;
-                 }
-
-                 //double noiseThreshold = 0.005;
-                 //for (int i = 1; i < amplitudeArray.Length - 1; i++)
-                 //{
-                 //    if ((amplitudeArray[i - 1] < noiseThreshold) && (amplitudeArray[i + 1] < noiseThreshold)) amplitudeArray[i] = 0.0;
-                 //}
-                 //DataTools.writeBarGraph(amplitudeArray);
-                 if (b == 2)
-                {
-                    array2return = amplitudeArray; //returned for debugging purposes only
-                }
-
-                //ii: DETECT HARMONICS
-                 var results = AutoAndCrossCorrelation.DetectPeriodicityInLongArray(amplitudeArray, rowStep, rowWidth, zeroBinCount);
-                 double[] intensity = results.Item1;     //an array of periodicity scores
-                 double[] periodicity = results.Item2;
-
-                 //transfer periodicity info to a matrices.
-                 for (int rs = 0; rs < numberOfRowSteps; rs++)
-                 {
-                     intensityMatrix[rs, b] = intensity[rs];
-                     periodicityMatrix[rs, b] = periodicity[rs];
-
-                     //mark up the hits matrix
-                     //double relativePeriod = periodicity[rs] / rowWidth / 2;
-                     if (intensity[rs] > intensityThreshold)
-                     {
-                         int minRow = rs * rowStep;
-                         int maxRow = minRow + rowStep - 1;
-                         for (int r = minRow; r < maxRow; r++)
-                        {
-                            for (int c = minCol; c < maxCol; c++)
-                         {
-                             //hitsMatrix[r, c] = relativePeriod;
-                             hitsMatrix[r, c] = periodicity[rs];
-                         }
-                        }
-                    } // if()
-                 } // for loop over numberOfRowSteps
-             } // for loop over numberOfColSteps
-
-             return Tuple.Create(intensityMatrix, periodicityMatrix, hitsMatrix, array2return);
-         }
-         */
-
         /// <summary>
         /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
         ///
@@ -203,17 +124,19 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// A METHOD TO DETECT HARMONICS IN THE sub-band of a spectrogram.
-        /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of the spectrogram.
+        /// A METHOD TO DETECT a set of stacked HARMONICS/FORMANTS in the sub-band of a spectrogram.
         /// Developed for GenericRecognizer of harmonics.
-        /// WARNING: As of March 2020, this method averages the values in five adjacent frames. This is to reduce noise.
-        ///          But it requires that the frequency of any potential formants is not changing rapidly.
-        ///          THis may not be suitable for detecting human speech. However can reduce the frame step.
+        /// NOTE 1: This method assumes the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of the spectrogram.
+        /// NOTE 2: As of March 2020, this method averages the values in five adjacent frames. This is to reduce noise.
+        ///         But it requires that the frequency of any potential formants is not changing rapidly.
+        ///         This may not be suitable for detecting human speech. However can reduce the frame step.
+        /// NOTE 3: This method assumes that the minimum  number of formants in a stack = 3.
+        ///         This means that the first 4 values in the returned array of DCT coefficients are set = 0 (see below).
         /// </summary>
-        /// <param name="m">spectrogram data matrix.</param>
-        /// <param name="dBThreshold">Minimum sound level.</param>
+        /// <param name="m">data matrix derived from the subband of a spectrogram.</param>
+        /// <param name="xThreshold">Minimum acceptable value to be considered part of a harmonic.</param>
         /// <returns>three arrays: dBArray, intensity, maxIndexArray.</returns>
-        public static Tuple<double[], double[], int[]> DetectHarmonicsInSpectrogramData(double[,] m, double dBThreshold)
+        public static Tuple<double[], double[], int[]> DetectHarmonicsInSpectrogramData(double[,] m, double xThreshold)
         {
             int rowCount = m.GetLength(0);
             int colCount = m.GetLength(1);
@@ -241,13 +164,14 @@ namespace AudioAnalysisTools
                 var avFrame = new double[colCount];
                 for (int i = 0; i < colCount; i++)
                 {
+                    //avFrame[i] = (frame2[i] + frame3[i] + frame4[i]) / 3;
                     avFrame[i] = (frame1[i] + frame2[i] + frame3[i] + frame4[i] + frame5[i]) / 5;
                 }
 
                 // ignore frame if its maximum decibel value is below the threshold.
                 double maxValue = avFrame.Max();
                 dBArray[t] = maxValue;
-                if (maxValue < dBThreshold)
+                if (maxValue < xThreshold)
                 {
                     continue;
                 }
@@ -259,20 +183,24 @@ namespace AudioAnalysisTools
                 double[] normXr = new double[colCount];
                 for (int i = 0; i < colCount; i++)
                 {
-                    // Would normally normalise the xcorr values for overlap count.
+                    // Typically normalise the xcorr values for overlap count.
+                    // i.e. normXr[i] = xr[i] / (colCount - i);
                     // But for harmonics, this introduces too much noise - need to give less weight to the less overlapped values.
-                    //normXr[i] = xr[i] / (colCount - i);
-                    normXr[i] = xr[i];
+                    // Therefore just normalise by dividing values by the first, so first value = 1.
+                    normXr[i] = xr[i] / xr[0];
+                    //normXr[i] = xr[i];
                 }
 
-                normXr = DataTools.DiffFromMean(normXr);
-                var xValues = new double[normXr.Length];
-                for (int j = 0; j < xValues.Length; j++) { xValues[j] = j; }
+                //normXr = DataTools.DiffFromMean(normXr);
 
                 // fit the x-correlation array to a line to remove first order trend.
-                // This should make determining the correct maximum DCT coefficient more likely.
-                Tuple<double, double> values = MathNet.Numerics.Fit.Line(xValues, normXr);
+                // This will help in detecting the correct maximum DCT coefficient.
+                var xValues = new double[normXr.Length];
+                for (int j = 0; j < xValues.Length; j++)
+                { xValues[j] = j; }
 
+                // get the line of best fit and subtract to get deviation from the line.
+                Tuple<double, double> values = MathNet.Numerics.Fit.Line(xValues, normXr);
                 var intercept = values.Item1;
                 var slope = values.Item2;
                 for (int j = 0; j < xValues.Length; j++)
@@ -281,8 +209,10 @@ namespace AudioAnalysisTools
                     normXr[j] -= lineValue;
                 }
 
-                // now do DCT across the auto cross xr
-                int lowerDctBound = 2;
+                // now do DCT across the detrended auto-cross-correlation
+                // set the first four values in the returned DCT coefficients to 0.
+                // We require a minimum of three formants, that is two gaps.
+                int lowerDctBound = 4;
                 var dctCoefficients = Oscillations2012.DoDct(normXr, cosines, lowerDctBound);
                 int indexOfMaxValue = DataTools.GetMaxIndex(dctCoefficients);
                 intensity[t] = dctCoefficients[indexOfMaxValue];
