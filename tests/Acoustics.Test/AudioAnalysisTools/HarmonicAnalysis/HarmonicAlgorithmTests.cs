@@ -54,8 +54,11 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
                 MaxHertz = 6000,
                 MaxFormantGap = 550,
                 MinFormantGap = 300,
-                MinDuration = 0.9,
-                MaxDuration = 1.1,
+
+                //Need to make allowance for a longer than actual duration.
+                //because of smoothing of the spectrogram frames prior to the auto-crosscorrelation.
+                MinDuration = 1.0,
+                MaxDuration = 1.16,
                 DecibelThresholds = new double?[] { this.threshold },
                 DctThreshold = 0.5,
             };
@@ -72,20 +75,18 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
                 SpectrogramTools.GetSonogramPlusCharts(this.spectrogram, events, plots, null));
 
             Assert.AreEqual(1, events.Count);
-            Assert.IsInstanceOfType(events.First(), typeof(SpectralEvent));
-            //Assert.IsInstanceOfType(events.First(), typeof(HarmonicEvent));
+            Assert.IsInstanceOfType(events.First(), typeof(HarmonicEvent));
 
             // first harmonic is 440Hz fundamental, with 12 harmonics, stopping at 5280 Hz
-            var actual = events.First() as SpectralEvent;
-            //var actual = events.First() as HarmonicEvent;
+            var actual = events.First() as HarmonicEvent;
 
-            //The actual bounds are not exact due to smoothing of the score array.
-            Assert.AreEqual(1.0, actual.EventStartSeconds, 0.1);
-            Assert.AreEqual(2.0, actual.EventEndSeconds, 0.1);
+            //The actual bounds are not exact due to smoothing of the frames prior to the auto-crosscorrelation
+            // that occurs in CrossCorrelation.DetectHarmonicsInSpectrogramData()
+            Assert.AreEqual(1.0, actual.EventStartSeconds, 0.15);
+            Assert.AreEqual(2.0, actual.EventEndSeconds, 0.15);
             Assert.AreEqual(400, actual.LowFrequencyHertz);
             Assert.AreEqual(6000, actual.HighFrequencyHertz);
-
-            Assert.Fail("intentionally faulty test");
+            Assert.AreEqual(440, actual.HarmonicInterval, 10);
         }
 
         [TestMethod]
@@ -97,8 +98,8 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
                 MaxHertz = 6000,
                 MaxFormantGap = 1100,
                 MinFormantGap = 950,
-                MinDuration = 0.9,
-                MaxDuration = 1.1,
+                MinDuration = 1.0,
+                MaxDuration = 1.17,
                 DecibelThresholds = new double?[] { this.threshold },
                 DctThreshold = 0.3,
             };
@@ -119,12 +120,11 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
 
             // second harmonic is 1000 Hz fundamental, with 4 harmonics, stopping at 5000 Hz
             var actual = events.First() as HarmonicEvent;
-            Assert.AreEqual(3.0, actual.EventStartSeconds, 0.1);
-            Assert.AreEqual(4.0, actual.EventEndSeconds, 0.1);
+            Assert.AreEqual(3.0, actual.EventStartSeconds, 0.15);
+            Assert.AreEqual(4.0, actual.EventEndSeconds, 0.15);
             Assert.AreEqual(400, actual.LowFrequencyHertz);
             Assert.AreEqual(6000, actual.HighFrequencyHertz);
-
-            Assert.Fail("intentionally faulty test");
+            Assert.AreEqual(1000, actual.HarmonicInterval, 50);
         }
     }
 }

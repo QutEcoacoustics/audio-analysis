@@ -395,7 +395,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             //get the array of intensity values minus intensity in side/buffer bands.
             var segmentStartOffset = TimeSpan.Zero;
             var plots = new List<Plot>();
-            var (acousticEvents, dBArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
+            var (acousticEvents, dBArray, harmonicIntensityScores) = HarmonicParameters.GetHarmonicEvents(
                 spectrogram,
                 minHertz,
                 maxHertz,
