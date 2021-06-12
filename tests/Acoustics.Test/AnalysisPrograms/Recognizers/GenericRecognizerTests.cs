@@ -436,15 +436,15 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             Assert.AreEqual(4, allResults.NewEvents.Count);
 
             var @event = (SpectralEvent)allResults.NewEvents[0];
-            Assert.AreEqual("Harmonics", @event.Name);
-            Assert.AreEqual("SpectralEvent", @event.ComponentName);
+            Assert.AreEqual("Stacked harmonics", @event.Name);
+            Assert.AreEqual("HarmonicEvent", @event.ComponentName);
             Assert.AreEqual(3.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(4.0, @event.EventEndSeconds, 0.1);
             Assert.AreEqual(500, @event.LowFrequencyHertz);
             Assert.AreEqual(5000, @event.HighFrequencyHertz);
 
             @event = (SpectralEvent)allResults.NewEvents[1];
-            Assert.AreEqual(5.2, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(5.2, @event.EventStartSeconds, 0.15);
             Assert.AreEqual(5.5, @event.EventEndSeconds, 0.1);
 
             @event = (SpectralEvent)allResults.NewEvents[2];
@@ -453,7 +453,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             @event = (SpectralEvent)allResults.NewEvents[3];
             Assert.AreEqual(11.3, @event.EventStartSeconds, 0.1);
-            Assert.AreEqual(11.6, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(11.6, @event.EventEndSeconds, 0.15);
         }
 
         [TestMethod]
