@@ -85,25 +85,29 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             Assert.AreEqual(4, acousticEvents.Count);
 
-            Assert.AreEqual(29.72, acousticEvents[0].EventStartSeconds, 0.1);
-            Assert.AreEqual(32.06, acousticEvents[0].EventEndSeconds, 0.1);
+            Assert.AreEqual(29.9, acousticEvents[0].EventStartSeconds, 0.1);
+            Assert.AreEqual(32.0, acousticEvents[0].EventEndSeconds, 0.1);
             Assert.AreEqual(200, acousticEvents[0].LowFrequencyHertz);
             Assert.AreEqual(2000, acousticEvents[0].HighFrequencyHertz);
+            Assert.AreEqual(0.2, acousticEvents[0].Periodicity, 0.1);
 
-            Assert.AreEqual(40.91, acousticEvents[1].EventStartSeconds, 0.1);
-            Assert.AreEqual(42.40, acousticEvents[1].EventEndSeconds, 0.1);
+            Assert.AreEqual(41.2, acousticEvents[1].EventStartSeconds, 0.1);
+            Assert.AreEqual(42.0, acousticEvents[1].EventEndSeconds, 0.1);
             Assert.AreEqual(200, acousticEvents[1].LowFrequencyHertz);
             Assert.AreEqual(2000, acousticEvents[1].HighFrequencyHertz);
+            Assert.AreEqual(0.2, acousticEvents[0].Periodicity, 0.1);
 
-            Assert.AreEqual(48.37, acousticEvents[2].EventStartSeconds, 0.1);
-            Assert.AreEqual(51.27, acousticEvents[2].EventEndSeconds, 0.1);
+            Assert.AreEqual(48.6, acousticEvents[2].EventStartSeconds, 0.1);
+            Assert.AreEqual(51.0, acousticEvents[2].EventEndSeconds, 0.1);
             Assert.AreEqual(200, acousticEvents[2].LowFrequencyHertz);
             Assert.AreEqual(2000, acousticEvents[2].HighFrequencyHertz);
+            Assert.AreEqual(0.2, acousticEvents[0].Periodicity, 0.1);
 
-            Assert.AreEqual(54.19, acousticEvents[3].EventStartSeconds, 0.1);
-            Assert.AreEqual(55.33, acousticEvents[3].EventEndSeconds, 0.1);
+            Assert.AreEqual(54.4, acousticEvents[3].EventStartSeconds, 0.1);
+            Assert.AreEqual(55.1, acousticEvents[3].EventEndSeconds, 0.1);
             Assert.AreEqual(200, acousticEvents[3].LowFrequencyHertz);
             Assert.AreEqual(2000, acousticEvents[3].HighFrequencyHertz);
+            Assert.AreEqual(0.2, acousticEvents[0].Periodicity, 0.1);
 
             //Assert.AreEqual(0.6062, stats.SpectralEnergyDistribution, 1E-4);
         }

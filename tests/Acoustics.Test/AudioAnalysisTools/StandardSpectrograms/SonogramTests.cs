@@ -194,7 +194,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
                 new AcousticEvent(startOffset, 40.0, 10.0, 4000, 5000),
             };
 
-            var image = SpectrogramTools.GetSonogramPlusCharts(actualDecibelSpectrogram, events, plots, null);
+            var image = SpectrogramTools.GetSonogramPlusCharts(actualDecibelSpectrogram, events, plots, null, actualDecibelSpectrogram.Configuration.SourceFName);
 
             // create the image for visual confirmation
             this.SaveTestOutput(outputDirectory => BaseSonogram.SaveDebugSpectrogram(image, outputDirectory, this.recording.BaseName));

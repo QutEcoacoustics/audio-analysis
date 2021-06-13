@@ -14,8 +14,8 @@ namespace AudioAnalysisTools
     /// <summary>
     /// NOTE: 26th October 2019.
     ///
-    /// This class contains methods to detect oscillations in a the sonogram of an audio signal.
-    /// The method Execute() returns all info about oscillations in the passed sonogram.
+    /// This class contains methods to detect oscillations in a the spectrogram of an audio signal.
+    /// The method Execute() returns all info about oscillations in the passed spectrogram.
     /// </summary>
     public static class Oscillations2019
     {
@@ -66,18 +66,14 @@ namespace AudioAnalysisTools
             // smooth the scores - window=11 has been the DEFAULT. Now letting user set this.
             dctScores = DataTools.filterMovingAverage(dctScores, smoothingWindow);
 
-            //double midOscFreq = minOscFreq + ((maxOscFreq - minOscFreq) / 2);
             events = Oscillations2012.ConvertOscillationScores2Events(
+                sonogram,
                 dctScores,
-                oscFreq,
                 minHz,
                 maxHz,
-                sonogram.FramesPerSecond,
-                sonogram.FBinWidth,
                 scoreThreshold,
                 minDuration,
                 maxDuration,
-                sonogram.Configuration.SourceFName,
                 segmentStartOffset);
         }
 

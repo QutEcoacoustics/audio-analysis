@@ -66,8 +66,6 @@ namespace AudioAnalysisTools
 
             var events = acEvents.ConvertAcousticEventsToSpectralEvents();
             spectralEvents.AddRange(events);
-            plots.Add(plot);
-
             return (spectralEvents, plots);
         }
 

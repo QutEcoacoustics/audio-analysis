@@ -30,7 +30,7 @@ namespace AudioAnalysisTools
             TimeSpan segmentStartOffset,
             string profileName)
         {
-            var spectralEvents = new List<EventCommon>();
+            var oscEvents = new List<EventCommon>();
             var plots = new List<Plot>();
 
             Oscillations2012.Execute(
@@ -49,13 +49,13 @@ namespace AudioAnalysisTools
                 out var hits,
                 segmentStartOffset);
 
-            spectralEvents.AddRange(oscillationEvents);
+            oscEvents.AddRange(oscillationEvents);
 
             // prepare plot of resultant Harmonics decibel array.
             var plot = Plot.PreparePlot(scores, $"{profileName} (Oscillations:{decibelThreshold:F0}db)", decibelThreshold.Value);
             plots.Add(plot);
 
-            return (spectralEvents, plots);
+            return (oscEvents, plots);
         }
 
         public static void Execute(
@@ -131,18 +131,14 @@ namespace AudioAnalysisTools
 
             // smooth the scores - window=11 has been the DEFAULT. Now letting user set this.
             scores = DataTools.filterMovingAverage(scores, smoothingWindow);
-            double[] oscFreq = GetOscillationFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
             events = ConvertOscillationScores2Events(
+                sonogram,
                 scores,
-                oscFreq,
                 minHz,
                 maxHz,
-                sonogram.FramesPerSecond,
-                sonogram.FBinWidth,
                 scoreThreshold,
                 minDuration,
                 maxDuration,
-                sonogram.Configuration.SourceFName,
                 segmentStartOffset);
         }
 
@@ -186,14 +182,6 @@ namespace AudioAnalysisTools
             double[,] matrix = sonogram.Data;
 
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
-
-            //following two lines write matrix of cos values for checking.
-            //string txtPath = @"C:\SensorNetworks\Output\cosines.txt";
-            //FileTools.WriteMatrix2File_Formatted(cosines, txtPath, "F3");
-
-            //following two lines write bmp image of cos values for checking.
-            //string bmpPath = @"C:\SensorNetworks\Output\cosines.png";
-            //ImageTools.DrawMatrix(cosines, bmpPath, true);
 
             //traverse columns - skip DC column
             for (int c = minBin; c <= maxBin; c++)
@@ -327,82 +315,39 @@ namespace AudioAnalysisTools
             return scores;
         }
 
-        public static double[] GetOscillationFrequency(double[,] hits, int minHz, int maxHz, double freqBinWidth)
+        /// <summary>
+        /// Converts the Oscillation Detector score array to a list of Oscillation Events.
+        /// </summary>
+        /// <param name="scores">the array of OD scores.</param>
+        /// <param name="minHz">lower freq bound of the acoustic event.</param>
+        /// <param name="maxHz">upper freq bound of the acoustic event.</param>
+        /// <param name="scoreThreshold">threshold.</param>
+        /// <param name="minDurationThreshold">min threshold.</param>
+        /// <param name="maxDurationThreshold">max threshold.</param>
+        /// <param name="segmentStartOffset">time offset.</param>
+        public static List<OscillationEvent> ConvertOscillationScores2Events(
+            SpectrogramStandard spectrogram,
+            double[] scores,
+            int minHz,
+            int maxHz,
+            double scoreThreshold,
+            double minDurationThreshold,
+            double maxDurationThreshold,
+            TimeSpan segmentStartOffset)
         {
-            int rows = hits.GetLength(0);
+            // The name of source file
+            string fileName = spectrogram.Configuration.SourceFName;
+            double framesPerSec = spectrogram.FramesPerSecond;
+            double freqBinWidth = spectrogram.FBinWidth;
+            int count = scores.Length;
+
+            // get the bin bounds of the frequency band of interest.
             int minBin = (int)(minHz / freqBinWidth);
             int maxBin = (int)(maxHz / freqBinWidth);
 
-            //to store the oscillation frequency
-            var oscFreq = new double[rows];
-            for (int r = 0; r < rows; r++)
-            {
-                double freq = 0;
-                int count = 0;
-
-                //traverse columns in required band
-                for (int c = minBin; c <= maxBin; c++)
-                {
-                    if (hits[r, c] > 0)
-                    {
-                        freq += hits[r, c];
-                        count++;
-                    }
-                }
-
-                if (count == 0)
-                {
-                    oscFreq[r] = 0;
-                }
-                else
-                {
-                    //return the average frequency
-                    oscFreq[r] = freq / count;
-                }
-            }
-
-            return oscFreq;
-        }
-
-        /// <summary>
-        /// Converts the Oscillation Detector score array to a list of AcousticEvents.
-        /// </summary>
-        /// <param name="scores">the array of OD scores.</param>
-        /// <param name="oscFreq">oscillation freq.</param>
-        /// <param name="minHz">lower freq bound of the acoustic event.</param>
-        /// <param name="maxHz">upper freq bound of the acoustic event.</param>
-        /// <param name="framesPerSec">the time scale required by AcousticEvent class.</param>
-        /// <param name="freqBinWidth">the freq scale required by AcousticEvent class.</param>
-        /// <param name="maxScoreThreshold">threshold.</param>
-        /// <param name="minDurationThreshold">min threshold.</param>
-        /// <param name="maxDurationThreshold">max threshold.</param>
-        /// <param name="fileName">name of source file to be added to AcousticEvent class.</param>
-        /// <param name="segmentStartOffset">time offset.</param>
-        public static List<OscillationEvent> ConvertOscillationScores2Events(
-            double[] scores,
-            double[] oscFreq,
-            int minHz,
-            int maxHz,
-            double framesPerSec,
-            double freqBinWidth,
-            double maxScoreThreshold,
-            double minDurationThreshold,
-            double maxDurationThreshold,
-            string fileName,
-            TimeSpan segmentStartOffset)
-        {
-            //double minThreshold = 0.1;
-            //double scoreThreshold = minThreshold; //set this to the minimum threshold to start with
-            double scoreThreshold = maxScoreThreshold;   //set this to the maximum threshold to start with
-            int count = scores.Length;
-
-            //int minBin = (int)(minHz / freqBinWidth);
-            //int maxBin = (int)(maxHz / freqBinWidth);
-            //int binCount = maxBin - minBin + 1;
             var events = new List<OscillationEvent>();
             bool isHit = false;
             double frameOffset = 1 / framesPerSec;
-            double startTime = 0.0;
             int startFrame = 0;
 
             //pass over all frames
@@ -412,64 +357,61 @@ namespace AudioAnalysisTools
                 {
                     //start of an event
                     isHit = true;
-                    startTime = i * frameOffset;
                     startFrame = i;
                 }
                 else //check for the end of an event
                     if (isHit && (scores[i] < scoreThreshold || i == count - 1))
                 {
                     isHit = false;
-
-                    //double endTime = i * frameOffset;
-                    //double duration = endTime - startTime;
                     double duration = (i - startFrame + 1) * frameOffset;
                     if (duration < minDurationThreshold)
                     {
-                        continue; //skip events with duration shorter than threshold
+                        //skip events with duration shorter than threshold
+                        continue;
                     }
 
                     if (duration > maxDurationThreshold)
                     {
-                        continue; //skip events with duration longer than threshold
+                        //skip events with duration longer than threshold
+                        continue;
                     }
 
-                    //this is end of an event, so initialise it
-                    var ev = new OscillationEvent()
-                    {
-                        //##########################################################################################
-                        //Name = "Oscillation", //default name
-                        EventStartSeconds = segmentStartOffset.TotalSeconds + startTime,
-                        EventEndSeconds = segmentStartOffset.TotalSeconds + startTime + duration,
-                        LowFrequencyHertz = minHz,
-                        HighFrequencyHertz = maxHz,
-                        FileName = fileName,
-                    };
-
-                    //##########################################################################################
-                    //ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
+                    // This is end of an event, so initialise it
+                    // First trim the event because oscillation events spill over the edges of the true event due to use of the DCT.
+                    (int trueStartFrame, int trueEndFrame, double framePeriodicity) = OscillationEvent.TrimEvent(spectrogram, startFrame, minBin, i, maxBin);
+                    double trueStartTime = trueStartFrame * frameOffset;
+                    double trueEndTime = trueEndFrame * frameOffset;
+                    int trueFrameLength = trueEndFrame - trueStartFrame + 1;
 
                     //obtain average score.
-                    double av = 0.0;
-                    for (int n = startFrame; n <= i; n++)
+                    double sum = 0.0;
+                    for (int n = trueStartFrame; n <= trueEndFrame; n++)
                     {
-                        av += scores[n];
+                        sum += scores[n];
                     }
 
-                    ev.Score = av / (i - startFrame + 1);
+                    double score = sum / trueFrameLength;
 
-                    //obtain oscillation freq.
-                    av = 0.0;
-                    for (int n = startFrame; n <= i; n++)
+                    var ev = new OscillationEvent()
                     {
-                        av += oscFreq[n];
-                    }
+                        Name = "Oscillation",
+                        SegmentStartSeconds = segmentStartOffset.TotalSeconds,
+                        ResultStartSeconds = segmentStartOffset.TotalSeconds + trueStartTime,
+                        EventStartSeconds = segmentStartOffset.TotalSeconds + trueStartTime,
+                        EventEndSeconds = segmentStartOffset.TotalSeconds + trueEndTime,
+                        LowFrequencyHertz = minHz,
+                        HighFrequencyHertz = maxHz,
+                        Periodicity = framePeriodicity * frameOffset,
+                        Score = score,
+                        FileName = fileName,
+                    };
 
                     //##########################################################################################
                     //ev.Score2 = av / (i - startFrame + 1);
                     //ev.Intensity = (int)ev.Score2; // store this info for later inclusion in csv file as Event Intensity
                     events.Add(ev);
                 }
-            } //end frames
+            }
 
             return events;
         }

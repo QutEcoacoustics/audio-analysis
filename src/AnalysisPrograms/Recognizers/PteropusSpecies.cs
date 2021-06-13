@@ -464,8 +464,7 @@ namespace AnalysisPrograms.Recognizers
         /// </summary>
         internal static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
         {
-            //var image = sonogram.GetImageFullyAnnotated("Test");
-            var image = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.Events, results.Plots, null);
+            var image = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.Events, results.Plots, null, results.Sonogram.Configuration.SourceFName);
             image.Save(Path.Combine(outputDirectory.FullName, baseName + ".profile.png"));
         }
     }

@@ -303,6 +303,13 @@ namespace AnalysisPrograms.Recognizers
                 }
             }
 
+            // Rescale the plots in case profiles used different window/frame lengths.
+            var lastSpectrogram = combinedResults.Sonogram;
+            combinedResults.Plots.ForEach(plot =>
+            {
+                plot.ScaleDataArray(lastSpectrogram.FrameCount);
+            });
+
             return combinedResults;
         }
 
@@ -425,10 +432,11 @@ namespace AnalysisPrograms.Recognizers
             };
 
             //add info about decibel threshold into the event.
-            //This info is used later during post-processing of events.
+            //This info is used later during post-processing of events and for drawing of events.
             foreach (var ev in spectralEvents)
             {
                 ev.DecibelDetectionThreshold = decibelThreshold.Value;
+                ev.SegmentDurationSeconds = spectrogram.Duration.TotalSeconds;
             }
 
             allResults.NewEvents.AddRange(spectralEvents);
@@ -459,7 +467,7 @@ namespace AnalysisPrograms.Recognizers
         /// </summary>
         public static string SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
         {
-            var image3 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.NewEvents, results.Plots, null);
+            var image3 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.NewEvents, results.Plots, null, baseName);
 
             var path = Path.Combine(outputDirectory.FullName, baseName + ".profile.png");
             image3.Save(path);

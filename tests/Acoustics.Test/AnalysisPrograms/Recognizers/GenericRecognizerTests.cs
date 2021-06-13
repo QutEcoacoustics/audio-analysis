@@ -310,10 +310,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
 
-            // add next two lines because cannot find spectrogram included with the test results.
             // Used for debugging only
-            var image = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.NewEvents, results.Plots, null);
-            image.SaveAsPng("C:/temp/image.png");
+            var image1 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.NewEvents, results.Plots, null, "TestWhistleAlgorithm");
+            image1.Save(this.TestOutputDirectory.CombineFile("image1.png"));
 
             Assert.AreEqual(4, results.NewEvents.Count);
             var @event = (SpectralEvent)results.NewEvents[0];
@@ -387,9 +386,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             };
 
             var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
-
-            //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
-            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
+            var emptyList = new List<EventCommon>();
+            var image2 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, emptyList, null, null, "TestHarmonicsAlgorithm");
+            image2.Save(this.TestOutputDirectory.CombineFile("image2.png"));
 
             //var results = recognizer.Recognize(recording, sonoConfig, 100.Seconds(), null, this.TestOutputDirectory, null);
             //get the array of intensity values minus intensity in side/buffer bands.
@@ -432,7 +431,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             allResults.Sonogram = spectrogram;
 
             // DEBUG PURPOSES COMMENT NEXT LINE
-            //GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "name");
+            //GenericRecognizer.SaveDebugSpectrogram(allResults, null, this.TestOutputDirectory, "name");
 
             Assert.AreEqual(4, allResults.NewEvents.Count);
 
@@ -580,7 +579,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
 
             //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
-            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
+            //results.Sonogram.GetImage().Save(this.outputDirectory.CombineFile("debug.png");
 
             var segmentStartOffset = TimeSpan.Zero;
             var (spectralEvents, plotList) = ForwardTrackAlgorithm.GetForwardTracks(
@@ -659,9 +658,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             };
 
             var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
-
-            //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
-            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
+            var emptyList = new List<EventCommon>();
+            var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, emptyList, null, null, "TestOneframeTrackAlgorithm");
+            image1.Save(this.TestOutputDirectory.CombineFile("debug.png"));
 
             var segmentStartOffset = TimeSpan.Zero;
             var (spectralEvents, plotList) = OneframeTrackAlgorithm.GetOneFrameTracks(
@@ -864,7 +863,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             allResults2.Plots.AddRange(plots);
             allResults2.Sonogram = spectrogram;
 
-            // DEBUG PURPOSES ONLY - COMMENT NEXT LINE
+            // DEBUG PURPOSES ONLY
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(allResults2, null, outputDirectory, "UpwardTracks2"));
 
@@ -1176,6 +1175,10 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
 
+            // DEBUG PURPOSES ONLY
+            this.SaveTestOutput(
+                outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, "ThreeProfiles"));
+
             Assert.AreEqual(3, results.NewEvents.Count);
 
             var @event = (SpectralEvent)results.NewEvents[0];
@@ -1204,6 +1207,84 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             Assert.AreEqual(1650, @event.HighFrequencyHertz, 0.1);
             Assert.AreEqual("DTMFupper", @event.Name);
             Assert.AreEqual("UpperBandDTMF_z", @event.Profile);
+        }
+
+        [TestMethod]
+        public void TestBlobPlusOscillationProfiles()
+        {
+            var config = new GenericRecognizer.GenericRecognizerConfig()
+            {
+                Profiles = new Dictionary<string, object>()
+                {
+                    {
+                        "TestBlob", new BlobParameters()
+                        {
+                            FrameSize = 1024,
+                            FrameStep = 1024,
+                            MaxHertz = 7200,
+                            MinHertz = 4800,
+                            BgNoiseThreshold = 0.0,
+                            BottomHertzBuffer = 1000,
+                            TopHertzBuffer = 500,
+                            DecibelThresholds = new double?[] { 3.0 },
+                        }
+                    },
+                    {
+                        "TestOscillation",
+                        new OscillationParameters()
+                        {
+                            SpeciesName = "DTMFlower",
+                            FrameSize = 512,
+                            FrameStep = 512,
+                            BgNoiseThreshold = 0.0,
+                            MaxHertz = 1050,
+                            MinHertz = 700,
+                            BottomHertzBuffer = 0,
+                            TopHertzBuffer = 0,
+                            DctDuration = 1.0,
+                            MinOscillationFrequency = 1,
+                            MaxOscillationFrequency = 2,
+                            MinDuration = 4,
+                            MaxDuration = 6,
+                            EventThreshold = 0.3,
+                            DecibelThresholds = new double?[] { 3.0 },
+                        }
+                    },
+                },
+                PostProcessing = new PostProcessingConfig()
+                {
+                    CombineOverlappingEvents = false,
+                },
+            };
+
+            var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
+
+            // DEBUG PURPOSES
+            this.SaveTestOutput(
+                outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, "BlobPlusOsc"));
+
+            Assert.AreEqual(2, results.NewEvents.Count);
+
+            var event1 = (SpectralEvent)results.NewEvents[0];
+            Assert.AreEqual(120, event1.EventStartSeconds, 0.1);
+            Assert.AreEqual(122, event1.EventEndSeconds, 0.1);
+            Assert.AreEqual(4800, event1.LowFrequencyHertz, 0.1);
+            Assert.AreEqual(7200, event1.HighFrequencyHertz, 0.1);
+            Assert.AreEqual("TestBlob", event1.Profile);
+            Assert.AreEqual(null, event1.Name);
+            Assert.AreEqual("SpectralEvent", event1.ComponentName);
+
+            var event2 = (OscillationEvent)results.NewEvents[1];
+            Assert.AreEqual(typeof(OscillationEvent), event2.GetType());
+            Assert.AreEqual(108.1, event2.EventStartSeconds, 0.1);
+            Assert.AreEqual(113.1, event2.EventEndSeconds, 0.1);
+            Assert.AreEqual(700, event2.LowFrequencyHertz);
+            Assert.AreEqual(1050, event2.HighFrequencyHertz);
+            Assert.AreEqual("TestOscillation", event2.Profile);
+            Assert.AreEqual("DTMFlower", event2.Name);
+            Assert.AreEqual("OscillationEvent", event2.ComponentName);
+            Assert.AreEqual("acoustic_components", event2.FileName);
+            Assert.AreEqual(0.83, event2.Periodicity, 0.1);
         }
     }
 }
