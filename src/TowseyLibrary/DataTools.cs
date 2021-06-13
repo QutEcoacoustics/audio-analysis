@@ -2256,29 +2256,6 @@ namespace TowseyLibrary
             return sum;
         }
 
-        public static double[] SumColumns(double[,] m)
-        {
-            int rows = m.GetLength(0);
-            int cols = m.GetLength(1);
-            double sum = 0.0;
-            double[] colSums = new double[cols];
-            for (int j = 0; j < cols; j++)
-            {
-                sum = 0.0;
-                for (int i = 0; i < rows; i++)
-                {
-                    sum += m[i, j];
-                }
-
-                colSums[j] = sum;
-            }
-
-            // sum = 0.0;
-            // for (int j = 0; j < cols; j++) sum += colSums[j];
-            // LoggedConsole.WriteLine("sum="+sum.ToString("F5"));
-            return colSums;
-        }
-
         public static double[] GetColumnsAverages(double[,] m)
         {
             int rows = m.GetLength(0);
@@ -2335,40 +2312,23 @@ namespace TowseyLibrary
             return smdVector;
         }
 
-        // copy first n values of vector1 into vector 2}
-        public static double[] CopyVector(int n, double[] v1)
-        {
-            double[] v2 = new double[v1.Length];
-            for (int i = 0; i < n; i++)
-            {
-                v2[i] = v1[i];
-            }
-
-            return v2;
-        }
-
-        // returns copy of a vector
-        public static double[] CopyVector(double[] v1)
-        {
-            double[] v2 = new double[v1.Length];
-            for (int i = 0; i < v1.Length; i++)
-            {
-                v2[i] = v1[i];
-            }
-
-            return v2;
-        }
-
+        /// <summary>
+        /// Lengthens or shortens an array of values with appropriate scaling.
+        /// However this method does NOT attempt to interpolate estimated values.
+        /// </summary>
+        /// <param name="v">the array or vector of values to be scaled.</param>
+        /// <param name="newLength">the lehgth of the new scaled array.</param>
+        /// <returns>a scaled array.</returns>
         public static double[] ScaleArray(double[] v, int newLength)
         {
-            int L = v.Length;
-            if (newLength == L)
+            int currentLength = v.Length;
+            if (newLength == currentLength)
             {
                 return v;
             }
 
             double[] ret = new double[newLength];
-            double ratio = newLength / (double)L;
+            double ratio = newLength / (double)currentLength;
 
             for (int i = 0; i < newLength; i++)
             {

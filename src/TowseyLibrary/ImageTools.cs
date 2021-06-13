@@ -3700,7 +3700,7 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Stacks the passed images one on top of the other.
-        /// Assumes that all images have the same width.
+        /// Adjust image to widest of them.
         /// </summary>
         public static Image<T> CombineImagesVertically<T>(List<Image<T>> list)
             where T : unmanaged, IPixel<T>
