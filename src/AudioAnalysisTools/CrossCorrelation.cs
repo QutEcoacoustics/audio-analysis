@@ -5,28 +5,34 @@
 namespace AudioAnalysisTools
 {
     using System;
-    using Accord.Math;
-    using AudioAnalysisTools.DSP;
     using TowseyLibrary;
 
+    /// <summary>
+    /// This class contains two methods that could eventually be deleted.
+    /// The methods are only called by call recognizers that have not been maintained in a long time.
+    /// </summary>
     public class CrossCorrelation
     {
+        // THESE KEYS COMMENTED 2021 June 13 as they appear to be unused.
         //these keys are used to define a cross-correlation event in a sonogram.
-        public const string key_COUNT = "count";
-        public const string key_START_FRAME = "startFrame";
-        public const string key_END_FRAME = "endFrame";
-        public const string key_FRAME_COUNT = "frameCount";
-        public const string key_START_SECOND = "startSecond";
-        public const string key_END_SECOND = "endSecond";
-        public const string key_MIN_FREQBIN = "minFreqBin";
-        public const string key_MAX_FREQBIN = "maxFreqBin";
-        public const string key_MIN_FREQ = "minFreq";
-        public const string key_MAX_FREQ = "maxFreq";
-        public const string key_SCORE = "score";
-        public const string key_PERIODICITY = "periodicity";
+        //public const string key_COUNT = "count";
+        //public const string key_START_FRAME = "startFrame";
+        //public const string key_END_FRAME = "endFrame";
+        //public const string key_FRAME_COUNT = "frameCount";
+        //public const string key_START_SECOND = "startSecond";
+        //public const string key_END_SECOND = "endSecond";
+        //public const string key_MIN_FREQBIN = "minFreqBin";
+        //public const string key_MAX_FREQBIN = "maxFreqBin";
+        //public const string key_MIN_FREQ = "minFreq";
+        //public const string key_MAX_FREQ = "maxFreq";
+        //public const string key_SCORE = "score";
+        //public const string key_PERIODICITY = "periodicity";
 
         /// <summary>
-        /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
+        /// TODO THis method could eventually be deleted. It has been replaced by the other methods below.
+        ///      Amongst other things, the term "periodicity" is used incorrectly in this method.
+        ///      It actually refers to the "harmonic interval".
+        /// This method assumes the matrix is derived from a spectrogram rotated so that the matrix rows are spectral timeframes of a spectrogram.
         ///
         /// </summary>
         public static Tuple<double[], double[]> DetectBarsInTheRowsOfaMatrix(double[,] m, double threshold, int zeroBinCount)
@@ -71,6 +77,8 @@ namespace AudioAnalysisTools
         } //DetectBarsInTheRowsOfaMatrix()
 
         /// <summary>
+        /// TODO TODO this method could be deleted. It is called only by a method to detect crow calls.
+        /// THis is long since superceded.
         /// A METHOD TO DETECT HARMONICS IN THE ROWS of the passed portion of a sonogram.
         /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
         /// Was first developed for crow calls.
@@ -121,105 +129,6 @@ namespace AudioAnalysisTools
             }
 
             return Tuple.Create(dBArray, intensity, periodicity);
-        }
-
-        /// <summary>
-        /// A METHOD TO DETECT a set of stacked HARMONICS/FORMANTS in the sub-band of a spectrogram.
-        /// Developed for GenericRecognizer of harmonics.
-        /// NOTE 1: This method assumes the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of the spectrogram.
-        /// NOTE 2: As of March 2020, this method averages the values in five adjacent frames. This is to reduce noise.
-        ///         But it requires that the frequency of any potential formants is not changing rapidly.
-        ///         This may not be suitable for detecting human speech. However can reduce the frame step.
-        /// NOTE 3: This method assumes that the minimum  number of formants in a stack = 3.
-        ///         This means that the first 4 values in the returned array of DCT coefficients are set = 0 (see below).
-        /// </summary>
-        /// <param name="m">data matrix derived from the subband of a spectrogram.</param>
-        /// <param name="xThreshold">Minimum acceptable value to be considered part of a harmonic.</param>
-        /// <returns>three arrays: dBArray, intensity, maxIndexArray.</returns>
-        public static Tuple<double[], double[], int[]> DetectHarmonicsInSpectrogramData(double[,] m, double xThreshold)
-        {
-            int rowCount = m.GetLength(0);
-            int colCount = m.GetLength(1);
-            var binCount = m.GetLength(1);
-
-            //set up the cosine coefficients
-            double[,] cosines = MFCCStuff.Cosines(binCount, binCount);
-
-            // set up time-frame arrays to store decibels, formant intensity and max index.
-            var dBArray = new double[rowCount];
-            var intensity = new double[rowCount];
-            var maxIndexArray = new int[rowCount];
-
-            // for all time frames
-            for (int t = 2; t < rowCount - 2; t++)
-            {
-                // Smooth the frame values by taking the average of five adjacent frames
-                var frame1 = MatrixTools.GetRow(m, t - 2);
-                var frame2 = MatrixTools.GetRow(m, t - 1);
-                var frame3 = MatrixTools.GetRow(m, t);
-                var frame4 = MatrixTools.GetRow(m, t + 1);
-                var frame5 = MatrixTools.GetRow(m, t + 2);
-
-                // set up a frame of average db values.
-                var avFrame = new double[colCount];
-                for (int i = 0; i < colCount; i++)
-                {
-                    //avFrame[i] = (frame2[i] + frame3[i] + frame4[i]) / 3;
-                    avFrame[i] = (frame1[i] + frame2[i] + frame3[i] + frame4[i] + frame5[i]) / 5;
-                }
-
-                // ignore frame if its maximum decibel value is below the threshold.
-                double maxValue = avFrame.Max();
-                dBArray[t] = maxValue;
-                if (maxValue < xThreshold)
-                {
-                    continue;
-                }
-
-                // do the autocross-correlation prior to doing the DCT.
-                double[] xr = AutoAndCrossCorrelation.AutoCrossCorr(avFrame);
-
-                // xr has twice length of frame and is symmetrical. Require only first half.
-                double[] normXr = new double[colCount];
-                for (int i = 0; i < colCount; i++)
-                {
-                    // Typically normalise the xcorr values for overlap count.
-                    // i.e. normXr[i] = xr[i] / (colCount - i);
-                    // But for harmonics, this introduces too much noise - need to give less weight to the less overlapped values.
-                    // Therefore just normalise by dividing values by the first, so first value = 1.
-                    normXr[i] = xr[i] / xr[0];
-                    //normXr[i] = xr[i];
-                }
-
-                //normXr = DataTools.DiffFromMean(normXr);
-
-                // fit the x-correlation array to a line to remove first order trend.
-                // This will help in detecting the correct maximum DCT coefficient.
-                var xValues = new double[normXr.Length];
-                for (int j = 0; j < xValues.Length; j++)
-                { xValues[j] = j; }
-
-                // get the line of best fit and subtract to get deviation from the line.
-                Tuple<double, double> values = MathNet.Numerics.Fit.Line(xValues, normXr);
-                var intercept = values.Item1;
-                var slope = values.Item2;
-                for (int j = 0; j < xValues.Length; j++)
-                {
-                    var lineValue = (slope * j) + intercept;
-                    normXr[j] -= lineValue;
-                }
-
-                // now do DCT across the detrended auto-cross-correlation
-                // set the first four values in the returned DCT coefficients to 0.
-                // We require a minimum of three formants, that is two gaps.
-                int lowerDctBound = 4;
-                var dctCoefficients = Oscillations2012.DoDct(normXr, cosines, lowerDctBound);
-                int indexOfMaxValue = DataTools.GetMaxIndex(dctCoefficients);
-                intensity[t] = dctCoefficients[indexOfMaxValue];
-                maxIndexArray[t] = indexOfMaxValue;
-            }
-
-            return Tuple.Create(dBArray, intensity, maxIndexArray);
         }
     }
 }
