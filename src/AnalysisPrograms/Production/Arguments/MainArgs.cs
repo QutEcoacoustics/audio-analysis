@@ -56,6 +56,7 @@ namespace AnalysisPrograms.Production.Arguments
         typeof(DummyAnalysis.Arguments),
         typeof(FileRenamer.Arguments),
         typeof(Sandpit.Arguments),
+        typeof(TrainingExperiment.Arguments),
         typeof(MahnooshSandpit.Arguments))]
     public class MainArgs
     {
