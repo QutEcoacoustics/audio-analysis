@@ -11,8 +11,12 @@ namespace AudioAnalysisTools
 
     public class HarmonicEvent : SpectralEvent
     {
-        /// <summary>Gets or sets the interval or spacing between harmonics/formants.
+        /// <summary>
+        /// Gets or sets the interval or spacing between harmonics/formants.
         /// </summary>
+        /// <value>
+        /// The ?average/calculated? gap between formant peaks, in hertz.
+        /// </value?
         public double HarmonicInterval { get; set; }
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
