@@ -13,10 +13,8 @@ namespace AudioAnalysisTools
     {
         /// <summary>
         /// Gets or sets the interval or spacing between harmonics/formants.
+        /// The calculated interval between formant peaks. Units are Hertz.
         /// </summary>
-        /// <value>
-        /// The ?average/calculated? gap between formant peaks, in hertz.
-        /// </value?
         public double HarmonicInterval { get; set; }
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)

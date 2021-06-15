@@ -41,8 +41,9 @@ namespace AnalysisPrograms.Recognizers.Base
         /// Gets or sets a smoothing window.
         /// This is used to run a moving average filter along each of the frequency bins.
         /// It can help to smooth over discontinuous formants.
+        /// If applied sensible values are 3, 5, or 7.
         /// </summary>
-        public int? SmoothingWindow { get; set; } = 0;
+        public int SmoothingWindow { get; set; } = 0;
 
         public static (List<EventCommon> SpectralEvents, List<Plot> DecibelPlots) GetComponentsWithHarmonics(
             SpectrogramStandard spectrogram,
@@ -62,7 +63,7 @@ namespace AnalysisPrograms.Recognizers.Base
                                 spectrogram,
                                 hp.MinHertz.Value,
                                 hp.MaxHertz.Value,
-                                hp.SmoothingWindow.Value,
+                                hp.SmoothingWindow,
                                 decibelThreshold.Value,
                                 hp.DctThreshold.Value,
                                 hp.MinDuration.Value,
