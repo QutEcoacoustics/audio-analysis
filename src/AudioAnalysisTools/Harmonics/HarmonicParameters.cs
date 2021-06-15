@@ -33,9 +33,16 @@ namespace AnalysisPrograms.Recognizers.Base
         public int? MinFormantGap { get; set; }
 
         /// <summary>
-        /// Gets or sets the the top bound of gap between formants. Units are Hertz.
+        /// Gets or sets the top bound of gap between formants. Units are Hertz.
         /// </summary>
         public int? MaxFormantGap { get; set; }
+
+        /// <summary>
+        /// Gets or sets a smoothing window.
+        /// This is used to run a moving average filter along each of the frequency bins.
+        /// It can help to smooth over discontinuous formants.
+        /// </summary>
+        public int? SmoothingWindow { get; set; } = 0;
 
         public static (List<EventCommon> SpectralEvents, List<Plot> DecibelPlots) GetComponentsWithHarmonics(
             SpectrogramStandard spectrogram,
@@ -44,6 +51,8 @@ namespace AnalysisPrograms.Recognizers.Base
             TimeSpan segmentStartOffset,
             string profileName)
         {
+            // a window to smooth the frequency bins
+
             var spectralEvents = new List<EventCommon>();
             var plots = new List<Plot>();
 
@@ -53,6 +62,7 @@ namespace AnalysisPrograms.Recognizers.Base
                                 spectrogram,
                                 hp.MinHertz.Value,
                                 hp.MaxHertz.Value,
+                                hp.SmoothingWindow.Value,
                                 decibelThreshold.Value,
                                 hp.DctThreshold.Value,
                                 hp.MinDuration.Value,
@@ -72,6 +82,7 @@ namespace AnalysisPrograms.Recognizers.Base
             SpectrogramStandard spectrogram,
             int minHz,
             int maxHz,
+            int smoothingWindow,
             double decibelThreshold,
             double dctThreshold,
             double minDuration,
@@ -91,12 +102,18 @@ namespace AnalysisPrograms.Recognizers.Base
             int maxBin = (int)Math.Round(maxHz / freqBinWidth);
             int bandBinCount = maxBin - minBin + 1;
 
+            // create a unit converter
+            var converter = new UnitConverters(
+                segmentStartOffset: segmentStartOffset.TotalSeconds,
+                sampleRate: spectrogram.SampleRate,
+                frameSize: spectrogram.Configuration.WindowSize,
+                frameOverlap: spectrogram.Configuration.WindowOverlap);
+
             // extract the sub-band of interest
             double[,] subMatrix = MatrixTools.Submatrix(spectrogram.Data, 0, minBin, frameCount - 1, maxBin);
 
-            //ii: DETECT HARMONICS
-            // now look for harmonics in search band using the Xcorrelation-DCT method.
-            var results = DetectHarmonicsInSpectrogramData(subMatrix, decibelThreshold);
+            // DETECT HARMONICS in search band using the Xcorrelation-DCT method.
+            var results = DetectHarmonicsInSpectrogramData(subMatrix, decibelThreshold, smoothingWindow);
 
             // set up score arrays
             double[] dBArray = results.Item1; // this is not used currently.
@@ -145,10 +162,11 @@ namespace AnalysisPrograms.Recognizers.Base
 
             //extract the events based on length and threshhold.
             // Note: This method does NOT do prior smoothing of the score array.
-            var harmonicEvents = ConvertScoreArray2Events(
+            var harmonicEvents = ConvertScoreArray2HarmonicEvents(
                     spectrogram,
                     harmonicIntensityScores2,
                     dBArray,
+                    converter,
                     maxIndexArray,
                     minDuration,
                     maxDuration,
@@ -175,7 +193,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <param name="m">data matrix derived from the subband of a spectrogram.</param>
         /// <param name="xThreshold">Minimum acceptable value to be considered part of a harmonic.</param>
         /// <returns>three arrays: dBArray, intensity, maxIndexArray.</returns>
-        public static Tuple<double[], double[], int[]> DetectHarmonicsInSpectrogramData(double[,] m, double xThreshold)
+        public static Tuple<double[], double[], int[]> DetectHarmonicsInSpectrogramData(double[,] m, double xThreshold, int smoothingWindow)
         {
             int rowCount = m.GetLength(0);
             int colCount = m.GetLength(1);
@@ -189,23 +207,17 @@ namespace AnalysisPrograms.Recognizers.Base
             var intensity = new double[rowCount];
             var maxIndexArray = new int[rowCount];
 
-            // for all time frames
-            for (int t = 2; t < rowCount - 2; t++)
+            // Run a moving average filter along each frequency bin.
+            // This may help to fill noise gaps in formants. Ignore values <3.
+            if (smoothingWindow > 2)
             {
-                // Smooth the frame values by taking the average of five adjacent frames
-                var frame1 = MatrixTools.GetRow(m, t - 2);
-                var frame2 = MatrixTools.GetRow(m, t - 1);
-                var frame3 = MatrixTools.GetRow(m, t);
-                var frame4 = MatrixTools.GetRow(m, t + 1);
-                var frame5 = MatrixTools.GetRow(m, t + 2);
+                m = MatrixTools.SmoothColumns(m, smoothingWindow);
+            }
 
-                // set up a frame of average db values.
-                var avFrame = new double[colCount];
-                for (int i = 0; i < colCount; i++)
-                {
-                    //avFrame[i] = (frame2[i] + frame3[i] + frame4[i]) / 3;
-                    avFrame[i] = (frame1[i] + frame2[i] + frame3[i] + frame4[i] + frame5[i]) / 5;
-                }
+            // for all time-frames or spectra
+            for (int t = 0; t < rowCount; t++)
+            {
+                var avFrame = MatrixTools.GetRow(m, t);
 
                 // ignore frame if its maximum decibel value is below the threshold.
                 double maxValue = avFrame.Max();
@@ -215,7 +227,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     continue;
                 }
 
-                // do the autocross-correlation prior to doing the DCT.
+                // do autocross-correlation prior to doing the DCT.
                 double[] xr = AutoAndCrossCorrelation.AutoCrossCorr(avFrame);
 
                 // xr has twice length of frame and is symmetrical. Require only first half.
@@ -229,8 +241,6 @@ namespace AnalysisPrograms.Recognizers.Base
                     normXr[i] = xr[i] / xr[0];
                 }
 
-                //normXr = DataTools.DiffFromMean(normXr);
-
                 // fit the x-correlation array to a line to remove first order trend.
                 // This will help in detecting the correct maximum DCT coefficient.
                 var xValues = new double[normXr.Length];
@@ -239,6 +249,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     xValues[j] = j;
                 }
 
+                // do linear detrend of the vector of coefficients.
                 // get the line of best fit and subtract to get deviation from the line.
                 Tuple<double, double> values = MathNet.Numerics.Fit.Line(xValues, normXr);
                 var intercept = values.Item1;
@@ -251,7 +262,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
                 // now do DCT across the detrended auto-cross-correlation
                 // set the first four values in the returned DCT coefficients to 0.
-                // We require a minimum of three formants, that is two gaps.
+                // We require a minimum of three formants, that is, two harmonic intervals.
                 int lowerDctBound = 4;
                 var dctCoefficients = Oscillations2012.DoDct(normXr, cosines, lowerDctBound);
                 int indexOfMaxValue = DataTools.GetMaxIndex(dctCoefficients);
@@ -278,10 +289,11 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <param name="scoreThreshold">threshold.</param>
         /// <param name="segmentStartOffset">the time offset from segment start to the recording start.</param>
         /// <returns>a list of acoustic events.</returns>
-        public static List<EventCommon> ConvertScoreArray2Events(
+        public static List<EventCommon> ConvertScoreArray2HarmonicEvents(
             SpectrogramStandard spectrogram,
             double[] scores,
             double[] dBArray,
+            UnitConverters converter,
             int[] maxIndexArray,
             double minDuration,
             double maxDuration,
@@ -293,22 +305,14 @@ namespace AnalysisPrograms.Recognizers.Base
         {
             double framesPerSec = spectrogram.FramesPerSecond;
             double freqBinWidth = spectrogram.FBinWidth;
-
-            // create a unit converter
-            var converter = new UnitConverters(
-                segmentStartOffset: segmentStartOffset.TotalSeconds,
-                sampleRate: spectrogram.SampleRate,
-                frameSize: spectrogram.Configuration.WindowSize,
-                frameOverlap: spectrogram.Configuration.WindowOverlap);
-
-            // used this to calculate a normalised score between 0 - 1.0
-            double maxPossibleScore = 5 * scoreThreshold;
-            var scoreRange = new Interval<double>(0, maxPossibleScore);
-
             bool isHit = false;
             double frameOffset = 1 / framesPerSec;
             int startFrame = 0;
             int frameCount = scores.Length;
+
+            // use this to calculate a normalised score between 0 - 1.0
+            double maxPossibleScore = 5 * scoreThreshold;
+            var scoreRange = new Interval<double>(0, maxPossibleScore);
 
             var events = new List<EventCommon>();
 
@@ -319,14 +323,15 @@ namespace AnalysisPrograms.Recognizers.Base
                 {
                     //start of an event
                     isHit = true;
-                    startFrame = i + 2;
+                    startFrame = i;
                 }
                 else // check for the end of an event
                 if (isHit && scores[i] <= scoreThreshold)
                 {
                     // this is end of an event, so initialise it
                     isHit = false;
-                    double duration = (i - 1 - startFrame) * frameOffset;
+                    int eventFrameLength = i - startFrame;
+                    double duration = eventFrameLength * frameOffset;
 
                     if (duration < minDuration || duration > maxDuration)
                     {
@@ -344,15 +349,14 @@ namespace AnalysisPrograms.Recognizers.Base
                     }
 
                     // calculate average event score
-                    int eventLength = i - startFrame;
-                    avScore /= eventLength;
-                    avIndex /= eventLength;
+                    avScore /= eventFrameLength;
+                    avIndex /= eventFrameLength;
                     double freqBinGap = 2 * bandBinCount / avIndex;
                     double harmonicInterval = freqBinGap * freqBinWidth;
 
                     // calculate start and end time of this event relative to start of segment.
                     var eventStartWrtSegment = startFrame * frameOffset;
-                    var eventEndWrtSegment = (i - 1) * frameOffset;
+                    var eventEndWrtSegment = eventStartWrtSegment + duration;
 
                     // Initialize the event.
                     var ev = new HarmonicEvent()
