@@ -7,6 +7,7 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
     using System;
     using System.IO;
     using System.Linq;
+    using Acoustics.Shared.Csv;
     using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms.Recognizers.Base;
     using global::AudioAnalysisTools;
@@ -52,10 +53,12 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
         {
             var parameters = new HarmonicParameters
             {
+                // Here is option to smooth the frequency bins. Can help with harmonic detection.
+                SmoothingWindow = 5,
                 MinHertz = 400,
-                MaxHertz = 6000,
-                MaxFormantGap = 550,
-                MinFormantGap = 300,
+                MaxHertz = 5500,
+                MaxFormantGap = 470,
+                MinFormantGap = 420,
 
                 //Need to make allowance for a longer than actual duration.
                 //because of smoothing of the spectrogram frames prior to the auto-crosscorrelation.
@@ -84,11 +87,11 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
 
             //The actual bounds are not exact due to smoothing of the frames prior to the auto-crosscorrelation
             // that occurs in CrossCorrelation.DetectHarmonicsInSpectrogramData()
-            Assert.AreEqual(1.0, actual.EventStartSeconds, 0.15);
-            Assert.AreEqual(2.0, actual.EventEndSeconds, 0.15);
+            Assert.AreEqual(1.0, actual.EventStartSeconds, 0.1);
+            Assert.AreEqual(2.0, actual.EventEndSeconds, 0.1);
             Assert.AreEqual(400, actual.LowFrequencyHertz);
-            Assert.AreEqual(6000, actual.HighFrequencyHertz);
-            Assert.AreEqual(440, actual.HarmonicInterval, 10);
+            Assert.AreEqual(5500, actual.HighFrequencyHertz);
+            Assert.AreEqual(440, actual.HarmonicInterval, 30);
         }
 
         [TestMethod]
@@ -97,11 +100,11 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
             var parameters = new HarmonicParameters
             {
                 MinHertz = 400,
-                MaxHertz = 6000,
+                MaxHertz = 5500,
                 MaxFormantGap = 1100,
                 MinFormantGap = 950,
                 MinDuration = 0.95,
-                MaxDuration = 1.17,
+                MaxDuration = 1.2,
                 DecibelThresholds = new double?[] { this.decibelThreshold },
                 DctThreshold = 0.3,
             };
@@ -122,11 +125,11 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
 
             // second harmonic is 1000 Hz fundamental, with 4 harmonics, stopping at 5000 Hz
             var actual = events.First() as HarmonicEvent;
-            Assert.AreEqual(3.0, actual.EventStartSeconds, 0.15);
-            Assert.AreEqual(4.0, actual.EventEndSeconds, 0.15);
+            Assert.AreEqual(3.0, actual.EventStartSeconds, 0.1);
+            Assert.AreEqual(4.0, actual.EventEndSeconds, 0.1);
             Assert.AreEqual(400, actual.LowFrequencyHertz);
-            Assert.AreEqual(6000, actual.HighFrequencyHertz);
-            Assert.AreEqual(1000, actual.HarmonicInterval, 60);
+            Assert.AreEqual(5500, actual.HighFrequencyHertz);
+            Assert.AreEqual(1000, actual.HarmonicInterval, 80);
         }
 
         [TestMethod]
@@ -136,7 +139,8 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
             double[,] cosineBasisFunctions = MFCCStuff.Cosines(8, 8);
 
             //following line writes matrix of cos values for checking.
-            FileTools.WriteMatrix2File_Formatted(cosineBasisFunctions, this.TestOutputDirectory.FullName + "Cosines.txt", "F3");
+            var outputDir = new FileInfo(Path.Join(this.TestOutputDirectory.FullName, "Cosines.csv"));
+            Csv.WriteMatrixToCsv<double>(outputDir, cosineBasisFunctions);
 
             //following line writes bmp image of cos values for checking.
             var image = ImageTools.DrawMatrix(cosineBasisFunctions, true);

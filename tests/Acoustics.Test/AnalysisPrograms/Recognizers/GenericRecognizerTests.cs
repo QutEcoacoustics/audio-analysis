@@ -369,6 +369,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var maxDuration = 1.1;
             var decibelThreshold = 2.0;
 
+            // no need to use a smoothing window on this artificial example.
+            int smoothingWindow = 0;
+
             //Set up the virtual recording.
             int samplerate = 22050;
             double signalDuration = 13.0; //seconds
@@ -399,6 +402,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 spectrogram,
                 minHertz,
                 maxHertz,
+                smoothingWindow,
                 decibelThreshold,
                 dctThreshold,
                 minDuration,
@@ -430,30 +434,34 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             // effectively keeps only the *last* sonogram produced
             allResults.Sonogram = spectrogram;
 
-            // DEBUG PURPOSES COMMENT NEXT LINE
-            //GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "name");
+            // SAVE IMAGE FOR DEBUG PURPOSES
+            this.SaveTestOutput(outputDirectory => GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "HarmonicEvent"));
 
             Assert.AreEqual(4, allResults.NewEvents.Count);
 
-            var @event = (SpectralEvent)allResults.NewEvents[0];
+            var @event = (HarmonicEvent)allResults.NewEvents[0];
             Assert.AreEqual("Stacked harmonics", @event.Name);
             Assert.AreEqual("HarmonicEvent", @event.ComponentName);
             Assert.AreEqual(3.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(4.0, @event.EventEndSeconds, 0.1);
             Assert.AreEqual(500, @event.LowFrequencyHertz);
             Assert.AreEqual(5000, @event.HighFrequencyHertz);
+            Assert.AreEqual(630, @event.HarmonicInterval, 10);
 
-            @event = (SpectralEvent)allResults.NewEvents[1];
-            Assert.AreEqual(5.2, @event.EventStartSeconds, 0.15);
+            @event = (HarmonicEvent)allResults.NewEvents[1];
+            Assert.AreEqual(5.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(5.5, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(680, @event.HarmonicInterval, 10);
 
-            @event = (SpectralEvent)allResults.NewEvents[2];
+            @event = (HarmonicEvent)allResults.NewEvents[2];
             Assert.AreEqual(7.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(8.0, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(1050, @event.HarmonicInterval, 10);
 
-            @event = (SpectralEvent)allResults.NewEvents[3];
+            @event = (HarmonicEvent)allResults.NewEvents[3];
             Assert.AreEqual(11.3, @event.EventStartSeconds, 0.1);
-            Assert.AreEqual(11.6, @event.EventEndSeconds, 0.15);
+            Assert.AreEqual(11.7, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(630, @event.HarmonicInterval, 10);
         }
 
         [TestMethod]
