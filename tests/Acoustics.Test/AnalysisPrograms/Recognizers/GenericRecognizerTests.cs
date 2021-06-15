@@ -310,10 +310,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
 
-            // add next two lines because cannot find spectrogram included with the test results.
             // Used for debugging only
-            var image = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.NewEvents, results.Plots, null);
-            image.SaveAsPng("C:/temp/image.png");
+            this.SaveTestOutput(outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, config, outputDirectory, "TestWhistle"));
 
             Assert.AreEqual(4, results.NewEvents.Count);
             var @event = (SpectralEvent)results.NewEvents[0];
