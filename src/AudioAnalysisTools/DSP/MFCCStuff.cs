@@ -524,19 +524,25 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// cosines.
+        /// Returns a matrix of cosine basis functions.
+        /// These are prepared prior to performing a DCT, Discrete Cosine Transform.
+        /// The rows k = 0 to coeffCount are the basis functions.
+        /// The columns, m = 0 to M where M = signalLength or the length of the required DCT.
+        /// The value of m/M ranges from 0 to 1.0.
+        /// The value of Pi*m/M ranges from 0 to Pi radians.
+        /// The value of k*Pi*m/M ranges from 0 to k*Pi radians. WHen k=2, 2Pi radians corresponds to one rotation.
         /// </summary>
-        /// <param name="spectrumLength">Same as bin count or filter bank count ie length of spectrum = N.</param>
-        /// <param name="coeffCount">count of coefficients.</param>
-        public static double[,] Cosines(int spectrumLength, int coeffCount)
+        /// <param name="signalLength">The length of the signal to be processed. e.g. the frequency bin count or filter bank count or ...</param>
+        /// <param name="coeffCount">The number of basis funcitons = the rquired number of DCT coefficients.</param>
+        public static double[,] Cosines(int signalLength, int coeffCount)
         {
-            double[,] cosines = new double[coeffCount + 1, spectrumLength]; //get an extra coefficient because do not want DC coeff
+            double[,] cosines = new double[coeffCount + 1, signalLength]; //get an extra coefficient because do not want DC coeff at [0].
             for (int k = 0; k < coeffCount + 1; k++)
             {
-                double kPiOnM = k * Math.PI / spectrumLength;
+                double kPiOnM = k * Math.PI / signalLength;
 
                 // for each spectral bin
-                for (int m = 0; m < spectrumLength; m++)
+                for (int m = 0; m < signalLength; m++)
                 {
                     cosines[k, m] = Math.Cos(kPiOnM * (m + 0.5)); //can also be Cos(kPiOnM * (m - 0.5)
                 }

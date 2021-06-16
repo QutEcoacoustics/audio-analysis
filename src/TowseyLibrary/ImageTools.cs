@@ -3409,38 +3409,36 @@ namespace TowseyLibrary
         /// Draws matrix but automatically determines the scale to fit 1000x1000 pixel image.
         /// </summary>
         /// <param name="matrix">the data.</param>
-        public static void DrawMatrix(double[,] matrix, string pathName, bool doScale)
+        public static Image<Rgb24> DrawMatrix(double[,] matrix, bool doScale)
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-
-            int maxYpixels = rows;
             int maxXpixels = cols;
-            int YpixelsPerCell = 1;
-            int XpixelsPerCell = 1;
+            int yPixelsPerCell = 1;
+            int xPixelsPerCell = 1;
             if (doScale)
             {
-                maxYpixels = 1000;
+                var maxYpixels = 1000;
                 maxXpixels = 2500;
-                YpixelsPerCell = maxYpixels / rows;
-                XpixelsPerCell = maxXpixels / cols;
-                if (YpixelsPerCell == 0)
+                yPixelsPerCell = maxYpixels / rows;
+                xPixelsPerCell = maxXpixels / cols;
+                if (yPixelsPerCell == 0)
                 {
-                    YpixelsPerCell = 1;
+                    yPixelsPerCell = 1;
                 }
 
-                if (XpixelsPerCell == 0)
+                if (xPixelsPerCell == 0)
                 {
-                    XpixelsPerCell = 1;
+                    xPixelsPerCell = 1;
                 }
             }
 
-            int Ypixels = YpixelsPerCell * rows;
-            int Xpixels = XpixelsPerCell * cols;
+            int yPixels = yPixelsPerCell * rows;
+            int xPixels = xPixelsPerCell * cols;
 
             Color[] grayScale = GrayScale();
 
-            var bmp = new Image<Rgb24>(Xpixels, Ypixels);
+            var bmp = new Image<Rgb24>(xPixels, yPixels);
 
             double[,] norm = DataTools.normalise(matrix);
             for (int r = 0; r < rows; r++)
@@ -3453,11 +3451,11 @@ namespace TowseyLibrary
                         greyId = 0;
                     }
 
-                    int xOffset = XpixelsPerCell * c;
-                    int yOffset = YpixelsPerCell * r;
-                    for (int x = 0; x < XpixelsPerCell; x++)
+                    int xOffset = xPixelsPerCell * c;
+                    int yOffset = yPixelsPerCell * r;
+                    for (int x = 0; x < xPixelsPerCell; x++)
                     {
-                        for (int y = 0; y < YpixelsPerCell; y++)
+                        for (int y = 0; y < yPixelsPerCell; y++)
                         {
                             bmp[xOffset + x, yOffset + y] = grayScale[greyId];
                         }
@@ -3465,7 +3463,7 @@ namespace TowseyLibrary
                 }
             }
 
-            bmp.Save(pathName);
+            return bmp;
         }
 
         public static void DrawMatrixInColour(double[,] matrix, string pathName, bool doScale)

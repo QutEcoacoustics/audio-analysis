@@ -7,6 +7,8 @@ namespace Acoustics.Test.TestHelpers
     using System;
     using System.IO;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
 
     [TestClass]
     public class OutputDirectoryTest
@@ -67,6 +69,25 @@ namespace Acoustics.Test.TestHelpers
             }
 
             return savedFile;
+        }
+
+        protected void SaveImage(Image image, params string[] tokens)
+        {
+            var token = tokens.Join("_");
+
+            var outName = $"{this.TestContext.TestName}{token}.png";
+            if (image == null)
+            {
+                this.TestContext.WriteLine($"Skipping writing expected image `{outName}` because it is null");
+                return;
+            }
+
+            this.SaveTestOutput(output =>
+            {
+                var path = output.CombinePath(outName);
+                image.Save(path);
+                return path;
+            });
         }
 
         /// <summary>

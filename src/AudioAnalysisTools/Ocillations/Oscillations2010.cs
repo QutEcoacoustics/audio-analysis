@@ -8,6 +8,7 @@ namespace AudioAnalysisTools
     using System.Collections.Generic;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
 
     public static class Oscillations2010
@@ -169,7 +170,8 @@ namespace AudioAnalysisTools
 
             //following two lines write bmp image of cos values for checking.
             string fPath = @"C:\SensorNetworks\Output\cosines.bmp";
-            ImageTools.DrawMatrix(cosines, fPath, true);
+            var image = ImageTools.DrawMatrix(cosines, true);
+            image.Save(fPath);
 
             foreach (AcousticEvent av in events)
             {

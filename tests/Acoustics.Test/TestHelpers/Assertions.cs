@@ -6,6 +6,7 @@ namespace Acoustics.Test.TestHelpers
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
@@ -151,6 +152,47 @@ namespace Acoustics.Test.TestHelpers
 
                 expectedEnum.Dispose();
                 actualEnum.Dispose();
+            }
+        }
+
+        public static void IsEmpty<T>(
+            this CollectionAssert _,
+            IEnumerable<T> actual,
+            bool printItems = false,
+            string message = "")
+        {
+            if (actual == null)
+            {
+                Assert.Fail("actual is null, expected none");
+            }
+
+            using var actualEnum = actual.GetEnumerator();
+
+            if (actualEnum.MoveNext())
+            {
+                var items = printItems ? actual.FormatList() : string.Empty;
+                Assert.Fail($"Actual had {actual.Count()} items and we expected none.\n{items}\n{message}");
+            }
+        }
+
+        public static void IsValid<T>(
+            this Assert _,
+            T actual,
+            ValidationContext context = null,
+            string message = "")
+            where T : IValidatableObject
+        {
+            if (actual == null)
+            {
+                Assert.Fail("actual is null, expected an object to validate");
+            }
+
+            List<ValidationResult> failures = new();
+            context ??= new ValidationContext(actual);
+            if (!Validator.TryValidateObject(actual, context, failures))
+            {
+                var items = failures.Select(x => x.MemberNames.Join(", ") + " => " + x.ToString()).FormatList();
+                Assert.Fail($"Actual was not valid. Returned validation failures:\n{items}\n{message}");
             }
         }
 
