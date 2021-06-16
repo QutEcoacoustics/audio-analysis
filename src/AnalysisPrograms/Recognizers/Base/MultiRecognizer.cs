@@ -64,15 +64,15 @@ namespace AnalysisPrograms.Recognizers.Base
             MultiRecognizerConfig multiRecognizerConfig = (MultiRecognizerConfig)configuration;
 
             // make a standard spectrogram in which to render acoustic events and to append score tracks
-            // currently using Hamming window. Worth trying Hanning Window
             var config = new SonogramConfig
             {
+                WindowSize = 512,
+                WindowFunction = WindowFunctions.HANNING.ToString(),
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.1,
-                WindowSize = 512,
             };
-            var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 
+            var spectrogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
             var scoreTracks = new List<Image<Rgb24>>();
             var plots = new List<Plot>();
             var events = new List<AcousticEvent>();
@@ -103,8 +103,8 @@ namespace AnalysisPrograms.Recognizers.Base
 
                     newEvents.AddRange(output.NewEvents);
 
-                    // rescale scale of plots
-                    output.Plots.ForEach(p => p.ScaleDataArray(sonogram.FrameCount));
+                    // rescale all the plots to fit the current spectrogram.
+                    output.Plots.ForEach(p => p.ScaleDataArray(spectrogram.FrameCount));
 
                     plots.AddRange(output.Plots);
                 }
@@ -117,7 +117,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 Events = events,
                 NewEvents = newEvents,
                 ScoreTrack = scoreTrackImage,
-                Sonogram = sonogram,
+                Sonogram = spectrogram,
                 Plots = plots,
                 Hits = null,
             };

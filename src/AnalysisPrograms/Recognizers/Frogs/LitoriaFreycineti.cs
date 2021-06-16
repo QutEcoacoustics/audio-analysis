@@ -190,7 +190,7 @@ namespace AnalysisPrograms.Recognizers.Frogs
             bool displayDebugImage = MainEntry.InDEBUG;
             if (displayDebugImage)
             {
-                Image debugImage1 = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, plots, hits);
+                Image debugImage1 = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, plots, hits, sonogram.Configuration.SourceFName);
                 var debugPath1 =
                     outputDirectory.Combine(
                         FilenameHelpers.AnalysisResultName(
@@ -220,7 +220,7 @@ namespace AnalysisPrograms.Recognizers.Frogs
                             this.Identifier,
                             "png",
                             "DebugSpectrogram2"));
-                Image debugImage2 = SpectrogramTools.GetSonogramPlusCharts(sonogram2, acousticEvents, plots, null);
+                Image debugImage2 = SpectrogramTools.GetSonogramPlusCharts(sonogram2, acousticEvents, plots, null, sonogram2.Configuration.SourceFName);
                 debugImage2.Save(debugPath2.FullName);
             }
         }

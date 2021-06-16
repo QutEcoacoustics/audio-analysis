@@ -380,7 +380,7 @@ namespace AnalysisPrograms.Recognizers.Base
             List<EventCommon> predictedEvents,
             double eventThreshold)
         {
-            var image = SpectrogramTools.GetSonogramPlusCharts(sonogram, predictedEvents, scores, hits);
+            var image = SpectrogramTools.GetSonogramPlusCharts(sonogram, predictedEvents, scores, hits, sonogram.Configuration.SourceFName);
             return image;
         }
 

@@ -147,25 +147,31 @@ namespace AudioAnalysisTools.StandardSpectrograms
             BaseSonogram sonogram,
             List<EventCommon> events,
             List<Plot> plots,
-            double[,] hits)
+            double[,] hits,
+            string title)
         {
-            var spectrogram = sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false);
+            // get the spectrogram as image but do not add gridlines at this stage.
+            var spectrogram = sonogram.GetImage(doHighlightSubband: false, add1KHzLines: false, doMelScale: false);
             Contract.RequiresNotNull(spectrogram, nameof(spectrogram));
 
             var height = spectrogram.Height;
             var width = spectrogram.Width;
             var frameSize = sonogram.Configuration.WindowSize;
-            //var segmentDuration = sonogram.Duration;
             var spectrogramDuration = width * sonogram.FrameStep;
 
             // init with linear frequency scale and draw freq grid lines on image
-            int hertzInterval = 1000;
-            if (height < 200)
+            var nyquist = sonogram.NyquistFrequency;
+            int hertzInterval = 2000;
+            if (nyquist <= 16000)
             {
-                hertzInterval = 2000;
+                hertzInterval = 1000;
+            } else
+            if (nyquist <= 8000)
+            {
+                hertzInterval = 500;
             }
 
-            var nyquist = sonogram.NyquistFrequency;
+            // now add gridlines
             var freqScale = new FrequencyScale(nyquist, frameSize, hertzInterval);
             FrequencyScale.DrawFrequencyLinesOnImage(spectrogram, freqScale.GridLineLocations, includeLabels: true);
 
@@ -186,7 +192,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
 
             int pixelWidth = spectrogram.Width;
-            var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram("TITLE", pixelWidth);
+            var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, pixelWidth);
             var timeTrack = ImageTrack.DrawTimeTrack(sonogram.Duration, pixelWidth);
 
             var imageList = new List<Image<Rgb24>>
@@ -226,11 +232,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
             BaseSonogram sonogram,
             List<AcousticEvent> events,
             List<Plot> plots,
-            double[,] hits)
+            double[,] hits,
+            string title)
         {
             // convert AcousticEvents to EventsCommon
             List<EventCommon> newEvents = EventConverters.ConvertAcousticEventsToSpectralEvents(events);
-            var compositeImage = GetSonogramPlusCharts(sonogram, newEvents, plots, hits);
+            var compositeImage = GetSonogramPlusCharts(sonogram, newEvents, plots, hits, title);
             return compositeImage;
         }
 

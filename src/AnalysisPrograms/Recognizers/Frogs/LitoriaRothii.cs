@@ -222,7 +222,7 @@ namespace AnalysisPrograms.Recognizers.Frogs
                 var lowPassPlot = new Plot("Low Pass", normalisedScores, normalisedThreshold);
 
                 var debugPlots = new List<Plot> { ampltdPlot, lowPassPlot, demeanedPlot, plot };
-                Image debugImage = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, debugPlots, null);
+                Image debugImage = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, debugPlots, null, sonogram.Configuration.SourceFName);
                 var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
             }
