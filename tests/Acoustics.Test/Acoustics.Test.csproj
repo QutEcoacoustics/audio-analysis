@@ -38,6 +38,7 @@
     <ProjectReference Include="..\..\src\AcousticWorkbench\AcousticWorkbench.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="AudioAnalysisTools\HarmonicAnalysis\" />
     <Folder Include="Shared\Collections\" />
   </ItemGroup>
   <ItemGroup>

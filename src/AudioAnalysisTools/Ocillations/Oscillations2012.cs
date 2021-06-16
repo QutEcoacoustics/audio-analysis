@@ -187,14 +187,6 @@ namespace AudioAnalysisTools
 
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
 
-            //following two lines write matrix of cos values for checking.
-            //string txtPath = @"C:\SensorNetworks\Output\cosines.txt";
-            //FileTools.WriteMatrix2File_Formatted(cosines, txtPath, "F3");
-
-            //following two lines write bmp image of cos values for checking.
-            //string bmpPath = @"C:\SensorNetworks\Output\cosines.png";
-            //ImageTools.DrawMatrix(cosines, bmpPath, true);
-
             //traverse columns - skip DC column
             for (int c = minBin; c <= maxBin; c++)
             {

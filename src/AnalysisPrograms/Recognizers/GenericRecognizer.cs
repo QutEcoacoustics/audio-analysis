@@ -6,6 +6,7 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -72,10 +73,10 @@ namespace AnalysisPrograms.Recognizers
             {
                 if (profile is CommonParameters c)
                 {
-                    var checks = c.Validate(null).Where(v => v is not null);
-                    if (checks.Any())
+                    List<ValidationResult> failures = new();
+                    if (!Validator.TryValidateObject(c, new ValidationContext(c), failures))
                     {
-                        throw new ConfigFileException(checks, file) { ProfileName = profileName };
+                        throw new ConfigFileException(failures, file) { ProfileName = profileName };
                     }
                 }
 

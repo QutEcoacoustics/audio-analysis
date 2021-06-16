@@ -2278,6 +2278,11 @@ namespace TowseyLibrary
 
         //=============================================================================
 
+        /// <summary>
+        /// This method smooths the columns of a matrix using a moving average filter.
+        /// It is useful for smoothing the freqeuncy bins of a spectrogram
+        /// where it is assumed that the matrix columns are the frequency bins.
+        /// </summary>
         public static double[,] SmoothColumns(double[,] matrix, int window)
         {
             int rows = matrix.GetLength(0);
