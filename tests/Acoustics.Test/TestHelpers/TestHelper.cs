@@ -292,7 +292,9 @@ namespace Acoustics.Test.TestHelpers
                 },
         };
 
-        public static bool OnContinuousIntegrationServer => !GetEnvironmentVariable("TF_BUILD").IsNullOrEmpty() || !GetEnvironmentVariable("APPVEYOR").IsNullOrEmpty();
+        public static string CIRunNumber => GetEnvironmentVariable("GITHUB_RUN_NUMBER") ?? GetEnvironmentVariable("BUILD_BUILDID");
+
+        public static bool OnContinuousIntegrationServer => !GetEnvironmentVariable("CI").IsNullOrEmpty() || !GetEnvironmentVariable("TF_BUILD").IsNullOrEmpty() || !GetEnvironmentVariable("APPVEYOR").IsNullOrEmpty();
 
         /// <summary>
         /// Tests that an exception is thrown, and that it is of

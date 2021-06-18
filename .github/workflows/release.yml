@@ -1,0 +1,43 @@
+name: release
+
+on:
+  schedule:
+    # at midnight every Sunday (UTC)
+    - cron: "0 0 * * 0"
+  # Manual trigger of a release
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Reason"
+        required: true
+        default: ""
+jobs:
+  release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 200
+          lfs: false
+
+      # fetch more tag info so git_version.ps1 works properly
+      - name: Ensure tags are fetched
+        # Retrieve annotated tags.
+        run: git fetch --tags --force
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: my-artifact
+          path: "${{ runner.temp }}/build_files"
+
+      - name: debug
+        run: ls -R "${{ runner.temp }}/build_files"
+
+      - name: Generate release notes
+        shell: pwsh
+        run: |
+          Get-Content "${{ runner.temp }}/build_files/AP_vars.json" | ConvertFrom-Json | ForEach-Object { $_.Value | Set-Content $_.Path }
+          ./build/release_notes.ps1 v${env:AP_Version} '${{ runner.temp }}/release_notes.txt' -update_changelog

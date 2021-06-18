@@ -1,0 +1,74 @@
+[
+  {
+    "Path": "Env:AP_Year",
+    "Value": "21"
+  },
+  {
+    "Path": "Env:AP_Month",
+    "Value": "6"
+  },
+  {
+    "Path": "Env:AP_BuildDate",
+    "Value": "2021-06-21T13:09:04.1345649+00:00"
+  },
+  {
+    "Path": "Env:AP_BuildNumber",
+    "Value": "000"
+  },
+  {
+    "Path": "Env:AP_CommitHash",
+    "Value": "07809b0b814d8da14d1d5d2591ee0ec538e05cfc"
+  },
+  {
+    "Path": "Env:AP_CommitHashShort",
+    "Value": "g07809b0b"
+  },
+  {
+    "Path": "Env:AP_Branch",
+    "Value": "github-actions"
+  },
+  {
+    "Path": "Env:AP_LastTag",
+    "Value": "v20.11.2.0"
+  },
+  {
+    "Path": "Env:AP_CommitsSinceLastTag",
+    "Value": "123"
+  },
+  {
+    "Path": "Env:AP_TagsThisMonth",
+    "Value": "0"
+  },
+  {
+    "Path": "Env:AP_IsDirty",
+    "Value": "true"
+  },
+  {
+    "Path": "Env:AP_Version",
+    "Value": "21.6.0.123"
+  },
+  {
+    "Path": "Env:AP_InformationalVersion",
+    "Value": "21.6.0.123-github-actions-07809b0b814d8da14d1d5d2591ee0ec538e05cfc-DIRTY-CI:000"
+  },
+  {
+    "Path": "Env:AP_GeneratedMetadata",
+    "Value": "AssemblyMetadata.Generated.cs"
+  },
+  {
+    "Path": "Env:AP_CacheWarning",
+    "Value": ""
+  },
+  {
+    "Path": "Env:AP_MsBuildSelfContained",
+    "Value": "false"
+  },
+  {
+    "Path": "Env:AP_MsBuildRuntimeIdentifer",
+    "Value": ""
+  },
+  {
+    "Path": "Env:AP_MsBuildConfiguration",
+    "Value": ""
+  }
+]

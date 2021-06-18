@@ -9,8 +9,13 @@
     <RunSettingsFilePath>$(MSBuildThisFileDirectory).runsettings</RunSettingsFilePath>
     <!-- No consumers for our test docs, so don't generate them. -->
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Explicitly set the PlatformTarget for arm64, see: https://github.com/dotnet/sdk/issues/15434 -->
+    <PlatformTarget Condition="'$(Platform)' == 'arm64'">arm64</PlatformTarget>
   </PropertyGroup>
-
+  <!-- https://github.com/dotnet/sdk/pull/16802 TODO: Remove for .NET 6 -->
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.1'))">
+    <AvailablePlatforms>$(AvailablePlatforms),ARM64</AvailablePlatforms>
+  </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\AP.CopyFiles.targets" />
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="1.3.0">

@@ -159,7 +159,7 @@ namespace Acoustics.Test
             var actual = File.GetLastWriteTimeUtc(generatedBuildData);
             Assert.That.AreEqual(now, actual, TimeSpan.FromMinutes(5));
 
-            var ciBuild = Environment.GetEnvironmentVariable("BUILD_BUILDID");
+            var ciBuild = TestHelper.CIRunNumber;
             Assert.AreEqual(string.IsNullOrWhiteSpace(ciBuild) ? "000" : ciBuild, BuildMetadata.CiBuild);
         }
 

@@ -46,12 +46,13 @@
             "titleBar.inactiveForeground": "#15202b99",
             "statusBar.background": "#50ba1a",
             "statusBarItem.hoverBackground": "#3d8d14",
-            "statusBar.foreground": "#15202b",
-            "statusBar.border": "#50ba1a",
-            "titleBar.border": "#50ba1a"
+            "statusBar.foreground": "#15202b"
         },
         "peacock.remoteColor": "#50ba1a",
         "peacock.color": "#50ba1a",
         "editor.minimap.size": "fill",
+        "cSpell.words": [
+            "nuget"
+        ],
     }
 }

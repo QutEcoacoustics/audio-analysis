@@ -1,0 +1,229 @@
+# $schema: https://json.schemastore.org/github-action.json
+name: build
+
+on:
+  push:
+    branches:
+      - "*"
+    paths-ignore:
+      - "doc/**"
+      - "scripts/*"
+      - "**/*.md"
+
+# pull_request: # not sure if this is needed
+#   paths:
+#     - "!doc/**"
+#     - "!scripts/*"
+#     - "!**/*.md"
+
+jobs:
+  build:
+    env:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+    # defaults:
+    #   run:
+    #     # apparently pwsh commands are templated into a temp file outside the current directory
+    #     working-directory: "${{ github.workspace }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            configuration: Release
+            runTests: true
+          - os: ubuntu-latest
+            rid: linux-x64
+            configuration: Release
+            runTests: true
+          - os: macos-latest
+            rid: osx-x64
+            configuration: Release
+            runTests: true
+          # For Raspberry Pis
+          - os: ubuntu-latest
+            rid: linux-arm
+            configuration: Release
+            runTests: false # not currently supported by github actions
+          # For generic linux arm
+          - os: ubuntu-latest
+            rid: linux-arm64
+            configuration: Release
+            runTests: false # not currently supported by github actions, but also failing in .NET project SDKs. Try again in .NET 6?
+          # TODO: add support for macos-arm
+          - os: ubuntu-latest
+            rid: ""
+            configuration: Release
+            runTests: true
+          - os: ubuntu-latest
+            rid: "linux-musl-x64"
+            configuration: Release
+            runTests: true
+    name: "${{ matrix.rid || 'Any' }}, ${{ matrix.configuration }}"
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # NOTE: the preliminary steps should be identical to ./build-docs.yml
+      # checkout code and cache lfs
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 200
+
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS cache
+        uses: actions/cache@v2
+        id: lfs-cache
+        with:
+          path: .git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
+
+      # fetch more tag info so git_version.ps1 works properly
+      - name: Ensure tags are fetched
+        # Retrieve annotated tags.
+        run: git fetch --tags --force
+
+      - name: Install build dependencies
+        shell: pwsh
+        run: ./build/install_dependencies.ps1  '${{ matrix.rid }}'
+
+      # setup and build solution
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+
+      # enable stdout with ::echo::on
+      - name: Calculate variables
+        id: calc_vars
+        shell: pwsh
+        run: |
+          echo "::echo::on"
+
+          $runtime_arg = '${{ matrix.rid }}' ? '--runtime ${{ matrix.rid }}' : ''
+          echo "::set-output name=RUNTIME_ARG::$runtime_arg"
+
+          $is_self_contained = '${{ matrix.rid }}' -ne ''
+          $self_contained_arg = '${{ matrix.rid }}' ? '--self-contained' : ''
+          echo "::set-output name=SELF_CONTAINED_ARG::$self_contained_arg"
+
+          $variant_tag = '${{ matrix.rid }}' ? '${{ matrix.rid }}' : 'any'
+          echo "::set-output name=VARIANT_TAG::$variant_tag"
+
+          $vars = . ./src/git_version.ps1 -configuration ${{ matrix.configuration }} -self_contained "$is_self_contained" -runtime_identifier '${{ matrix.rid }}' -env_vars  -prefix "AP_"
+          $vars | Write-Output
+          $vars | Set-Content
+          $vars | ConvertTo-Json | Out-File  "${{ runner.temp }}/AP_vars.json"
+
+          echo "::set-output name=AP_VERSION::${env:AP_Version}"
+          $extension = $IsWindows ? ".zip" : ".tar.xz"
+          $artifact_tag = "AP_${variant_tag}_${{ matrix.configuration }}_${env:AP_Version}"
+          echo "::set-output name=ARTIFACT_TAG::$artifact_tag"
+          $artifact_path = "${{ runner.temp }}/AP_${variant_tag}_${{ matrix.configuration }}_${env:AP_Version}${extension}"
+          echo "::set-output name=ARTIFACT_PATH::$artifact_path"
+
+          $safe_temp = "${{ runner.temp }}" -replace "\\","/"
+          echo "::set-output name=SAFE_TEMP::$safe_temp"
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.nuget/packages
+          # Look to see if there is a cache hit for the corresponding requirements file
+          key: ${{ runner.os }}-nuget--${{ hashFiles('**/*.*proj') }} # hash of project files
+          restore-keys: |
+            ${{ runner.os }}-nuget
+
+      - name: Restore dependencies
+        run: >
+          dotnet restore
+          ${{ steps.calc_vars.outputs.RUNTIME_ARG }}
+
+      # The warnings are numerous for our project. Pure spam including them in our CI log, hence disabled with WarningLevel=0
+      # Caution: leading whitespace is interpreted like a line break
+      # Note: project must be specified for an RID specific build
+      - name: Build
+        run: >
+          dotnet build
+          src/AnalysisPrograms/AnalysisPrograms.csproj
+          --no-restore
+          --configuration ${{ matrix.configuration }}
+          ${{ steps.calc_vars.outputs.RUNTIME_ARG }}
+          -p:WarningLevel=0
+
+      - name: Test
+        id: test_run
+        if: "matrix.runTests"
+        run: >
+          dotnet test
+          tests/Acoustics.Test/Acoustics.Test.csproj
+          -p:WarningLevel=0
+          --configuration ${{ matrix.configuration }}
+          ${{ steps.calc_vars.outputs.RUNTIME_ARG }}
+          --logger trx
+          --settings tests/Acoustics.Test/.runsettings
+          --collect:"XPlat Code Coverage"
+          --results-directory '${{runner.temp}}/Acoustics.Test_Results'
+
+      # D:\a\_temp\Acoustics.Test_Results\runneradmin_fv-az41-747_2021-06-21_23_15_12.trx
+      # bug in this actions path parsing: https://github.com/dorny/test-reporter/issues/127
+      - name: Publish Test Results
+        if: "always() && (steps.test_run.outcome == 'success' || steps.test_run.outcome == 'failure')"
+        uses: dorny/test-reporter@v1.4.3
+        with:
+          name: "Test Results: ${{ matrix.rid || 'Any' }}, ${{ matrix.configuration }}"
+          path: "${{  steps.calc_vars.outputs.SAFE_TEMP }}/Acoustics.Test_Results/**/*.trx"
+          reporter: "dotnet-trx"
+          fail-on-error: "false"
+
+      - name: Publish code coverage
+        if: always() && (steps.test_run.outcome == 'success' || steps.test_run.outcome == 'failure')
+        uses: codecov/codecov-action@v1
+        with:
+          #token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          #files: ./coverage1.xml,./coverage2.xml # optional
+          directory: "${{runner.temp}}/Acoustics.Test_Results"
+          #flags: unittests # optional
+          #name: codecov-umbrella # optional
+          #fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
+
+      - name: Publish build
+        run: >
+          dotnet publish --no-build
+          src/AnalysisPrograms/AnalysisPrograms.csproj
+          --configuration ${{ matrix.configuration }}
+          ${{ steps.calc_vars.outputs.RUNTIME_ARG }}
+          --output "${{runner.temp}}/publish"
+          ${{ steps.calc_vars.outputs.SELF_CONTAINED_ARG }}
+
+      - name: Create archive
+        uses: knicknic/os-specific-run@v1.0.3
+        with:
+          macos: |
+            cd "${{runner.temp}}/publish"
+            tar -cvzf "${{ steps.calc_vars.outputs.ARTIFACT_PATH }}" *
+          linux: |
+            cd "${{runner.temp}}/publish"
+            tar -cvzf "${{ steps.calc_vars.outputs.ARTIFACT_PATH }}" *
+          windows: >
+            7z a -tzip "${{ steps.calc_vars.outputs.ARTIFACT_PATH }}" "${{runner.temp}}\publish\*"
+
+      - name: debug generated assets
+        if: always()
+        shell: pwsh
+        run: Get-ChildItem -Recurse "${{ runner.temp }}"
+
+      - name: Upload the build results
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.calc_vars.outputs.ARTIFACT_TAG }}
+          path: ${{ steps.calc_vars.outputs.ARTIFACT_PATH }}
+
+      - name: Upload AP_vars.json
+        uses: actions/upload-artifact@v2
+        with:
+          name: AP_vars.json
+          path: "${{ runner.temp }}/AP_vars.json"

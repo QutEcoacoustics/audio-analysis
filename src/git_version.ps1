@@ -17,7 +17,7 @@ function construct_string($values) {
     $final += "$prologue"
     $total = $values.Count
     $index = 0
-    foreach($key in $values.Keys) {
+    foreach ($key in $values.Keys) {
         $value = $values[$key]
         $thisDelimiter = $index + 1 -eq $total ? "" : $delimiter
         $final += "${prefix}${key}${seperator}${value}${suffix}${thisDelimiter}"
@@ -35,12 +35,12 @@ class PathAndValue {
     PathAndValue(
         [string]$Path,
         [string]$Value
-    ){
+    ) {
         $this.Path = $Path
         $this.Value = $Value
     }
 
-    [string]ToString(){
+    [string]ToString() {
         return $this.Value
     }
 }
@@ -68,7 +68,7 @@ $self_contained = if ($self_contained -eq 'true') { 'true' } else { 'false' }
 $commit_hash = git show -s --format="%H"
 
 # process "HEAD -> github-actions, origin/github-actions"
-$branch = (git show -s --pretty='%D' HEAD) -split ',' | Where-Object { -not $_.Contains("HEAD") } | % { $_ -replace '.*/','' }  | Select-Object -First 1
+$branch = (git show -s --pretty='%D' HEAD) -split ',' | Where-Object { -not $_.Contains("HEAD") } | % { $_ -replace '.*/', '' }  | Select-Object -First 1
 if ([string]::IsNullOrWhiteSpace($branch)) {
     $branch = git rev-parse --abbrev-ref HEAD
 }
@@ -85,7 +85,7 @@ $month = $now.Month
 $short_year = $now.ToString("yy")
 $short_month = $now.ToString("%M")
 $build_date = $now.ToString("O")
-$build_number = if ($null -eq ${env:BUILD_BUILDID}) { "000" } else { ${env:BUILD_BUILDID} }
+$build_number = if ($null -eq ${env:GITHUB_RUN_NUMBER}) { "000" } else { ${env:GITHUB_RUN_NUMBER} }
 
 $tags_this_month = git log --tags --simplify-by-decoration --first-parent --pretty="format:%ai %d" --after="$year-$month-01T00:00Z"
 $tag_count_this_month = $tags_this_month.Count
@@ -99,25 +99,25 @@ $templated = $ExecutionContext.InvokeCommand.ExpandString($content)
 $templated | Out-File $metadata_file -Force -Encoding utf8NoBOM
 
 
-$values =  [ordered]@{
-    "Year" = $short_year;
-    "Month" = $short_month;
-    "BuildDate" = $build_date;
-    "BuildNumber" = $build_number;
-    "CommitHash" = $commit_hash;
-    "CommitHashShort" = $describe_hash;
-    "Branch" = $branch;
-    "LastTag" = $describe_tag;
-    "CommitsSinceLastTag" = $describe_commit_count;
-    "TagsThisMonth" = $tag_count_this_month;
-    "IsDirty" = $is_dirty;
-    "Version" = $version;
-    "InformationalVersion" = $informational_version;
-    "GeneratedMetadata" = $metadata_file;
-    "CacheWarning" = $cache_warning;
-    "MsBuildSelfContained" = $self_contained;
+$values = [ordered]@{
+    "Year"                    = $short_year;
+    "Month"                   = $short_month;
+    "BuildDate"               = $build_date;
+    "BuildNumber"             = $build_number;
+    "CommitHash"              = $commit_hash;
+    "CommitHashShort"         = $describe_hash;
+    "Branch"                  = $branch;
+    "LastTag"                 = $describe_tag;
+    "CommitsSinceLastTag"     = $describe_commit_count;
+    "TagsThisMonth"           = $tag_count_this_month;
+    "IsDirty"                 = $is_dirty;
+    "Version"                 = $version;
+    "InformationalVersion"    = $informational_version;
+    "GeneratedMetadata"       = $metadata_file;
+    "CacheWarning"            = $cache_warning;
+    "MsBuildSelfContained"    = $self_contained;
     "MsBuildRuntimeIdentifer" = $runtime_identifier;
-    "MsBuildConfiguration" = $configuration;
+    "MsBuildConfiguration"    = $configuration;
 }
 
 
@@ -130,8 +130,8 @@ $epilogue = ""
 
 # if we're on the CI, register these variables
 if ($set_ci) {
-    $prefix = "##vso[task.setvariable variable=AP_" + $prefix
-    $seperator = "]"
+    $prefix = "::set-output name=" + $prefix
+    $seperator = "::"
     Write-Output (construct_string $values)
 }
 elseif ($json) {
@@ -149,7 +149,7 @@ elseif ($env_vars) {
     # an object, which makes the pipeline version rather intolerable.
     # Hence we're adding a toString() to our pscustomobject that ensures only
     # the value is represented when Set-Content calls toString
-    foreach($key in $values.Keys) {
+    foreach ($key in $values.Keys) {
         $value = $values[$key]
         Write-Output ([PathAndValue]::new("Env:${prefix}$key", $value))
     }

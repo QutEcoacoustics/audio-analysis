@@ -1,5 +1,5 @@
 parameters:
-  buildPlatform: 'Any CPU'
+  buildPlatform: "Any CPU"
   platforms:
     - rid: win-x64
       pool: windows-latest
@@ -26,8 +26,8 @@ parameters:
     - rid: osx-x64
       pool: macos-latest
       configurations: [debug, release]
-        
-    - rid: '' # framework dependent build
+
+    - rid: "" # framework dependent build
       pool: ubuntu-latest
       configurations: [release]
   # cross-product not supported
@@ -36,219 +36,218 @@ parameters:
 # useful article on directory layout: https://github.com/microsoft/azure-pipelines-agent/blob/master/docs/jobdirectories.md#build
 jobs:
   - ${{ each platform in parameters.platforms }}:
-    - ${{ each configuration in platform.configurations }}:
-      - job:
-        displayName: Build ${{ format('{0}_{1}_{2}', coalesce(platform.rid, 'any'), platform.pool, configuration) }}
-        continueOnError: ${{ coalesce(platform.unsupportedAzurePipelinesPlatform, 'false') }}
-        pool:
-          vmImage: ${{ platform.pool }}
-        variables:
-          ${{ if eq(configuration, 'Debug') }}:
-            configurationTag: _Debug
-          ${{ if ne(configuration, 'Debug') }}:
-            configurationTag: ''
-          ${{ if eq('', platform.rid) }}:
-            runtimeArgument: ''
-            selfContainedArgument: ''
-            isSelfContained: 'false'
-            platformTag: any
-          ${{ if ne('', platform.rid) }}:
-            runtimeArgument: --runtime ${{ platform.rid }}
-            selfContainedArgument: --self-contained
-            isSelfContained: 'true'
-            platformTag: ${{ platform.rid }}
-        steps:
-          # - pwsh: 'Get-ChildItem Env:'
-          #   displayName: debug environment variables
-          - checkout: self
-            clean: false
-            fetchDepth: 200
-            lfs: false
-            persistCredentials: true
-            displayName: "Shallow cloning repo"
+      - ${{ each configuration in platform.configurations }}:
+          - job:
+            displayName: Build ${{ format('{0}_{1}_{2}', coalesce(platform.rid, 'any'), platform.pool, configuration) }}
+            continueOnError: ${{ coalesce(platform.unsupportedAzurePipelinesPlatform, 'false') }}
+            pool:
+              vmImage: ${{ platform.pool }}
+            variables:
+              ${{ if eq(configuration, 'Debug') }}:
+                configurationTag: _Debug
+              ${{ if ne(configuration, 'Debug') }}:
+                configurationTag: ""
+              ${{ if eq('', platform.rid) }}:
+                runtimeArgument: ""
+                selfContainedArgument: ""
+                isSelfContained: "false"
+                platformTag: any
+              ${{ if ne('', platform.rid) }}:
+                runtimeArgument: --runtime ${{ platform.rid }}
+                selfContainedArgument: --self-contained
+                isSelfContained: "true"
+                platformTag: ${{ platform.rid }}
+            steps:
+              # - pwsh: 'Get-ChildItem Env:'
+              #   displayName: debug environment variables
+              - checkout: self
+                clean: false
+                fetchDepth: 200
+                lfs: false
+                persistCredentials: true
+                displayName: "Shallow cloning repo"
 
-          - task: Cache@2
-            # this won't work unless the build succeeds https://github.com/microsoft/azure-pipelines-tasks/issues/11388
-            inputs:
-              key: '"lfs_assets"'
-              restore: |
-                lfs_assets
-              path: ".git/lfs/objects"
-            displayName: "Cache git LFS objects"
+              - task: Cache@2
+                # this won't work unless the build succeeds https://github.com/microsoft/azure-pipelines-tasks/issues/11388
+                inputs:
+                  key: '"lfs_assets"'
+                  restore: |
+                    lfs_assets
+                  path: ".git/lfs/objects"
+                displayName: "Cache git LFS objects"
 
-          - pwsh: git lfs pull
-            displayName: "Refresh LFS assets"
+              - pwsh: git lfs pull
+                displayName: "Refresh LFS assets"
 
-          - task: Cache@2
-            inputs:
-              key: nuget | "$(Agent.OS)"
-              restoreKeys: |
-                nuget | "$(Agent.OS)"
-                nuget
-              path: $(NUGET_PACKAGES)
-            displayName: Cache NuGet packages
+              - task: Cache@2
+                inputs:
+                  key: nuget | "$(Agent.OS)"
+                  restoreKeys: |
+                    nuget | "$(Agent.OS)"
+                    nuget
+                  path: $(NUGET_PACKAGES)
+                displayName: Cache NuGet packages
 
-          - ${{ if startsWith(platform.pool, 'ubuntu') }}:
-            - template: azure-pipelines-dependencies-linux.yml
+              - ${{ if startsWith(platform.pool, 'ubuntu') }}:
+                  - template: azure-pipelines-dependencies-linux.yml
 
-          - pwsh: |
-              $sdkVersion = (Get-Content "global.json" | ConvertFrom-Json).sdk.version
-              Write-Output "##vso[task.setvariable variable=sdkVersion]$sdkVersion"
-            displayName: Get .NET SDK version from "global.json"
+              - pwsh: |
+                  $sdkVersion = (Get-Content "global.json" | ConvertFrom-Json).sdk.version
+                  Write-Output "##vso[task.setvariable variable=sdkVersion]$sdkVersion"
+                displayName: Get .NET SDK version from "global.json"
 
-          # the following steps were adapted form this guide:
-          # https://docs.microsoft.com/en-us/azure/devops/pipelines/ecosystems/dotnet-core?view=azure-devops#run-your-tests
-          - task: UseDotNet@2
-            inputs:
-              packageType: sdk
-              version: $(sdkVersion)
-            displayName: Lock down .NET SDK version
+              # the following steps were adapted form this guide:
+              # https://docs.microsoft.com/en-us/azure/devops/pipelines/ecosystems/dotnet-core?view=azure-devops#run-your-tests
+              - task: UseDotNet@2
+                inputs:
+                  packageType: sdk
+                  version: $(sdkVersion)
+                displayName: Lock down .NET SDK version
 
-          - task: DotNetCoreCLI@2
-            inputs:
-              command: restore
-              selectOrConfig: config
-              nugetConfigPath: NuGet.config
-            displayName: Restore solution dependencies
+              - task: DotNetCoreCLI@2
+                inputs:
+                  command: restore
+                  selectOrConfig: config
+                  nugetConfigPath: NuGet.config
+                displayName: Restore solution dependencies
 
-          - pwsh: src/git_version.ps1 -configuration ${{ configuration }} -self_contained '$(isSelfContained)' -runtime_identifier '${{ platform.rid }}' -set_ci | Tee-Object '$(Build.ArtifactStagingDirectory)/AP_version_vars.txt'
-            displayName: run git_version.ps1 script
-            name: git_version
+              - pwsh: src/git_version.ps1 -configuration ${{ configuration }} -self_contained '$(isSelfContained)' -runtime_identifier '${{ platform.rid }}' -set_ci | Tee-Object '$(Build.ArtifactStagingDirectory)/AP_version_vars.txt'
+                displayName: run git_version.ps1 script
+                name: git_version
 
-          - task: DotNetCoreCLI@2
-            inputs:
-              command: build
-              projects: src/AnalysisPrograms/AnalysisPrograms.csproj
-              versioningScheme: 'off'
-              arguments: --configuration ${{ configuration }} --no-restore $(runtimeArgument)
-            displayName: Build solution (${{ configuration }}, ${{ coalesce(platform.rid, 'any') }})
+              - task: DotNetCoreCLI@2
+                inputs:
+                  command: build
+                  projects: src/AnalysisPrograms/AnalysisPrograms.csproj
+                  versioningScheme: "off"
+                  arguments: --configuration ${{ configuration }} --no-restore $(runtimeArgument)
+                displayName: Build solution (${{ configuration }}, ${{ coalesce(platform.rid, 'any') }})
 
-          # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
-          - pwsh: >
-              dotnet test
-              tests/Acoustics.Test/Acoustics.Test.csproj
-              $(runtimeArgument)
-              --configuration ${{ configuration }}
-              --logger trx
-              --settings tests/Acoustics.Test/.runsettings
-              --collect:"XPlat Code Coverage"
-              --results-directory '$(Agent.TempDirectory)/Acoustics.Test_Results'
-              --
-              RunConfiguration.DisableAppDomain=true
-            displayName: Run Acoustics.Test
+              # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
+              - pwsh: >
+                  dotnet test
+                  tests/Acoustics.Test/Acoustics.Test.csproj
+                  $(runtimeArgument)
+                  --configuration ${{ configuration }}
+                  --logger trx
+                  --settings tests/Acoustics.Test/.runsettings
+                  --collect:"XPlat Code Coverage"
+                  --results-directory '$(Agent.TempDirectory)/Acoustics.Test_Results'
+                  --
+                  RunConfiguration.DisableAppDomain=true
+                displayName: Run Acoustics.Test
 
-          - task: PublishTestResults@2
-            inputs:
-              testResultsFormat: VSTest
-              testResultsFiles: '**/*.trx'
-              searchFolder: $(Agent.TempDirectory)/Acoustics.Test_Results
-              testRunTitle: "Acoustics.Test for ${{ platform.rid }} ${{ configuration }}"
-              buildConfiguration: ${{ configuration }}
-              buildPlatform: $(platformTag)
-              publishRunAttachments: true
-            condition: succeededOrFailed()
-            displayName: Publish Acoustics.Tests results
+              - task: PublishTestResults@2
+                inputs:
+                  testResultsFormat: VSTest
+                  testResultsFiles: "**/*.trx"
+                  searchFolder: $(Agent.TempDirectory)/Acoustics.Test_Results
+                  testRunTitle: "Acoustics.Test for ${{ platform.rid }} ${{ configuration }}"
+                  buildConfiguration: ${{ configuration }}
+                  buildPlatform: $(platformTag)
+                  publishRunAttachments: true
+                condition: succeededOrFailed()
+                displayName: Publish Acoustics.Tests results
 
-          # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
-          - pwsh: >
-              dotnet test
-              tests/AED.Test/AED.Test.fsproj
-              $(runtimeArgument)
-              --configuration ${{ configuration }}
-              --logger trx
-              --settings tests/AED.Test/.runsettings
-              --collect:"XPlat Code Coverage"
-              --results-directory '$(Agent.TempDirectory)/AED.Test_Results'
-              --
-              RunConfiguration.DisableAppDomain=true
-            # run even if other tests failed
-            condition: succeededOrFailed()
-            displayName: Run AED.Test
+              # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
+              - pwsh: >
+                  dotnet test
+                  tests/AED.Test/AED.Test.fsproj
+                  $(runtimeArgument)
+                  --configuration ${{ configuration }}
+                  --logger trx
+                  --settings tests/AED.Test/.runsettings
+                  --collect:"XPlat Code Coverage"
+                  --results-directory '$(Agent.TempDirectory)/AED.Test_Results'
+                  --
+                  RunConfiguration.DisableAppDomain=true
+                # run even if other tests failed
+                condition: succeededOrFailed()
+                displayName: Run AED.Test
 
-          - task: PublishTestResults@2
-            inputs:
-              testResultFormat: VSTest
-              testResultsFiles: '**/*.trx'
-              searchFolder: $(Agent.TempDirectory)/AED.Test_Results
-              testRunTitle: ".Test for ${{ platform.rid }} ${{ configuration }}"
-              buildConfiguration: ${{ configuration }}
-              buildPlatform: $(platformTag)
-              publishRunAttachments: true
-            condition: succeededOrFailed()
-            displayName: Publish AED.Tests results
+              - task: PublishTestResults@2
+                inputs:
+                  testResultFormat: VSTest
+                  testResultsFiles: "**/*.trx"
+                  searchFolder: $(Agent.TempDirectory)/AED.Test_Results
+                  testRunTitle: ".Test for ${{ platform.rid }} ${{ configuration }}"
+                  buildConfiguration: ${{ configuration }}
+                  buildPlatform: $(platformTag)
+                  publishRunAttachments: true
+                condition: succeededOrFailed()
+                displayName: Publish AED.Tests results
 
-          - task: DotNetCoreCLI@2
-            condition: succeededOrFailed()
-            inputs:
-              command: custom
-              custom: tool
-              arguments: install --tool-path . dotnet-reportgenerator-globaltool
-            displayName: Install ReportGenerator tool
+              - task: DotNetCoreCLI@2
+                condition: succeededOrFailed()
+                inputs:
+                  command: custom
+                  custom: tool
+                  arguments: install --tool-path . dotnet-reportgenerator-globaltool
+                displayName: Install ReportGenerator tool
 
-          # e.g. /home/vsts/work/_temp/Acoustics.Test_Results/<guid>/coverage.cobertura.xml
-          # e.g. /home/vsts/work/_temp/AED.Test_Results/<guid>/coverage.cobertura.xml
-          # e.g. /home/vsts/work/1/s/coverlet/reports
-          - pwsh: >
-              ./reportgenerator
-              -reports:$(Agent.TempDirectory)/*Test_Results/**/coverage.cobertura.xml
-              -sourcedirs:$(Build.SourcesDirectory)
-              -targetdir:'$(Agent.TempDirectory)/coverlet/reports'
-              -reporttypes:"Cobertura"
-              -verbosity:verbose
-            displayName: Create cobertura reports
+              # e.g. /home/vsts/work/_temp/Acoustics.Test_Results/<guid>/coverage.cobertura.xml
+              # e.g. /home/vsts/work/_temp/AED.Test_Results/<guid>/coverage.cobertura.xml
+              # e.g. /home/vsts/work/1/s/coverlet/reports
+              - pwsh: >
+                  ./reportgenerator
+                  -reports:$(Agent.TempDirectory)/*Test_Results/**/coverage.cobertura.xml
+                  -sourcedirs:$(Build.SourcesDirectory)
+                  -targetdir:'$(Agent.TempDirectory)/coverlet/reports'
+                  -reporttypes:"Cobertura"
+                  -verbosity:verbose
+                displayName: Create cobertura reports
 
-          - task: PublishCodeCoverageResults@1
-            inputs:
-              codeCoverageTool: Cobertura
-              summaryFileLocation: $(Agent.TempDirectory)/coverlet/reports/Cobertura.xml
-            displayName: 'Publish code coverage'
+              - task: PublishCodeCoverageResults@1
+                inputs:
+                  codeCoverageTool: Cobertura
+                  summaryFileLocation: $(Agent.TempDirectory)/coverlet/reports/Cobertura.xml
+                displayName: "Publish code coverage"
 
-          - task: DotNetCoreCLI@2
-            condition: succeededOrFailed()
-            inputs:
-              command: custom
-              custom: tool
-              arguments: install --global Codecov.Tool
-            displayName: Install CodeCov Tool
-          
-          - pwsh: codecov -f $(Agent.TempDirectory)/*Test_Results/**/coverage.opencover.xml -t $(CODECOV_TOKEN)
-            displayName: Upload CodeCov report
+              - task: DotNetCoreCLI@2
+                condition: succeededOrFailed()
+                inputs:
+                  command: custom
+                  custom: tool
+                  arguments: install --global Codecov.Tool
+                displayName: Install CodeCov Tool
 
-          - task: DotNetCoreCLI@2
-            inputs:
-              command: publish
-              projects: src/AnalysisPrograms/AnalysisPrograms.csproj
-              # seems to place in a sub-folder named after project. e.g. $(Build.BinariesDirectory)/AnalysisPrograms
-              #                                                                 /home/vsts/work/1/b/AnalysisPrograms
-              arguments: >
-                $(runtimeArgument)
-                --configuration ${{ configuration }}
-                --output $(Build.BinariesDirectory)
-                $(selfContainedArgument)
-              nobuild: true
-              publishWebProjects: false
-              # does not seem to tar - we need to keep unix permissions
-              zipAfterPublish: false
-            displayName: dotnet publish
+              - pwsh: codecov -f $(Agent.TempDirectory)/*Test_Results/**/coverage.opencover.xml -t $(CODECOV_TOKEN)
+                displayName: Upload CodeCov report
 
-          - task: ArchiveFiles@2
-            inputs:
-              # $(Build.BinariesDirectory) == /home/vsts/work/1/b
-              rootFolderOrFile: '$(Build.BinariesDirectory)/AnalysisPrograms'
-              includeRootFolder: false
-              ${{ if startsWith(platform.pool, 'windows') }}:
-                archiveType: zip
-                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_v$(AP_Version).zip'
-              ${{ if not(startsWith(platform.pool, 'windows')) }}:
-                archiveType: tar
-                tarCompression: xz
-                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_v$(AP_Version).tar.xz'
+              - task: DotNetCoreCLI@2
+                inputs:
+                  command: publish
+                  projects: src/AnalysisPrograms/AnalysisPrograms.csproj
+                  # seems to place in a sub-folder named after project. e.g. $(Build.BinariesDirectory)/AnalysisPrograms
+                  #                                                                 /home/vsts/work/1/b/AnalysisPrograms
+                  arguments: >
+                    $(runtimeArgument)
+                    --configuration ${{ configuration }}
+                    --output $(Build.BinariesDirectory)
+                    $(selfContainedArgument)
+                  nobuild: true
+                  publishWebProjects: false
+                  # does not seem to tar - we need to keep unix permissions
+                  zipAfterPublish: false
+                displayName: dotnet publish
 
-            displayName: Archive published app
+              - task: ArchiveFiles@2
+                inputs:
+                  # $(Build.BinariesDirectory) == /home/vsts/work/1/b
+                  rootFolderOrFile: "$(Build.BinariesDirectory)/AnalysisPrograms"
+                  includeRootFolder: false
+                  ${{ if startsWith(platform.pool, 'windows') }}:
+                    archiveType: zip
+                    archiveFile: "$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_v$(AP_Version).zip"
+                  ${{ if not(startsWith(platform.pool, 'windows')) }}:
+                    archiveType: tar
+                    tarCompression: xz
+                    archiveFile: "$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_v$(AP_Version).tar.xz"
 
-          # this code takes all the files in $(Build.ArtifactStagingDirectory) and uploads them as an artifact of your build.
-          - task: PublishBuildArtifacts@1
-            inputs:
-              pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-              artifactName: $(platformTag)$(configurationTag)
+                displayName: Archive published app
 
+              # this code takes all the files in $(Build.ArtifactStagingDirectory) and uploads them as an artifact of your build.
+              - task: PublishBuildArtifacts@1
+                inputs:
+                  pathtoPublish: "$(Build.ArtifactStagingDirectory)"
+                  artifactName: $(platformTag)$(configurationTag)
