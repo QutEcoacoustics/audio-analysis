@@ -125,9 +125,6 @@ jobs:
           $artifact_path = "${{ runner.temp }}/AP_${variant_tag}_${{ matrix.configuration }}_${env:AP_Version}${extension}"
           echo "::set-output name=ARTIFACT_PATH::$artifact_path"
 
-          $safe_temp = "${{ runner.temp }}" -replace "\\","/"
-          echo "::set-output name=SAFE_TEMP::$safe_temp"
-
       - uses: actions/cache@v2
         with:
           path: ~/.nuget/packages
@@ -168,27 +165,22 @@ jobs:
           --results-directory '${{runner.temp}}/Acoustics.Test_Results'
 
       # D:\a\_temp\Acoustics.Test_Results\runneradmin_fv-az41-747_2021-06-21_23_15_12.trx
-      # bug in this actions path parsing: https://github.com/dorny/test-reporter/issues/127
       - name: Publish Test Results
         if: "always() && (steps.test_run.outcome == 'success' || steps.test_run.outcome == 'failure')"
-        uses: dorny/test-reporter@v1.4.3
+        uses: dorny/test-reporter@v1.5.0
         with:
           name: "Test Results: ${{ matrix.rid || 'Any' }}, ${{ matrix.configuration }}"
-          path: "${{  steps.calc_vars.outputs.SAFE_TEMP }}/Acoustics.Test_Results/**/*.trx"
+          path: "${{ runner.temp }}/Acoustics.Test_Results/**/*.trx"
           reporter: "dotnet-trx"
           fail-on-error: "false"
+          path-replace-backslashes: "true"
 
       - name: Publish code coverage
         if: always() && (steps.test_run.outcome == 'success' || steps.test_run.outcome == 'failure')
         uses: codecov/codecov-action@v1
         with:
-          #token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-          #files: ./coverage1.xml,./coverage2.xml # optional
           directory: "${{runner.temp}}/Acoustics.Test_Results"
-          #flags: unittests # optional
-          #name: codecov-umbrella # optional
-          #fail_ci_if_error: true # optional (default = false)
-          verbose: true # optional (default = false)
+          verbose: true
 
       - name: Publish build
         run: >
