@@ -8,6 +8,9 @@ on:
 
 jobs:
   build-docs:
+    # only if not created by dependabot
+    if: >
+      github.actor != 'dependabot[bot]'
     # docfx v2 is a .NET Framework project and only runs on Windows
     runs-on: windows-latest
 
