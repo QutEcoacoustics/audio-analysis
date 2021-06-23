@@ -1,19 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" 
+<Project DefaultTargets="Build"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- Register our task that as something to run before standard build target -->
   <Target Name="APVersionBeforeBuild" BeforeTargets="PrepareForBuild">
     <!-- <Message Text="[APVersionBeforeBuild] Debug: $(RuntimeIdentifier)" Importance="High" /> -->
-    <Exec Command="pwsh –NonInteractive -noprofile $(ProjectDir)../git_version.ps1 -configuration $(Configuration) -self_contained $(SelfContained) -runtime_identifier &quot;$(RuntimeIdentifier)&quot; -target_framework &quot;$(TargetFramework.ToLowerInvariant())&quot;" ConsoleToMSBuild="True" EchoOff="false" StandardOutputImportance="low">
+    <Exec Command="pwsh –NonInteractive -NoProfile $(ProjectDir)../git_version.ps1 -configuration $(Configuration) -self_contained $(SelfContained) -runtime_identifier &quot;$(RuntimeIdentifier)&quot; -target_framework &quot;$(TargetFramework.ToLowerInvariant())&quot;"
+      ConsoleToMSBuild="True" EchoOff="false" StandardOutputImportance="low"
+      ContinueOnError="ErrorAndContinue">
+
       <Output TaskParameter="ConsoleOutput" ItemName="VersionMetadata" />
     </Exec>
-    <!-- <Message Text="[APVersionBeforeBuild] %(VersionMetadata.Identity)" Importance="High" /> -->
+    <!-- <Message Text="[APVersionBeforeBuild::Debug] %(VersionMetadata.Identity)" Importance="High" /> -->
+
     <!-- batch through returned metadata, then use ✨MAGIC✨ to convert subexpression to string, then split on key/value -->
     <!-- and finally create each property -->
-    <CreateProperty Value="$([System.String]::Copy(`%(VersionMetadata.Identity)`).Split('=')[1].Trim())">
+    <CreateProperty
+      Condition="$([System.String]::Copy(`%(VersionMetadata.Identity)`).Contains('='))"
+      Value="$([System.String]::Copy(`%(VersionMetadata.Identity)`).Split('=')[1].Trim())">
       <Output TaskParameter="Value" PropertyName="$([System.String]::Copy(`%(VersionMetadata.Identity)`).Split('=')[0].Trim())" />
     </CreateProperty>
+
+
 
     <Message Text="[APVersionBeforeBuild] Generated metadata file: $(GeneratedMetadata)" Importance="High" />
     <Message Text="[APVersionBeforeBuild] Last Tag: $(LastTag), Hash: $(CommitHashShort), CommitCount: $(CommitsSinceLastTag)" Importance="High" />
@@ -22,7 +30,7 @@
     <Message Text="[APVersionBeforeBuild] BuildDate: $(BuildDate)" Importance="High" />
     <Message Text="[APVersionBeforeBuild] SelfContained: $(MsBuildSelfContained), Build RuntimeIdentifier:$(MsBuildRuntimeIdentifer)" Importance="High" />
     <Message Text="[APVersionBeforeBuild] git_version.ps1 stdout:    %(VersionMetadata.Identity)" Importance="High" Condition="$(GeneratedMetadata) == ''"/>
-    <Error Text="AP Version script failed to set MsBuildRuntimeIdentifer. This value is needed for correct function in compiled code" Condition="$(MsBuildRuntimeIdentifer) == '' And $(SelfContained)" />
-    <Error Text="AP Version metadata generation failed. Check you have PowerShell 6+ &amp; Git installed and available on the system PATH." Condition="$(GeneratedMetadata) == ''"/>
+    <Error Text="$(MSBuildThisFile):APVersion error AP004: AP Version script failed to set MsBuildRuntimeIdentifer. This value is needed for correct function in compiled code" Condition="$(MsBuildRuntimeIdentifer) == '' And $(SelfContained)" />
+    <Error Code="AP003" Text="AP Version metadata generation failed. Check you have PowerShell 6+ &amp; Git installed and available on the system PATH. https://github.com/QutEcoacoustics/audio-analysis/blob/master/CONTRIBUTING.md#AP003" Condition="$(GeneratedMetadata) == ''"/>
   </Target>
 </Project>

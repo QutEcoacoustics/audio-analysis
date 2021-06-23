@@ -16,7 +16,7 @@ if ($null -eq (Get-Command "git-lfs" -ErrorAction SilentlyContinue )) {
 Push-Location
 Set-Location $solution_root
 $errored = $false
-foreach($line in (git-lfs ls-files)) {
+foreach ($line in (git-lfs ls-files)) {
     # format:
     # 1da5b69f92 * tests/Fixtures/whip bird2.wav
     $status = $line[11]
@@ -29,16 +29,16 @@ foreach($line in (git-lfs ls-files)) {
         $status = git status --porcelain $file
         $has_changed = ($null -ne $status)
         if (-not $has_changed) {
-            Write-Output "$file`:git-lfs error AP0001: Git LFS BLOB has not been restored. The file is empty! It contains only a LFS pointer."
+            Write-Output "$file`:git-lfs error AP001: Git LFS BLOB has not been restored. The file is empty! It contains only a LFS pointer."
             $errored = $true
         }
     }
 }
 
 if ($errored -eq $true) {
-    Write-Output "$solution_root${slash}src${slash}AP.RequireLfsAssets.targets`:git-lfs error AP0002: AP build cannot continue there are Git LFS assets that have not been restored. Please follow the instructions at https://github.com/QutEcoacoustics/audio-analysis/blob/master/CONTRIBUTING.md#AP001"
+    Write-Output "$solution_root${slash}src${slash}AP.RequireLfsAssets.targets`:git-lfs error AP002: AP build cannot continue there are Git LFS assets that have not been restored. Please follow the instructions at https://github.com/QutEcoacoustics/audio-analysis/blob/master/CONTRIBUTING.md#AP001"
 }
-else  {
+else {
     $null >> $cache_file
 }
 

@@ -36,7 +36,8 @@
   and improve on this.  
   [![codecov](https://codecov.io/gh/QutEcoacoustics/audio-analysis/branch/master/graph/badge.svg)](https://codecov.io/gh/QutEcoacoustics/audio-analysis)
 
-## Required Software
+
+## Required Software (<span id="AP003">AP003</span>)
 
 The **required** software for developing new code (not running the program) includes:
 
