@@ -77,7 +77,7 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
                 "440_harmonic");
 
             this.SaveImage(
-                SpectrogramTools.GetSonogramPlusCharts(this.spectrogram, events, plots, null));
+                SpectrogramTools.GetSonogramPlusCharts(this.spectrogram, events, plots, null, "440_harmonic"));
 
             Assert.AreEqual(1, events.Count);
             Assert.IsInstanceOfType(events.First(), typeof(HarmonicEvent));
@@ -118,7 +118,7 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
                 "1000_harmonic");
 
             this.SaveImage(
-                SpectrogramTools.GetSonogramPlusCharts(this.spectrogram, events, plots, null));
+                SpectrogramTools.GetSonogramPlusCharts(this.spectrogram, events, plots, null, "1000_harmonic"));
 
             Assert.AreEqual(1, events.Count);
             Assert.IsInstanceOfType(events.First(), typeof(HarmonicEvent));
