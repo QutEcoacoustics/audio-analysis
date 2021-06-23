@@ -22,6 +22,9 @@ if ($IsLinux) {
         sudo update-binfmts --display
     }
 
+    log "Updating apt sources"
+    exec { sudo apt-get update }
+    
     log "Installing SoX"
     exec { sudo apt-get install -y libsox-fmt-all sox }
 
