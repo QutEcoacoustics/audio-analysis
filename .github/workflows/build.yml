@@ -20,8 +20,10 @@ jobs:
   build:
     env:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
-    # ARM workflows are run on ORACLE Cloud via this package:
-    # https://github.com/oracle-quickstart/oci-github-actions-runner
+    # defaults:
+    #   run:
+    #     # apparently pwsh commands are templated into a temp file outside the current directory
+    #     working-directory: "${{ github.workspace }}"
     strategy:
       fail-fast: false
       matrix:
@@ -39,12 +41,12 @@ jobs:
             configuration: Release
             runTests: true
           # For Raspberry Pis
-          - os: [self-hosted, linux, ARM64]
+          - os: ubuntu-latest
             rid: linux-arm
             configuration: Release
             runTests: false # not currently supported by github actions
           # For generic linux arm
-          - os: [self-hosted, linux, ARM64]
+          - os: ubuntu-latest
             rid: linux-arm64
             configuration: Release
             runTests: false # not currently supported by github actions, but also failing in .NET project SDKs. Try again in .NET 6?
@@ -59,8 +61,7 @@ jobs:
             runTests: true
     name: "${{ matrix.rid || 'Any' }}, ${{ matrix.configuration }}"
     runs-on: ${{ matrix.os }}
-    # don't trigger build for forks
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+
     steps:
       # NOTE: the preliminary steps should be identical to ./build-docs.yml
       # checkout code and cache lfs
