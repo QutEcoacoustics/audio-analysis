@@ -9,12 +9,12 @@ on:
       - "doc/**"
       - "scripts/*"
       - "**/*.md"
-
-# pull_request: # not sure if this is needed
-#   paths:
-#     - "!doc/**"
-#     - "!scripts/*"
-#     - "!**/*.md"
+  # the push trigger does not apply to PRs from another fork
+  pull_request:
+    paths:
+      - "!doc/**"
+      - "!scripts/*"
+      - "!**/*.md"
 
 jobs:
   build:

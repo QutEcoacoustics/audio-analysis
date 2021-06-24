@@ -52,6 +52,7 @@
         "peacock.color": "#50ba1a",
         "editor.minimap.size": "fill",
         "cSpell.words": [
+            "dependabot",
             "nuget"
         ],
     }
