@@ -155,10 +155,15 @@ namespace AnalysisPrograms.Recognizers.Frogs
                 minDuration,
                 maxDuration,
                 scoreSmoothingWindow,
+                out var bandDecibels,
                 out var scores,
                 out var oscillationEvents,
                 out var hits,
                 segmentStartOffset);
+
+            int minBin = (int)(minHz / sonogram.FBinWidth);
+            int maxBin = (int)(maxHz / sonogram.FBinWidth);
+            bandDecibels = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, sonogram.Data.GetLength(0) - 1, maxBin);
 
             var acousticEvents = oscillationEvents.ConvertSpectralEventsToAcousticEvents();
 

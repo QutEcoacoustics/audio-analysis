@@ -110,11 +110,6 @@ namespace AnalysisPrograms.Recognizers
                 frameSize,
                 maxOscilFreq);
 
-            //windowOverlap = 0.75; // previous default
-
-            // DEBUG: Following line used to search for where indeterminism creeps into the spectrogram values which vary from run to run.
-            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.BaseName+"_RecordingSamples.csv"), recording.WavReader.GetChannel(0));
-
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
@@ -122,18 +117,12 @@ namespace AnalysisPrograms.Recognizers
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
 
-                // the default window is HAMMING
-                //WindowFunction = WindowFunctions.HANNING.ToString(),
-                //WindowFunction = WindowFunctions.NONE.ToString(),
                 // if do not use noise reduction can get a more sensitive recogniser.
                 NoiseReductionType = NoiseReductionType.None,
             };
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
             TimeSpan recordingDuration = recording.Duration;
-
-            //int sr = recording.SampleRate;
-            //double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 
             /* #############################################################################################################################################
              * window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
@@ -142,22 +131,12 @@ namespace AnalysisPrograms.Recognizers
              * 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
              */
 
-            // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
-            // int maxbin = minBin + numberOfBins - 1;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-
-            //int rowCount = sonogram.Data.GetLength(0);
-            //int colCount = sonogram.Data.GetLength(1);
-
-            // DEBUG: Following lines used to search for where indeterminism creeps into the spectrogram values which vary from run to run.
-            //double[] array = DataTools.Matrix2Array(sonogram.Data);
-            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.BaseName+".csv"), array);
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             double minDurationOfAdvertCall = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
 
-            //double minDurationOfReleaseCall = 1.0;
             Oscillations2012.Execute(
                 (SpectrogramStandard)sonogram,
                 minHz,
@@ -169,15 +148,16 @@ namespace AnalysisPrograms.Recognizers
                 eventThreshold,
                 minDurationOfAdvertCall,
                 maxDuration,
+                out var bandDecibels,
                 out var scores,
                 out var oscillationEvents,
                 out var hits,
                 segmentStartOffset);
 
-            // DEBUG: Following line used to search for where indeterminism creeps into the event detection
-            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.BaseName+"_ScoreArray.csv"), scores);
+            int minBin = (int)(minHz / sonogram.FBinWidth);
+            int maxBin = (int)(maxHz / sonogram.FBinWidth);
+            bandDecibels = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, sonogram.Data.GetLength(0) - 1, maxBin);
             var events = oscillationEvents.ConvertSpectralEventsToAcousticEvents();
-
             var prunedEvents = new List<AcousticEvent>();
 
             foreach (AcousticEvent ae in events)
@@ -199,13 +179,6 @@ namespace AnalysisPrograms.Recognizers
                 ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                 ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                 prunedEvents.Add(ae);
-
-                //if (ae.Duration >= minDurationOfAdvertCall)
-                //{
-                //    ae.Name = abbreviatedSpeciesName; // + ".AdvertCall";
-                //    prunedEvents.Add(ae);
-                //    continue;
-                //}
             }
 
             // do a recognizer test.
@@ -225,8 +198,6 @@ namespace AnalysisPrograms.Recognizers
                 Hits = hits,
                 Plots = plot.AsList(),
                 Events = prunedEvents,
-
-                //Events = events
             };
         }
 
@@ -248,8 +219,9 @@ namespace AnalysisPrograms.Recognizers
                 Log.Warn("   Score Test file does not exist.    Writing output as future score-test file");
                 FileTools.WriteArray2File(scoreArray, scoreFilePath);
             }
-            else // else if the scores file exists then do a compare.
+            else
             {
+                // else if the scores file exists then do a compare.
                 bool allOK = true;
                 var scoreLines = FileTools.ReadTextFile(scoreFilePath);
                 for (int i = 0; i < scoreLines.Count; i++)
@@ -304,8 +276,9 @@ namespace AnalysisPrograms.Recognizers
                     Csv.WriteToCsv<EventBase>(eventsFile, events);
                 }
             }
-            else // else if the events file exists then do a compare.
+            else
             {
+                // else if the events file exists then do a compare.
                 bool AOK = true;
                 var newEventsFilePath = Path.Combine(dir + subDir, fileName + ".NewEvents.txt");
                 var newEventsFile = new FileInfo(newEventsFilePath);

@@ -78,11 +78,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 eventThreshold,
                 minDurationSeconds,
                 maxDurationSeconds,
-                out var scores,
+                out var bandDecibels,
+                out var oscScores,
                 out var acousticEvents,
                 out var hits,
                 segmentStartOffset);
 
+            Assert.AreEqual(this.sonogram.FrameCount, bandDecibels.Length);
+            Assert.AreEqual(this.sonogram.FrameCount, oscScores.Length);
             Assert.AreEqual(4, acousticEvents.Count);
 
             Assert.AreEqual(29.9, acousticEvents[0].EventStartSeconds, 0.1);

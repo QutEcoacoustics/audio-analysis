@@ -368,8 +368,6 @@ namespace AnalysisPrograms.Recognizers
                 (SpectrogramStandard)sonogram,
                 minHz,
                 maxHz,
-
-                //decibelThreshold,
                 dctDuration,
                 (int)Math.Floor(minOscFreq),
                 (int)Math.Floor(maxOscFreq),
@@ -377,7 +375,8 @@ namespace AnalysisPrograms.Recognizers
                 eventThreshold,
                 minDurationSeconds,
                 maxDurationSeconds,
-                out var scores,
+                out var bandDecibels,
+                out var oscScores,
                 out var oscillationEvents,
                 out var hits,
                 segmentStartOffset);
@@ -389,7 +388,7 @@ namespace AnalysisPrograms.Recognizers
             var normThreshold = decibelThreshold / intensityNormalisationMax;
             var normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, 0, intensityNormalisationMax);
             var plot1 = new Plot(speciesName + " Wing-beat band", normalisedIntensityArray, normThreshold);
-            var plot2 = new Plot(speciesName + " Wing-beat Osc Score", scores, eventThreshold);
+            var plot2 = new Plot(speciesName + " Wing-beat Osc Score", oscScores, eventThreshold);
             var plots = new List<Plot> { plot1, plot2 };
 
             // ######################################################################

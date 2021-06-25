@@ -132,8 +132,6 @@ namespace AnalysisPrograms.Recognizers.Frogs
              * 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
              */
 
-            // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
-            // int maxbin = minBin + numberOfBins - 1;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
@@ -155,9 +153,14 @@ namespace AnalysisPrograms.Recognizers.Frogs
                 minDuration,
                 maxDuration,
                 out var scores,
+                out var bandDecibels,
                 out var oscillationEvents,
                 out var hits,
                 segmentStartOffset);
+
+            int minBin = (int)(minHz / sonogram.FBinWidth);
+            int maxBin = (int)(maxHz / sonogram.FBinWidth);
+            bandDecibels = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, sonogram.Data.GetLength(0) - 1, maxBin);
 
             var acousticEvents = oscillationEvents.ConvertSpectralEventsToAcousticEvents();
 

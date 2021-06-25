@@ -168,7 +168,8 @@ namespace AnalysisPrograms
                 eventThreshold,
                 minDuration,
                 maxDuration,
-                out var scores,
+                out var bandDecibels,
+                out var oscScores,
                 out var oscillationEvents,
                 out var hits,
                 segmentStartOffset);
@@ -194,7 +195,7 @@ namespace AnalysisPrograms
             }
 
             // ######################################################################
-            var plot = new Plot(AnalysisName, scores, eventThreshold);
+            var plot = new Plot(AnalysisName, oscScores, eventThreshold);
 
             return new KoalaMaleResults
             {

@@ -143,8 +143,6 @@ namespace AnalysisPrograms.Recognizers.Frogs
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
 
-            // double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
-
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             // This window is used to smooth the score array before extracting events.
@@ -162,10 +160,15 @@ namespace AnalysisPrograms.Recognizers.Frogs
                 minDuration,
                 maxDuration,
                 scoreSmoothingWindow,
+                out var bandDecibels,
                 out var scores,
                 out var oscillationEvents,
                 out var hits,
                 segmentStartOffset);
+
+            int minBin = (int)(minHz / sonogram.FBinWidth);
+            int maxBin = (int)(maxHz / sonogram.FBinWidth);
+            bandDecibels = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, sonogram.Data.GetLength(0) - 1, maxBin);
 
             var acousticEvents = oscillationEvents.ConvertSpectralEventsToAcousticEvents();
 
@@ -220,8 +223,9 @@ namespace AnalysisPrograms.Recognizers.Frogs
 
             if (events.Count > 0)
             {
-                foreach (AcousticEvent ev in events) // set colour for the events
+                foreach (AcousticEvent ev in events)
                 {
+                    // set colour for the events
                     ev.BorderColour = AcousticEvent.DefaultBorderColor;
                     ev.ScoreColour = AcousticEvent.DefaultScoreColor;
                 }
