@@ -8,6 +8,130 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v21.6.0.111 2021-06-25
+
+Version v21.6.0.111
+
+
+
+### Details
+
+[Compare v20.11.2.0...v21.6.0.111](https://github.com/QutBioacoustics/audio-analysis/compare/v20.11.2.0...v21.6.0.111)
+
+- dd616545 Anthony Truskinger - h
+- 91fe476a Anthony Truskinger - Revert "Update changelog for v21.6.0.111"
+- 58d4a640 QUT Ecoacoustics - Update changelog for v21.6.0.111
+- dcc2a77f Anthony Truskinger - g
+- 91340986 Anthony Truskinger - Revert "Update changelog for v"
+- 8e35beb0 QUT Ecoacoustics - Update changelog for v
+- 9b2db303 Anthony Truskinger - f
+- f8503e92 Anthony Truskinger - e
+- 26712b55 Anthony Truskinger - d
+- 71fe0ebc Anthony Truskinger - c
+- 39718eba Anthony Truskinger - b
+- adb6a94b Anthony Truskinger - a
+- 452921ea Anthony Truskinger - Revert "CI: Attempt to run on self-hosted ARM runner"
+- 8eeff1fe Anthony Truskinger - CI: Attempt to run on self-hosted ARM runner
+- ebe17fb8 Anthony Truskinger - CI: fix build workflow so it runs on PRs
+- 02d65002 Anthony Truskinger - Add better error message and error case handling for when git_version script fails
+- 3c2fd473 Anthony Truskinger - Update apt sources before installing dependencies on CI
+- e5aacb0b Anthony Truskinger - Don't build docs for dependabot commits
+- f9e56595 Anthony Truskinger - Update CI build dependency
+- 36c6173b Anthony Truskinger - Replaces azure-pipelines with github actions
+- b08a36b8 Anthony Truskinger - Fix syntax error from merge
+- 7a65f8f2 towsey - ([#469](https://github.com/QutEcoacoustics/audio-analysis/issues/469)) Rescaling of plot graphs for generic recogniser
+- dd5e5e1f Michael Towsey - ([#471](https://github.com/QutEcoacoustics/audio-analysis/issues/471), [#498](https://github.com/QutEcoacoustics/audio-analysis/issues/498)) Issue #471 check formant gap (#498)
+- 5830fa33 towsey - ([#469](https://github.com/QutEcoacoustics/audio-analysis/issues/469)) Add comments to two methods
+- 13a69601 Anthony Truskinger - ([#496](https://github.com/QutEcoacoustics/audio-analysis/issues/496), [#97](https://github.com/QutEcoacoustics/audio-analysis/issues/97)) Fixes bug in multi recogniser (#496)
+- 2099caf9 Michael Towsey - ([#497](https://github.com/QutEcoacoustics/audio-analysis/issues/497), [#492](https://github.com/QutEcoacoustics/audio-analysis/issues/492), [#792](https://github.com/QutEcoacoustics/audio-analysis/issues/792)) Issue492 revise mfcc code (#497)
+- 9a2b560a Michael Towsey - ([#477](https://github.com/QutEcoacoustics/audio-analysis/issues/477), [#470](https://github.com/QutEcoacoustics/audio-analysis/issues/470), [#447](https://github.com/QutEcoacoustics/audio-analysis/issues/447)) Work on whistle algorithm (#477)
+- e3487d81 dependabot-preview[bot] - Upgrade to GitHub-native Dependabot
+- 16580beb Anthony Truskinger - Fixed broken recognisers
+- d2fab48a Anthony Truskinger - Fix bugs introduced in feedback logging patch
+- 8843d23f Anthony Truskinger - Final tweaks to NSW DPI recognisers
+- 473f9244 Anthony Truskinger - Initial drafts of Bell Miner and Rufous Scrub Bird recognisers
+- da1e0e2a Anthony Truskinger - Adds two new post-processing options
+- 1320b098 Anthony Truskinger - Fix bugs add more validation
+- ff72a485 Anthony Truskinger - Fix merge conflicts and update variables
+- 75992a2e Anthony Truskinger - Work on recognizers
+- 5e108f7c Anthony Truskinger - Added validation to config files
+- a08a19df Anthony Truskinger - First draft of glossy-black cockatoo
+- c2e49ab2 Anthony Truskinger - Fix merge commit, add noise reduction type to generic recognizer
+- a89b786f Anthony Truskinger - Add recognizer shells
+- 38b8135c Anthony Truskinger - Added configs for recognisers
+- d0c9c350 Anthony Truskinger - Made the post-processing section optional for generic recognisers
+- 66a0ad17 Anthony Truskinger - Adds a friendly error msg when config file is empty
+- 1f5c47e0 Anthony Truskinger - Removed `Tag` from AcousticEvent
+- 041342eb Anthony Truskinger - Fixes bug in GetEventsAroundMaxima
+- d0e2cbab Anthony Truskinger - Bumped CSV version and fixed Topology conversion exception
+- 5d277a64 Anthony Truskinger - Updated all recognisers with new metadata fields
+- 7f29c612 Anthony Truskinger - Stub out initial recogniser files for NSW DPI project
+- e1a6784f Anthony Truskinger - Create logical bug template
+- cea4d383 Anthony Truskinger - Simplify feature request template
+- 150b6661 Anthony Truskinger - Delete question.md
+- 84646fd4 Anthony Truskinger - Create config.yml for issue templates
+- 9dac7a3f Anthony Truskinger - Update bug_report.md
+- 9cda490f towsey - ([#466](https://github.com/QutEcoacoustics/audio-analysis/issues/466)) Fix bug in EventFilters.cs
+- eadb4b16 Anthony Truskinger - Update README.md
+- f4b60084 towsey - Fixed bug in when removing enclosed events
+- 68983e68 Anthony Truskinger - Cleanup generic recogniser docs again
+- 405ac246 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Update generic_recognizers.md
+- 17c79315 Anthony Truskinger - Reapplied markdown formatting changes
+- ce858da9 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Update generic_recognizers.md
+- bc0f263a Anthony Truskinger - Updated logging statment
+- 5a9c9504 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Final set of editing based on Anthony's requests.
+- e6996451 Anthony Truskinger - Fixed formatting in generic recognizer guide
+- 78222726 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Changes to code and documentation requested by Anthony
+- a92319b3 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Changes as requested by Anthony.
+- be61baa6 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Change docs and config file to be consistent with code changes
+- 380e65c2 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Update GenericRecognizerTests.cs
+- 5a24efc0 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Fix most issues addressed by Anthony in PR response
+- c75a8a81 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Changes to accommodate changed post-processing parameters
+- dcc9559e towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Changes to the use of parameters in the config files
+- cabcefb6 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Fix broken tests after changes to recognizer config file
+- 049c901c towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Rework the event detection/post-processing algorithm
+- 5812f0b3 Anthony Truskinger - Don't run executable check on windows
+- ff192c4c Anthony Truskinger - Fixed mistake in downloader script
+- c7ccc06d towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Add more parameters to control post-processing steps
+- bee4e67a towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Removal of incomplete and unresurrectable recognizers
+- 79687e47 Anthony Truskinger - Updates CsvHelper
+- 90b85c30 Anthony Truskinger - Address a few corner cases in install script
+- 343c4ad4 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Provide more information to user about the effect o post-processing filters
+- 94b33d45 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Add more info concerning post-processing of events
+- 53945d09 towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Add feedback to user about results of filtering events
+- 0c2d451b towsey - ([#451](https://github.com/QutEcoacoustics/audio-analysis/issues/451)) Add feedback to user about results of filtering events on syllable periodicity
+- e448dbc3 Anthony Truskinger - Temporarily disabled API docs
+- 985e1083 Anthony Truskinger - Minor fixes to docs
+- 2a0b3048 Anthony Truskinger - Fix nullable enum parsing bug
+- c191192a Anthony Truskinger - Fix erroneous toc entry
+- a3ca310d towsey - ([#406](https://github.com/QutEcoacoustics/audio-analysis/issues/406)) Update generic_recognizers.md
+- ed27e988 Anthony Truskinger - Update docs readme
+- 79168e89 Anthony Truskinger - Finished edits to generic recognizer config
+- 85cfe797 Anthony Truskinger - More work on generic recognizers doc
+- abc1bf89 Anthony Truskinger - More updates to generic recognition guide
+- 2750ee70 Anthony Truskinger - Bump six labors fonts
+- 13db6aa0 Anthony Truskinger - Bump image sharp versions for build on server
+- 4d8aa4c0 Anthony Truskinger - Renable api docs generation
+- c6154e4c Anthony Truskinger - Partial edits for generic manual
+- 5f448434 Anthony Truskinger - Updated find_ap.ps1 script
+- 29032ea4 Michael Towsey - ([#406](https://github.com/QutEcoacoustics/audio-analysis/issues/406)) Initial draft of generic recogniser guide
+- 16e8b73a Anthony Truskinger - Disable macos 11 instller build
+- 6471b3f8 Anthony Truskinger - Address PR comments
+- 7a478bc1 Anthony Truskinger - Remove  installer tests
+- f10ada37 Anthony Truskinger - ([#315](https://github.com/QutEcoacoustics/audio-analysis/issues/315)) Enhance docs deploy
+- bbb93adc Anthony Truskinger - ([#343](https://github.com/QutEcoacoustics/audio-analysis/issues/343)) Rewrites downlaod script
+- c788dbfe Anthony Truskinger - ([#315](https://github.com/QutEcoacoustics/audio-analysis/issues/315)) Docs generation is now automatic
+- 7c070922 Anthony Truskinger - Update target framework in csprojs to net5.0
+- 4a657bee Anthony Truskinger - Update build arguments
+- 3bdb893c Anthony Truskinger - Updated dependencies, removed patches, add new ones
+- c97268f0 dependabot-preview[bot] - Bump log4net from 2.0.9 to 2.0.12
+- 1b71b172 dependabot-preview[bot] - Bump Microsoft.NET.Test.Sdk from 16.7.1 to 16.8.0
+- 544b4554 dependabot-preview[bot] - Bump SixLabors.ImageSharp from 1.0.1 to 1.0.2
+- d7dd6f8f dependabot-preview[bot] - Bump Microsoft.Extensions.Configuration from 3.1.9 to 5.0.0
+- b6495d38 dependabot-preview[bot] - Bump FsUnit.xUnit from 4.0.1 to 4.0.2
+- fe148dd9 dependabot-preview[bot] - Bump Moq from 4.14.6 to 4.15.1
+- 5a92a444 dependabot-preview[bot] - Bump CsvHelper from 15.0.8 to 16.0.0
+- 5f368efd dependabot-preview[bot] - Bump System.IO.Abstractions from 12.2.7 to 12.2.24
 ## Ecoacoustics Audio Analysis Software v20.11.2.0 2020-11-15
 
 Version v20.11.2.0
@@ -1257,6 +1381,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 

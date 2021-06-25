@@ -102,28 +102,29 @@ jobs:
         shell: pwsh
         run: |
           echo "::echo::on"
+          . ./build/ci.ps1
 
           $runtime_arg = '${{ matrix.rid }}' ? '--runtime ${{ matrix.rid }}' : ''
-          echo "::set-output name=RUNTIME_ARG::$runtime_arg"
+          Set-CiOutput "RUNTIME_ARG" "$runtime_arg"
 
           $is_self_contained = '${{ matrix.rid }}' -ne ''
           $self_contained_arg = '${{ matrix.rid }}' ? '--self-contained' : ''
-          echo "::set-output name=SELF_CONTAINED_ARG::$self_contained_arg"
+          Set-CiOutput "SELF_CONTAINED_ARG" "$self_contained_arg"
 
           $variant_tag = '${{ matrix.rid }}' ? '${{ matrix.rid }}' : 'any'
-          echo "::set-output name=VARIANT_TAG::$variant_tag"
+          Set-CiOutput "VARIANT_TAG" "$variant_tag"
 
           $vars = . ./src/git_version.ps1 -configuration ${{ matrix.configuration }} -self_contained "$is_self_contained" -runtime_identifier '${{ matrix.rid }}' -env_vars  -prefix "AP_"
           $vars | Write-Output
           $vars | Set-Content
           $vars | ConvertTo-Json | Out-File  "${{ runner.temp }}/AP_vars.json"
 
-          echo "::set-output name=AP_VERSION::${env:AP_Version}"
+          Set-CiOutput "AP_VERSION" "${env:AP_Version}"
           $extension = $IsWindows ? ".zip" : ".tar.xz"
           $artifact_tag = "AP_${variant_tag}_${{ matrix.configuration }}_${env:AP_Version}"
-          echo "::set-output name=ARTIFACT_TAG::$artifact_tag"
+          Set-CiOutput "ARTIFACT_TAG" "$artifact_tag"
           $artifact_path = "${{ runner.temp }}/AP_${variant_tag}_${{ matrix.configuration }}_${env:AP_Version}${extension}"
-          echo "::set-output name=ARTIFACT_PATH::$artifact_path"
+          Set-CiOutput "ARTIFACT_PATH" "$artifact_path"
 
       - uses: actions/cache@v2
         with:
@@ -214,8 +215,8 @@ jobs:
           name: ${{ steps.calc_vars.outputs.ARTIFACT_TAG }}
           path: ${{ steps.calc_vars.outputs.ARTIFACT_PATH }}
 
-      - name: Upload AP_vars.json
+      - name: Upload AP_vars
         uses: actions/upload-artifact@v2
         with:
-          name: AP_vars.json
+          name: AP_vars
           path: "${{ runner.temp }}/AP_vars.json"

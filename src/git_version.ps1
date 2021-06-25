@@ -68,7 +68,9 @@ $self_contained = if ($self_contained -eq 'true') { 'true' } else { 'false' }
 $commit_hash = git show -s --format="%H"
 
 # process "HEAD -> github-actions, origin/github-actions"
-$branch = (git show -s --pretty='%D' HEAD) -split ',' | Where-Object { -not $_.Contains("HEAD") } | % { $_ -replace '.*/', '' }  | Select-Object -First 1
+$branch = (git show -s --pretty='%D' HEAD) -split ',' `
+| Where-Object { -not ($_.Contains("HEAD") -or $_.Contains("tag")) } `
+| ForEach-Object { $_ -replace '.*/', '' }  | Select-Object -First 1
 if ([string]::IsNullOrWhiteSpace($branch)) {
     $branch = git rev-parse --abbrev-ref HEAD
 }

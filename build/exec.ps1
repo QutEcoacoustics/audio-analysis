@@ -1,3 +1,5 @@
+. $PSScriptRoot/ci.ps1
+
 function script:exec {
     [CmdletBinding()]
 
@@ -8,9 +10,13 @@ function script:exec {
         [switch]$WhatIf = $false
     )
     if ($WhatIf) {
-        $InformationPreference  = 'Continue'
+        $InformationPreference = 'Continue'
         Write-Information "Would execute `"$cmd`""
         return;
+    }
+
+    if (Test-CI) {
+        Write-Information = "Executing `"$cmd`""
     }
 
     & $cmd

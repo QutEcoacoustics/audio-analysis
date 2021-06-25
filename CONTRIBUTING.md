@@ -66,7 +66,7 @@ There are three options:
         - .NET Core SDK for Visual Studio 2019
     - If you're at a university that has an Office365 Subscription you can download software from https://azureforeducation.microsoft.com/devtools
     - The [community edition](https://visualstudio.microsoft.com/vs/) of Visual Studio should work fine and is totally free
-    - [Optional] Resharper Ulitmate (Academic License)
+    - [Optional] Resharper Ultimate (Academic License)
     - Install these plugins (_ReSharper_ menu > _Extension Manager_)
       - ReSpeller Free
 2. **VS Code** (recommended for Mac and Linux, works on Windows too)

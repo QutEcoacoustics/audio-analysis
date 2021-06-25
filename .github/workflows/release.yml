@@ -13,7 +13,8 @@ on:
         default: ""
 jobs:
   release:
-    needs: [build]
+    # can't depend on a job from another workflow
+    #needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,17 +28,41 @@ jobs:
         # Retrieve annotated tags.
         run: git fetch --tags --force
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v2
+      # The official GA does not allow downloading artifacts from another workflow.
+      # The artifacts will be extracted to directories that have the same name as the artifact. E.g.:
+      # /home/runner/work/_temp/artifacts/AP_win-x64_Release_21.6.0.111/AP_win-x64_Release_21.6.0.111.zip
+      # /home/runner/work/_temp/artifacts/AP_vars.json/AP_vars.json
+      # /home/runner/work/_temp/artifacts/AP_osx-x64_Release_21.6.0.111/AP_osx-x64_Release_21.6.0.111.tar.xz
+      - name: Download artifacts
+        uses: dawidd6/action-download-artifact@v2
         with:
-          name: my-artifact
-          path: "${{ runner.temp }}/build_files"
+          workflow: build.yml
+          workflow_conclusion: success
+          # Optional, uploaded artifact name,
+          # will download all artifacts if not specified
+          # and extract them in respective subdirectories
+          # https://github.com/actions/download-artifact#download-all-artifacts
+          #name:
+          path: "${{ runner.temp }}/artifacts"
 
-      - name: debug
-        run: ls -R "${{ runner.temp }}/build_files"
-
-      - name: Generate release notes
+      - name: Prepare release and generate release notes
+        id: prepare_vars
         shell: pwsh
-        run: |
-          Get-Content "${{ runner.temp }}/build_files/AP_vars.json" | ConvertFrom-Json | ForEach-Object { $_.Value | Set-Content $_.Path }
-          ./build/release_notes.ps1 v${env:AP_Version} '${{ runner.temp }}/release_notes.txt' -update_changelog
+        run: . ./build/prepare_release.ps1 "${{ runner.temp }}"
+
+      - name: Release
+        uses: softprops/action-gh-release@master
+        with:
+          body_path: "${{ runner.temp }}/release_notes.txt"
+          draft: false
+          prerelease: true
+          name: ${{ steps.prepare_vars.outputs.AP_ReleaseTitle }}
+          tag_name: v${{ steps.prepare_vars.outputs.AP_Version }}
+          fail_on_unmatched_files: true
+          target_commitish: ${{ steps.prepare_vars.outputs.AP_CommitHash }}
+          files: |
+            ${{ runner.temp }}/artifacts/**/*.zip
+            ${{ runner.temp }}/artifacts/**/*.tar.xz
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

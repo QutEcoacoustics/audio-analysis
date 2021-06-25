@@ -11,6 +11,7 @@ param(
 $ErrorActionPreference = "Stop"
 $DebugPreference = 'Continue'
 . $PSScriptRoot/exec.ps1
+. $PSScriptRoot/ci.ps1
 
 Write-Debug "`$tag_name:$tag_name"
 Write-Debug "`$output_file:$output_file"
@@ -49,12 +50,18 @@ foreach ($line in $commit_summary) {
     if ($line.StartsWith(">>>")) {
         if ($null -ne $current) {
             $commits += $current
+            $current.Issues = $current.Issues | Select-Object -Unique
         }
 
         $current = [pscustomobject]@{Title = $line.Substring(3); Issues = @() }
     }
 
-    $issue_refs = ($line | Select-String "#\d+" -AllMatches).Matches.Value | Where-Object { $null -ne $_ }
+    $issue_refs = $line `
+    | Select-String "#\d+" -AllMatches `
+    | Select-Object -ExpandProperty Matches `
+    | Select-Object -ExpandProperty Value `
+    | Where-Object { '' -ne $_ }
+    $issue_refs  | Write-Debug
     $current.Issues += $issue_refs
 
 }
@@ -107,6 +114,6 @@ else {
 Write-Debug "Release message:`n$release_title`n$release_message"
 Write-Debug "commit count: $($commits.Count)"
 
-Write-Output "##vso[task.setvariable variable=AP_ReleaseTitle]$release_title"
+Set-CiOutput "AP_ReleaseTitle" "$release_title"
 Write-Output "Writing release notes to $output_file"
 $release_message | Out-File $output_file -Encoding utf8NoBOM
