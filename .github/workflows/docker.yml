@@ -1,0 +1,39 @@
+name: publish docker
+
+on:
+  release:
+    types: [published]
+  # Manual trigger of a release
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Reason"
+        required: true
+        default: ""
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          lfs: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2.5.0
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2.5.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Run the build script
+        shell: pwsh
+        run: |
+          $version = gh release view --json tagName,targetCommitish | ConvertFrom-Json
+          $version | Write-Output
+          ./build/build_and_push -version $version.tagName -commit $version.targetCommitish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

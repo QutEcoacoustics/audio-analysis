@@ -157,6 +157,7 @@ $headers = if ($GithubApiToken) {
         Write-Debug "Not using a github auth token"
         @{}
     }
+$headers['Accept'] = 'application/json'
 
 $base_indent = "- "
 $indent = "  - "
@@ -234,14 +235,19 @@ function Get-AssetUrl($prerelease ) {
             throw "Unknown platform. We could not detect your platform or we do not have a build for your platform."
         }
         Write-Debug "${indent}Querying GitHub with $github_url"
-        $response = Invoke-RestMethod -Method Get -Uri $github_url -Headers $headers
-        $response = $response | Select-Object -First 1
-        $asset_url = $response.assets `
+        $response = Invoke-RestMethod -Method Get -Uri $github_url -Headers $headers | % assets
+        $assets = $response
+
+        $asset_url = $assets `
             | Where-Object { $_.name -like "*$build*" } `
             | ForEach-Object browser_download_url
 
+        Write-Debug "${indent}Asset url: $asset_url. Available assets: $($response.assets.Count)"
         if($asset_url.Count -gt 1)  {
             throw "More than one asset matched criteria, need one url to continue. Urls: $asset_url"
+        }
+        if ($null -eq $assert_url.Count) {
+            throw "Could not determine which asset to download. Do we support your OS and CPU architecture?"
         }
 
         $final_version = $response.tag_name -replace "^v",""
@@ -282,7 +288,8 @@ function Get-Asset($asset_url) {
     $extension = switch ($asset_url) {
         { $_.EndsWith(".zip") } { ".zip" }
         { $_.EndsWith(".tar.xz") } { ".tar.xz" }
-        Default { "Unspported extension for $asset_url"}
+        { $_.EndsWith(".tar.gz") } { ".tar.gz" }
+        Default { throw "Unsupported extension for $asset_url"}
     }
     $downloaded_zip = "$Destination${dir_seperator}AP$extension"
     Write-Debug "${indent}Downloading $asset_url to $downloaded_zip"
@@ -306,6 +313,13 @@ function Get-Asset($asset_url) {
         if ($extension -eq ".tar.xz") {
             # we should be only mac/linux at this branch
             tar --extract --xz --file $downloaded_zip --directory $Destination
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed extracting $downloaded_zip using tar"
+            }
+        }
+        elseif ($extension -eq ".tar.gz") {
+            # we should be only mac/linux at this branch
+            tar --extract --gzip --file $downloaded_zip --directory $Destination
             if ($LASTEXITCODE -ne 0) {
                 throw "Failed extracting $downloaded_zip using tar"
             }
@@ -432,7 +446,7 @@ $actions =  [ordered]@{
             if ($LASTEXITCODE -ne 0) { return $false } else { return $true }
         } )
         "Check" =  ("AP executable should have execute permission", {
-            if($IsWindows) { return $null } 
+            if($IsWindows) { return $null }
             $(test -x $ap_path ; 0 -eq $LASTEXITCODE)
         } )
         "Uninstall" = $null

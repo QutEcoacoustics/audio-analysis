@@ -61,7 +61,7 @@ foreach ($line in $commit_summary) {
     | Select-Object -ExpandProperty Matches `
     | Select-Object -ExpandProperty Value `
     | Where-Object { '' -ne $_ }
-    $issue_refs  | Write-Debug
+
     $current.Issues += $issue_refs
 
 }

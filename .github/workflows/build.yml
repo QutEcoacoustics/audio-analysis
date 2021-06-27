@@ -121,9 +121,11 @@ jobs:
 
           Set-CiOutput "AP_VERSION" "${env:AP_Version}"
           $extension = $IsWindows ? ".zip" : ".tar.xz"
+          $configuration_tag =  '${{ matrix.configuration }}' -eq 'Release' ?  '' : '_Debug'
           $artifact_tag = "AP_${variant_tag}_${{ matrix.configuration }}_${env:AP_Version}"
           Set-CiOutput "ARTIFACT_TAG" "$artifact_tag"
-          $artifact_path = "${{ runner.temp }}/AP_${variant_tag}_${{ matrix.configuration }}_${env:AP_Version}${extension}"
+
+          $artifact_path = "${{ runner.temp }}/AP_${variant_tag}${configuration_tag}_v${env:AP_Version}${extension}"
           Set-CiOutput "ARTIFACT_PATH" "$artifact_path"
 
       - uses: actions/cache@v2
@@ -197,10 +199,10 @@ jobs:
         with:
           macos: |
             cd "${{runner.temp}}/publish"
-            tar -cvzf "${{ steps.calc_vars.outputs.ARTIFACT_PATH }}" *
+            tar -cvJf "${{ steps.calc_vars.outputs.ARTIFACT_PATH }}" *
           linux: |
             cd "${{runner.temp}}/publish"
-            tar -cvzf "${{ steps.calc_vars.outputs.ARTIFACT_PATH }}" *
+            tar -cvJf "${{ steps.calc_vars.outputs.ARTIFACT_PATH }}" *
           windows: >
             7z a -tzip "${{ steps.calc_vars.outputs.ARTIFACT_PATH }}" "${{runner.temp}}\publish\*"
 

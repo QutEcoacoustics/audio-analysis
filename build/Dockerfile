@@ -1,21 +1,23 @@
+# syntax=docker/dockerfile:1.2
+
 FROM  debian:stretch-slim
 
-ARG GIT_COMMIT
-ARG AP_SOURCE="github"
-ARG AP_VERSION="latest"
+ARG GIT_COMMIT=""
+ARG AP_VERSION=""
+ARG CREATION_DATE=""
 
-LABEL maintainer="Anthony Truskinger <a.truskinger@qut.edu.au>" \
-      description="Debian environment for running AnalysisPrograms.exe" \
-      version="1.0" \
-      org.ecosounds.name="AnalysisPrograms.exe" \
-      org.ecosounds.version=${AP_VERSION} \
-      org.ecosounds.vendor="QUT Ecoacoustics" \
-      org.ecosounds.url="https://github.com/QutEcoacoustics/audio-analysis" \
-      org.ecosounds.vcs-url="https://github.com/QutEcoacoustics/audio-analysis" \
-      org.ecosounds.vcs-ref=${GIT_COMMIT} \
-      org.ecosounds.schema-version="1.0"
-
-
+LABEL \
+    info.ecoacoustics.qut.ap.created=${CREATION_DATE} \
+    info.ecoacoustics.qut.ap.authors="Anthony Truskinger <a.truskinger@qut.edu.au>" \
+    info.ecoacoustics.qut.ap.url="https://github.com/QutEcoacoustics/audio-analysis" \
+    info.ecoacoustics.qut.ap.documentation="https://ap.qut.ecoacoustics.info/" \
+    info.ecoacoustics.qut.ap.source="https://github.com/QutEcoacoustics/audio-analysis/blob/master/build/Dockerfile" \
+    info.ecoacoustics.qut.ap.version="${AP_VERSION}" \
+    info.ecoacoustics.qut.ap.revision=${GIT_COMMIT} \
+    info.ecoacoustics.qut.ap.vendor="QUT Ecoacoustics" \
+    info.ecoacoustics.qut.ap.licenses="Apache-2.0" \
+    info.ecoacoustics.qut.ap.title="AnalysisPrograms.exe" \
+    info.ecoacoustics.qut.ap.description="Debian environment for running AnalysisPrograms.exe"
 
 # Install system components (used by powershell. and AP as well)
 RUN apt-get update && apt-get install -y curl gnupg apt-transport-https unzip \
@@ -33,7 +35,7 @@ RUN add-apt-repository "deb http://mp3splt.sourceforge.net/repository unstable m
 
 # Powershell
 RUN \
-     # Import the public repository GPG keys
+    # Import the public repository GPG keys
     curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
     # Register the Microsoft Product feed
     && echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-debian-stretch-prod stretch main" > /etc/apt/sources.list.d/microsoft.list \
@@ -44,6 +46,8 @@ RUN \
 
 # Install AP.exe
 ADD download_ap.ps1 /download_ap.ps1
-RUN /usr/bin/pwsh -NonInteractive -c "/download_ap.ps1 ${AP_SOURCE} -version ${AP_VERSION}"
+RUN --mount=type=secret,id=GITHUB_AUTH_TOKEN  \
+    /usr/bin/pwsh -NonInteractive -c \
+    '/download_ap.ps1 -Install -version "${AP_VERSION}" -GithubApiToken "$(Get-Content -Raw /run/secrets/GITHUB_AUTH_TOKEN)"'
 
 ENTRYPOINT [ "/bin/bash" ]

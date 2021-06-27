@@ -5,8 +5,7 @@ Documentation (_in progress_) can be found at <https://ap.qut.ecoacoustics.info/
 
 ## Quick links
 
- - Come chat on [Gitter](https://gitter.im/QutEcoacoustics/audio-analysis) with us 🙂  
-   [![Gitter](https://badges.gitter.im/QutEcoacoustics/audio-analysis.svg)](https://gitter.im/QutEcoacoustics/audio-analysis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+ - Ask questions or start a discussion with us in the [discussions](https://github.com/QutEcoacoustics/audio-analysis/discussions) 🙂  
  - See the **[docs](https://ap.qut.ecoacoustics.info/)** for instructions on
    - Downloading AnalysisPrograms.exe
    - Running the program
@@ -47,12 +46,15 @@ citations will printed in the console and in the log file.
 
 ## Build status
 
-[![Build Status](https://dev.azure.com/QutEcoacoustics/audio-analysis/_apis/build/status/QutEcoacoustics.audio-analysis?branchName=master)](https://dev.azure.com/QutEcoacoustics/audio-analysis/_build/latest?definitionId=3&branchName=master)
+[![build](https://github.com/QutEcoacoustics/audio-analysis/actions/workflows/build.yml/badge.svg)](https://github.com/QutEcoacoustics/audio-analysis/actions/workflows/build.yml)
+[![docs](https://github.com/QutEcoacoustics/audio-analysis/actions/workflows/docs.yml/badge.svg)](https://github.com/QutEcoacoustics/audio-analysis/actions/workflows/docs.yml)
+[![docs](https://github.com/QutEcoacoustics/audio-analysis/actions/workflows/docs.yml/badge.svg)](https://github.com/QutEcoacoustics/audio-analysis/actions/workflows/docs.yml)
+[![release](https://github.com/QutEcoacoustics/audio-analysis/actions/workflows/release.yml/badge.svg)](https://github.com/QutEcoacoustics/audio-analysis/actions/workflows/release.yml)
 
 Weekly versions of AnalysisPrograms.exe are now built automatically at midnight Monday night.
 You can get copies from the [Releases](https://github.com/QutBioacoustics/audio-analysis/releases) page.
 
-Per-commit (the very latest) builds can be found from the Azure Pipelines page.
+Per-commit (the very latest) builds can be found from the [Actions](https://github.com/QutEcoacoustics/audio-analysis/actions) page.
 
 # License
 
