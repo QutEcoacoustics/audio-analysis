@@ -407,7 +407,8 @@ namespace AnalysisPrograms.Recognizers
             else if (profileConfig is OscillationParameters op)
             {
                 List<Plot> decibelPlots;
-                (spectralEvents, decibelPlots) = Oscillations2012.GetComponentsWithOscillations(
+                double[,] hits;
+                (spectralEvents, decibelPlots, hits) = Oscillations2012.GetComponentsWithOscillations(
                     spectrogram,
                     op,
                     decibelThreshold,
