@@ -25,8 +25,8 @@ namespace AudioAnalysisTools
             int maxHz,
             double decibelThreshold,
             double dctDuration,
-            int minOscFreq,
-            int maxOscFreq,
+            double minOscFreq,
+            double maxOscFreq,
             double dctThreshold,
             double scoreThreshold,
             double minDuration,
@@ -68,12 +68,14 @@ namespace AudioAnalysisTools
 
             events = Oscillations2012.ConvertOscillationScores2Events(
                 sonogram,
-                dctScores,
-                minHz,
-                maxHz,
-                scoreThreshold,
                 minDuration,
                 maxDuration,
+                minHz,
+                maxHz,
+                minOscFreq,
+                maxOscFreq,
+                dctScores,
+                scoreThreshold,
                 segmentStartOffset);
         }
 
