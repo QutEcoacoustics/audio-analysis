@@ -76,7 +76,7 @@ namespace AnalysisPrograms
             /// <summary>
             /// Gets or sets the LDFC spectrogram configuration.
             /// </summary>
-            public LdSpectrogramConfig LdSpectrogramConfig { get; protected set; } = new LdSpectrogramConfig();
+            public LdSpectrogramConfig LdSpectrogramConfig { get; set; } = new LdSpectrogramConfig();
 
             public bool TileOutput { get; private set; } = false;
 
@@ -318,6 +318,11 @@ namespace AnalysisPrograms
             {
                 FileInfo indicesPropertiesConfig = acousticIndicesConfig.IndexPropertiesConfig.ToFileInfo();
 
+                // if needed override iamge chrome
+                if (tileOutput) {
+                    ldSpectrogramConfig.ImageChrome = false;
+                }
+
                 // Actually draw false color / long duration spectrograms
                 Tuple<Image<Rgb24>, string>[] images =
                     LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
@@ -329,8 +334,7 @@ namespace AnalysisPrograms
                         basename: basename,
                         analysisType: this.Identifier,
                         indexSpectrograms: dictionaryOfSpectra,
-                        indexStatistics: indexDistributions,
-                        imageChrome: (!tileOutput).ToImageChrome());
+                        indexStatistics: indexDistributions);
 
                 if (tileOutput)
                 {

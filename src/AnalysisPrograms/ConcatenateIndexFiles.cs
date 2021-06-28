@@ -425,8 +425,7 @@ namespace AnalysisPrograms
                             indexDistributions,
                             siteDescription,
                             sunriseDataFile: null,
-                            segmentErrors: gapsAndJoins,
-                            imageChrome: ImageChrome.With);
+                            segmentErrors: gapsAndJoins);
                 }
 
                 WriteSpectralIndexFiles(resultsDir, outputFileStem, AcousticIndices.TowseyAcoustic, dictionaryOfSpectralIndices1);
@@ -549,8 +548,7 @@ namespace AnalysisPrograms
                         indexDistributions,
                         siteDescription,
                         sunriseDataFile: null,
-                        segmentErrors: indexErrors,
-                        imageChrome: ImageChrome.With);
+                        segmentErrors: indexErrors);
 
                     if (!arguments.EventDataDirectories.IsNullOrEmpty())
                     {

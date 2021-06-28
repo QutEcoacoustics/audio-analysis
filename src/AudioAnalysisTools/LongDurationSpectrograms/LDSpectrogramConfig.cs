@@ -65,6 +65,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public double? BlueEnhanceParameter { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not to render chrome around the FCS.
+        /// Chrome is all the decoration around the data; axes, grids, titles, etc.
+        /// </summary>
+        /// <value>If <c>true</c> will render image chrome.</value>
+        public bool ImageChrome { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets the default XAxisTicInterval.
         /// The default assumes one minute spectra i.e. 60 per hour
         /// But as of January 2015, this is not fixed. The user can adjust

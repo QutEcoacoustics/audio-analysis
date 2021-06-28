@@ -75,6 +75,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         // public static readonly string DefaultColorMap1 = "ACI, ENT, EVN";
         // public static readonly string DefaultColorMap2 = "BGN, PMN, SPT";
 
+        public const int TrackHeight = 18;
+
         // the defaults
         public static readonly string DefaultColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
         public static readonly string DefaultColorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_SPT;
@@ -524,7 +526,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// draws only those spectrograms in the passed array of keys.
         /// </summary>
-        public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName, string[] keys)
+        public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName, string[] keys, ImageChrome chrome = ImageChrome.With)
         {
             foreach (string key in keys)
             {
@@ -558,15 +560,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     continue;
                 }
 
-                var bmp = this.DrawGreyscaleSpectrogramOfIndex(key);
-
-                var header = Drawing.NewImage(bmp.Width, 20, Color.LightGray);
-                header.Mutate(g =>
+                var bmp = this.DrawGreyscaleSpectrogramOfIndex(key, chrome);
+                Image<Rgb24> indexImage;
+                if (chrome is ImageChrome.With)
                 {
-                    g.DrawTextSafe(key, Drawing.Tahoma9, Color.Black, new PointF(4, 4));
-                });
+                    var header = Drawing.NewImage(bmp.Width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR, Color.LightGray);
+                    header.Mutate(g =>
+                    {
+                        g.DrawTextSafe(key, Drawing.Tahoma9, Color.Black, new PointF(4, 4));
+                    });
 
-                var indexImage = ImageTools.CombineImagesVertically(header, bmp);
+                    indexImage = ImageTools.CombineImagesVertically(header, bmp);
+                }
+                else
+                {
+                    indexImage = bmp;
+                }
 
                 // save the image - the directory for the path must exist
                 var path = FilenameHelpers.AnalysisResultPath(opdir, opFileName, key, "png");
@@ -576,7 +585,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// Assume calling method has done all the reality checks.</summary>
-        public Image<Rgb24> DrawGreyscaleSpectrogramOfIndex(string key)
+        public Image<Rgb24> DrawGreyscaleSpectrogramOfIndex(string key, ImageChrome chrome = ImageChrome.With)
         {
             var matrix = this.GetNormalisedSpectrogramMatrix(key);
             if (matrix == null)
@@ -585,13 +594,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             var bmp = ImageTools.DrawReversedMatrixWithoutNormalisation(matrix);
+
+            if (chrome is ImageChrome.Without)
+            {
+                return bmp;
+            }
+
             var xAxisPixelDuration = this.IndexCalculationDuration;
             var fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp.Width);
 
-            SpectrogramTools.DrawGridLinesOnImage((Image<Rgb24>)bmp, this.StartOffset, fullDuration, xAxisPixelDuration, this.FreqScale);
-            const int trackHeight = 20;
-            var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, this.RecordingStartDate, bmp.Width, trackHeight);
-            var returnImage = ImageTools.CombineImagesVertically(bmp, timeBmp);
+            SpectrogramTools.DrawGridLinesOnImage(bmp, this.StartOffset, fullDuration, xAxisPixelDuration, this.FreqScale);
+            var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, this.RecordingStartDate, bmp.Width, TrackHeight);
+            var returnImage = ImageTools.CombineImagesVertically(timeBmp, bmp, timeBmp);
             return returnImage;
         }
 
@@ -723,14 +737,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public Image<Rgb24> DrawDoubleSpectrogram(Image bmp1, Image bmp2, string colorMode)
         {
             var fullDuration = TimeSpan.FromSeconds(bmp2.Width); // assume one minute per pixel.
-            const int trackHeight = 20;
-            int imageHt = bmp2.Height + bmp1.Height + trackHeight + trackHeight + trackHeight;
+            int imageHt = bmp2.Height + bmp1.Height + TrackHeight + TrackHeight + TrackHeight;
             var title =
                 $"FALSE COLOUR and BACKGROUND NOISE SPECTROGRAMS      (scale: hours x kHz)      (colour: R-G-B = {this.ColorMap})         {Meta.OrganizationTag}  ";
-            var titleBmp = ImageTrack.DrawTitleTrack(bmp2.Width, trackHeight, title);
+            var titleBmp = ImageTrack.DrawTitleTrack(bmp2.Width, TrackHeight, title);
             var timeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             var offsetMinute = TimeSpan.Zero;
-            var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, offsetMinute, timeScale, bmp2.Width, trackHeight, "hours");
+            var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, offsetMinute, timeScale, bmp2.Width, TrackHeight, "hours");
 
             var compositeBmp = new Image<Rgb24>(bmp2.Width, imageHt); //get canvas for entire image
             compositeBmp.Mutate(gr =>
@@ -749,7 +762,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 // draw a colour spectrum of basic colours
                 int maxScaleLength = bmp2.Width / 3;
-                var scale = DrawColourScale(maxScaleLength, trackHeight - 2);
+                var scale = DrawColourScale(maxScaleLength, TrackHeight - 2);
                 int xLocation = bmp2.Width * 2 / 3;
                 gr.DrawImage(scale, new Point(xLocation, 1), 1f); //dra
             });
@@ -791,14 +804,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var xAxisPixelDuration = cs.IndexCalculationDuration;
             var fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
 
-            int trackHeight = 18;
-            Image<Rgb24> timeBmp1 = ImageTrack.DrawTimeRelativeTrack(fullDuration, bmp1.Width, trackHeight);
+            Image<Rgb24> timeBmp1 = ImageTrack.DrawTimeRelativeTrack(fullDuration, bmp1.Width, TrackHeight);
             Image<Rgb24> timeBmp2 = (Image<Rgb24>)timeBmp1.Clone();
             DateTimeOffset? dateTimeOffset = cs.RecordingStartDate;
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN DO SOMETHING WITH IT.
-                timeBmp2 = ImageTrack.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
+                timeBmp2 = ImageTrack.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, TrackHeight);
             }
 
             if (cs.FreqScale == null)
@@ -857,9 +869,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var freqScale = new FrequencyScale(11025, 512, 1000);
 
             SpectrogramTools.DrawGridLinesOnImage((Image<Rgb24>)bmp, TimeSpan.Zero, fullDuration, xAxisPixelDuration, freqScale);
-            const int trackHeight = 20;
             var recordingStartDate = default(DateTimeOffset);
-            var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, recordingStartDate, bmp.Width, trackHeight);
+            var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, recordingStartDate, bmp.Width, TrackHeight);
             var array = new Image<Rgb24>[2];
             array[0] = bmp;
             array[1] = timeBmp;
@@ -1102,7 +1113,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="siteDescription">Optionally specify details about the site where the audio was recorded.</param>
         /// <param name="sunriseDataFile">This is only available for locations near Brisbane, Austalia.</param>
         /// <param name="segmentErrors">Note that these segment errors were derived from previous analysis of the summary indices.</param>
-        /// <param name="imageChrome">If true, this method generates and returns separate chromeless images used for tiling website images.</param>
         public static Tuple<Image<Rgb24>, string>[] DrawSpectrogramsFromSpectralIndices(
             DirectoryInfo inputDirectory,
             DirectoryInfo outputDirectory,
@@ -1116,10 +1126,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, IndexDistributions.SpectralStats> indexStatistics = null,
             SiteDescription siteDescription = null,
             FileInfo sunriseDataFile = null,
-            List<GapsAndJoins> segmentErrors = null,
-            ImageChrome imageChrome = ImageChrome.With)
+            List<GapsAndJoins> segmentErrors = null)
         {
             var config = ldSpectrogramConfig;
+
+            ImageChrome imageChrome = ldSpectrogramConfig.ImageChrome.ToImageChrome();
+            Log.Debug($"FCS image will be rendered {imageChrome} chrome");
 
             // These parameters manipulate the color map and appearance of the false-color spectrogram
             string colorMap1 = config.ColorMap1 ?? DefaultColorMap1;   // assigns indices to RGB
@@ -1150,10 +1162,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
                 cs1.RecordingStartDate = dto;
-                if (dto != null)
-                {
-                    cs1.StartOffset = dto.TimeOfDay + cs1.StartOffset;
-                }
+                cs1.StartOffset = dto.TimeOfDay + cs1.StartOffset;
             }
 
             // Get and set the dictionary of index properties
@@ -1205,7 +1214,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // draw gray scale spectrogram for each index.
             var keys = SpectralIndexValues.Keys;
-            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
+            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys, imageChrome);
 
             // create and save first false-color spectrogram image
             var image1NoChrome = cs1.DrawFalseColorSpectrogramChromeless(cs1.ColorMode, colorMap1, blueEnhanceParameter);
@@ -1216,9 +1225,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             else
             {
-                image1 = SpectrogramFraming(cs1, (Image<Rgb24>)image1NoChrome.Clone());
-                var outputPath1 = FilenameHelpers.AnalysisResultPath(outputDirectory, cs1.FileName, colorMap1, "png");
-                image1.Save(outputPath1);
+               image1 = imageChrome is ImageChrome.With ? SpectrogramFraming(cs1, image1NoChrome.Clone()) : image1NoChrome;
+
+               var outputPath1 = FilenameHelpers.AnalysisResultPath(outputDirectory, cs1.FileName, colorMap1, "png");
+
+               image1.Save(outputPath1);
             }
 
             // create and save second false-color spectrogram image
@@ -1231,7 +1242,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             else
             {
                 cs1.ColorMap = colorMap2;
-                image2 = SpectrogramFraming(cs1, (Image<Rgb24>)image2NoChrome.Clone());
+                image2 = imageChrome is ImageChrome.With ? image2 = SpectrogramFraming(cs1, image2NoChrome.Clone()) : image2NoChrome;
+
                 var outputPath2 = FilenameHelpers.AnalysisResultPath(outputDirectory, cs1.FileName, colorMap2, "png");
                 image2.Save(outputPath2);
             }
@@ -1292,10 +1304,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap2 + LdSpectrogramRibbons.SpectralRibbonTag, "png"));
             }
 
-            // only return images if chromeless
-            return imageChrome == ImageChrome.Without
-                       ? new[] { Tuple.Create(image1NoChrome, colorMap1), Tuple.Create(image2NoChrome, colorMap2) }
-                       : null;
+            return new[] { Tuple.Create(image1NoChrome, colorMap1), Tuple.Create(image2NoChrome, colorMap2) };
         }
 
         /// <summary>

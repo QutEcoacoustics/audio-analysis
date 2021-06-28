@@ -22,8 +22,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
     [TestClass]
     public class LDSpectrogramRGBTests : OutputDirectoryTest
     {
-        [TestMethod]
-        public void TestChromelessImage()
+        private void GenerateAndTestFakeFCS(LdSpectrogramConfig config, int expectedHeight)
         {
             var indexPropertiesFile = ConfigFile.Default<IndexPropertiesCollection>();
             var indexProperties = ConfigFile.Deserialize<IndexPropertiesCollection>(indexPropertiesFile);
@@ -42,7 +41,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
             var images = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
                 inputDirectory: null,
                 outputDirectory: this.TestOutputDirectory,
-                ldSpectrogramConfig: new LdSpectrogramConfig(),
+                ldSpectrogramConfig: config,
                 indexPropertiesConfigPath: indexPropertiesFile,
                 indexGenerationData: new IndexGenerationData()
                 {
@@ -61,14 +60,47 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
                     .Select((x) => new SummaryIndexValues(60.0.Seconds(), indexProperties))
                     .Cast<SummaryIndexBase>()
                     .ToArray(),
-                indexStatistics: indexStatistics,
-                imageChrome: ImageChrome.Without);
+                indexStatistics: indexStatistics);
 
+            Assert.IsNotNull(images);
+
+            // chromeless images returned
             foreach (var (image, key) in images)
             {
                 Assert.That.ImageIsSize(60, 256, image);
-                Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(0, 0, 60, 256), Color.Black, (Image<Rgb24>)image);
+                Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(0, 0, 60, 256), Color.Black, image);
             }
+
+            // check images on disk are chromed/chromeless
+            var imagesToCheck = images.Select(item => item.Item2).Concat(keys);
+            foreach (var key in imagesToCheck)
+            {
+                var image = FilenameHelpers.AnalysisResultPath(this.TestOutputDirectory, "RGB_TEST", key, "png");
+                this.TestContext.WriteLine($"Testing {key}, found {image}");
+                var info = Image.Identify(image);
+
+                Assert.AreEqual(60, info.Bounds().Width);
+                Assert.AreEqual(expectedHeight, info.Bounds().Height, $"Image {image} was not expected height {expectedHeight} but was  {info.Height}");
+            }
+        }
+
+        [TestMethod]
+        public void TestChromedImage()
+        {
+            var config = new LdSpectrogramConfig();
+            Assert.IsTrue(config.ImageChrome, "Should render chrome by default");
+
+            var expectedHeight = 256 + SpectrogramConstants.HEIGHT_OF_TITLE_BAR + (LDSpectrogramRGB.TrackHeight * 2); // track height, bottom and top
+
+            this.GenerateAndTestFakeFCS(config, expectedHeight);
+        }
+
+        [TestMethod]
+        public void TestChromelessImage()
+        {
+            var config = new LdSpectrogramConfig() { ImageChrome = false };
+
+            this.GenerateAndTestFakeFCS(config, 256);
         }
 
         [TestMethod]

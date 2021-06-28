@@ -113,8 +113,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     indexDistributions,
                     siteDescription,
                     sunriseDataFile,
-                    segmentErrors,
-                    ImageChrome.With);
+                    segmentErrors);
             }
         }
 
