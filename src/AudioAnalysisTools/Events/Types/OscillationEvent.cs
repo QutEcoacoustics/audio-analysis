@@ -6,6 +6,7 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -27,6 +28,11 @@ namespace AudioAnalysisTools
         public double Periodicity { get; set; }
 
         /// <summary>
+        /// Gets the oascillation rate. This is calculated from the Periodicity. Cannot be set directly.
+        /// </summary>
+        public double OscillationRate => 1 / this.Periodicity;
+
+        /// <summary>
         /// Draws a border around this oscillation event.
         /// </summary>
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
@@ -44,18 +50,21 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Extracts an event from a spectrogram given its bounds.
         /// Then trims the event because oscillation events do not typically start where the DCT places them.
-        /// It a;sp returns the periodicity of the oscillation event.
+        /// It also returns the periodicity of the oscillation event.
         /// </summary>
         public static (int EventStart, int EventEnd, double FramePeriod) TrimEvent(SpectrogramStandard spectrogram, int startFrame, int minBin, int endFrame, int maxBin)
         {
-            //obtain the oscillation event's periodicity.
             //extract the relevant portion of the spectrogram.
             var eventMatrix = MatrixTools.Submatrix<double>(spectrogram.Data, startFrame, minBin, endFrame, maxBin);
-            var frameAverages = MatrixTools.GetRowAverages(eventMatrix);
-            frameAverages = DataTools.normalise(frameAverages);
-            double threshold = 0.25;
 
-            // find the true start frame
+            // Caclulate a normalised vector of timeframe average amplitudes.
+            var frameAverages = MatrixTools.GetRowAverages(eventMatrix);
+            var meanValue = frameAverages.Average();
+            frameAverages = DataTools.SubtractValueAndTruncateToZero(frameAverages, meanValue);
+            frameAverages = DataTools.normalise(frameAverages);
+            double threshold = 0.33;
+
+            // find a potentially more accurate start frame
             int startFrameOffset = 0;
             for (int frame = 1; frame < frameAverages.Length; frame++)
             {
@@ -66,8 +75,9 @@ namespace AudioAnalysisTools
                 }
             }
 
+            // find a potentially more accurate end frame
             int endFrameOffset = 0;
-            for (int frame = frameAverages.Length - 1; frame >= 0; frame--)
+            for (int frame = frameAverages.Length - 1; frame > 0; frame--)
             {
                 endFrameOffset++;
                 if (frameAverages[frame - 1] >= threshold && frameAverages[frame] < threshold)
@@ -76,10 +86,21 @@ namespace AudioAnalysisTools
                 }
             }
 
-            int trueStartFrame = startFrame + startFrameOffset;
-            int trueEndFrame = endFrame - endFrameOffset;
+            int revisedStartFrame = startFrame + startFrameOffset;
+            int revisedEndFrame = endFrame - endFrameOffset;
 
-            // determine the number of times the frame values step from below to above threshold.
+            // the above algorithm may produce faulty result for some situations.
+            // This is a sanity check.
+            int revisedEventLength = revisedEndFrame - revisedStartFrame + 1;
+            if (revisedEventLength < frameAverages.Length * 0.75)
+            {
+                // if revised event length is too short, return to original start and end values
+                revisedStartFrame = startFrame;
+                revisedEndFrame = endFrame;
+            }
+
+            // Now obtain the oscillation event's periodicity.
+            // Determine the number of times the frame values step from below to above threshold.
             // also the frame index in which the steps happen.
             int stepCount = 0;
             var peakOnsets = new List<int>();
@@ -96,7 +117,7 @@ namespace AudioAnalysisTools
             int framePeriods = peakOnsets[peakOnsets.Count - 1] - peakOnsets[0];
             double framePeriod = framePeriods / (double)(stepCount - 1);
 
-            return (trueStartFrame, trueEndFrame, framePeriod);
+            return (revisedStartFrame, revisedEndFrame, framePeriod);
         }
     }
 }
