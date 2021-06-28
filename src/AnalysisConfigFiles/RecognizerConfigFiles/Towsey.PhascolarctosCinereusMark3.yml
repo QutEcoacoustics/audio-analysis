@@ -8,46 +8,95 @@ SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
+CommonParameters: &common_parameters
+    SpeciesName: PhascolarctosCinereus
+    WindowFunction: HANNING
+    NoiseReductionType: Standard
+    BgNoiseThreshold: 0.0
+
+
 # Each of these profiles will be analyzed
 Profiles:
+    # This profile detections oscillation in the inhale.
     KoalaOsc: !OscillationParameters
+        <<: *common_parameters
+
         ComponentName: Oscillation 
-        SpeciesName: PhascolarctosCinereus
         FrameSize: 512
         FrameStep: 256
-        WindowFunction: HANNING
-        BgNoiseThreshold: 0.0
         # min and max of the freq band to search
-        MinHertz: 250          
+        MinHertz: 200          
         MaxHertz: 800
         # Min and max durations for the length of a true event (seconds).
-        MinDuration: 0.5
-        MaxDuration: 2.5
+        MinDuration: 0.2
+        MaxDuration: 3.5
         # duration of DCT in seconds
         # this cannot be too long because the oscillations are not constant.
-        DctDuration: 0.30
+        #DctDuration: 0.30
+        DctDuration: 0.2
         # minimum acceptable amplitude of a DCT coefficient
         DctThreshold: 0.5
         # OSCILLATIONS PER SECOND: ignore oscillation rates below the min & above the max threshold
-        MinOcilFreq: 20
-        MaxOcilFreq: 55
+        MinOscillationFrequency: 20
+        MaxOscillationFrequency: 60
         # Event threshold - Determines FP / FN trade-off for events.
         EventThreshold: 0.2
+        DecibelThresholds:
+            - 6.0
 
+#################### POST-PROCESSING of EVENTS ###################
+
+PostProcessing:
+    PostProcessInDecibelGroups: false
+    
+# # The following generic post-processing steps are determined by config settings.
+# # Step 1: Combine overlapping events - events derived from all profiles.
+# # Step 2: Combine possible syllable sequences and filter on excess syllable count.
+# # Step 3: Remove events whose bandwidth is too small or large.
+# # Step 4: Remove events that have excessive noise in their side-bands.
+
+#     # 1: Combine overlapping events
+    CombineOverlappingEvents: false
+
+    # 2: Combine possible syllable sequences
+#    SyllableSequence:
+#        SyllableStartDifference: 1.2
+#        SyllableHertzGap: 2400
+        # FilterSyllableSequence: true
+        # SyllableMaxCount: 3
+        # ExpectedPeriod: 0.1
+
+# #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
+#    Duration:
+#        ExpectedDuration: 2.5
+#        DurationStandardDeviation: 0.6
+
+#     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
+#  #   Bandwidth:
+#         ExpectedBandwidth: 280
+#         BandwidthStandardDeviation: 40
+
+#     # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
+#     SidebandActivity:
+#         LowerHertzBuffer: 150
+#         UpperHertzBuffer: 400
+#         MaxAverageSidebandDecibels: 3.0
+    RemoveEnclosedEvents: false
 
 ################################################################################
+
+# Options to save results files
+# Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
+SaveSonogramImages: Always
+#SaveSonogramImages: WhenEventsDetected
+
 # Save intermediate file options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 
-# Save spectrogram images: available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-# "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-SaveSonogramImages: True
-#SaveSonogramImages: WhenEventsDetected
-
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
-## End section for AnalyzeLongRecording
 
 # Other config files to reference
 IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"

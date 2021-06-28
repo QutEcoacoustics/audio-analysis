@@ -4,18 +4,17 @@
 
 namespace AnalysisPrograms.Recognizers
 {
+    using System;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using System.Runtime.CompilerServices;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
     using log4net;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Reflection;
-    using System.Text;
     using static AnalysisPrograms.Recognizers.GenericRecognizer;
 
     /// <summary>
@@ -77,13 +76,32 @@ namespace AnalysisPrograms.Recognizers
 
         public override string Author => "Towsey";
 
-        public override string SpeciesName => "PhascolarctosCinereus";
+        public override string SpeciesName => "PhascolarctosCinereusMark3";
 
-        public override string Description => "Detects male Koala bellows. This is Koala Mark 3";
+        public override string Description => "Detects male Koala bellows. This is Koala Recognizer, Mark 3";
 
         public override string CommonName => "Koala";
 
         public override Status Status => Status.InDevelopment;
+
+        public override AnalyzerConfig ParseConfig(FileInfo file)
+        {
+            RuntimeHelpers.RunClassConstructor(typeof(KoalaConfig3).TypeHandle);
+            var config = ConfigFile.Deserialize<KoalaConfig3>(file);
+
+            // validation of configs can be done here
+            GenericRecognizer.ValidateProfileTagsMatchAlgorithms(config.Profiles, file);
+
+            // This call sets a restriction so that only one generic algorithm is used.
+            // CHANGE this to accept multiple generic algorithms as required.
+            //if (result.Profiles.SingleOrDefault() is ForwardTrackParameters)
+            if (config.Profiles?.Count == 1 && config.Profiles.First().Value is OscillationParameters)
+            {
+                return config;
+            }
+
+            throw new ConfigFileException("Koala Recognizer Mark3 expects one and only one Oscillation algorithm.", file);
+        }
 
         /// <summary>
         /// This method is called once per segment. Segments are typically one-minute duration.

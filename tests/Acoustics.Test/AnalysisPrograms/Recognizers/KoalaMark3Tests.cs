@@ -1,4 +1,4 @@
-// <copyright file="KoalaV3Tests.cs" company="QutEcoacoustics">
+// <copyright file="KoalaMark3Tests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -8,14 +8,17 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
     using System.IO;
     using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms.Recognizers;
+    using global::AudioAnalysisTools;
+    using global::AudioAnalysisTools.Events;
     using global::AudioAnalysisTools.Events.Types;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    // [Ignore("Currently failing but also this work has not yet been implemented")]
+
     /// <summary>
     /// Species name = Koala = Botaurus poiciloptilus.
     /// Recognizer class = Phascolarctos cinereus.cs.
-    /// [Ignore("Currently failing but also this work has not yet been implemented")]
     /// </summary>
     [TestClass]
     public class KoalaMark3Tests : OutputDirectoryTest
@@ -26,7 +29,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         //private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "koala.wav");
         private static readonly FileInfo TestAsset = new FileInfo("C:\\Ecoacoustics\\WavFiles\\KoalaMale\\Jackaroo_20080715-103940.wav");
         private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles", "Towsey.PhascolarctosCinereusMark3.yml");
-        private static readonly PhascolarctosCinereus Recognizer = new PhascolarctosCinereus();
+        private static readonly PhascolarctosCinereusMark3 Recognizer = new PhascolarctosCinereusMark3();
 
         //NOTE: If testing recording at its original sample-rate, then use line below.
         //private static readonly AudioRecording Recording = new AudioRecording(TestAsset);
@@ -35,7 +38,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         //  as in the TestRecognizer() method below.
 
         [TestMethod]
-        public void TestRecognizer()
+        public void TestKoala3Recognizer()
         {
             var config = Recognizer.ParseConfig(ConfigFile);
             int resampleRate = config.ResampleRate.Value;
@@ -45,7 +48,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             var results = Recognizer.Recognize(
                 audioRecording: recording,
-                config: config,
+                configuration: config,
                 segmentStartOffset: TimeSpan.Zero,
                 getSpectralIndexes: null,
                 outputDirectory: this.TestOutputDirectory,
@@ -59,21 +62,21 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
-            Assert.AreEqual(1, events.Count);
+            Assert.AreEqual(12, events.Count);
             Assert.IsNull(scoreTrack);
-            Assert.AreEqual(1, plots.Count);
-            Assert.AreEqual(938, sonogram.FrameCount);
+            Assert.AreEqual(2, plots.Count);
+            //Assert.AreEqual(938, sonogram.FrameCount);
 
-            Assert.IsInstanceOfType(events[0], typeof(CompositeEvent));
+            Assert.IsInstanceOfType(events[0], typeof(OscillationEvent));
 
-            var onlyEvent = (CompositeEvent)events[0];
+            var ev = (SpectralEvent)events[0];
 
-            Assert.AreEqual(5.12, onlyEvent.EventStartSeconds);
-            Assert.AreEqual(12.26, onlyEvent.EventEndSeconds);
-            Assert.AreEqual(105, onlyEvent.LowFrequencyHertz);
-            Assert.AreEqual(180, onlyEvent.HighFrequencyHertz);
-            Assert.AreEqual(21.7, onlyEvent.Score);
-            Assert.AreEqual(0.95, onlyEvent.ScoreNormalized);
+            Assert.AreEqual(5.12, ev.EventStartSeconds);
+            Assert.AreEqual(12.26, ev.EventEndSeconds);
+            Assert.AreEqual(105, ev.LowFrequencyHertz);
+            Assert.AreEqual(180, ev.HighFrequencyHertz);
+            Assert.AreEqual(21.7, ev.Score);
+            Assert.AreEqual(0.95, ev.ScoreNormalized);
         }
     }
 }
