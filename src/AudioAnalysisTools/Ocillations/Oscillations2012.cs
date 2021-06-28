@@ -23,7 +23,7 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class Oscillations2012
     {
-        public static (List<EventCommon> SpectralEvents, List<Plot> DecibelPlots) GetComponentsWithOscillations(
+        public static (List<EventCommon> SpectralEvents, List<Plot> DecibelPlots, double[,] Hits) GetComponentsWithOscillations(
             SpectrogramStandard spectrogram,
             OscillationParameters op,
             double? decibelThreshold,
@@ -35,16 +35,17 @@ namespace AudioAnalysisTools
 
             Oscillations2012.Execute(
                 spectrogram,
-                op.MinHertz.Value,
-                op.MaxHertz.Value,
-                op.DctDuration,
-                op.MinOscillationFrequency,
-                op.MaxOscillationFrequency,
-                op.DctThreshold,
-                op.EventThreshold,
                 op.MinDuration.Value,
                 op.MaxDuration.Value,
-                out var scores,
+                op.MinHertz.Value,
+                op.MaxHertz.Value,
+                op.MinOscillationFrequency,
+                op.MaxOscillationFrequency,
+                op.DctDuration,
+                op.DctThreshold,
+                op.EventThreshold,
+                out var bandDecibels,
+                out var oscScores,
                 out var oscillationEvents,
                 out var hits,
                 segmentStartOffset);
@@ -52,24 +53,27 @@ namespace AudioAnalysisTools
             oscEvents.AddRange(oscillationEvents);
 
             // prepare plot of resultant Harmonics decibel array.
-            var plot = Plot.PreparePlot(scores, $"{profileName} (Oscillations:{decibelThreshold:F0}db)", decibelThreshold.Value);
-            plots.Add(plot);
+            var plot1 = Plot.PreparePlot(bandDecibels, $"{profileName} (Oscillations:{decibelThreshold:F0}db)", decibelThreshold.Value);
+            plots.Add(plot1);
+            var plot2 = Plot.PreparePlot(oscScores, $"{profileName} (Oscillation Event Score:{op.EventThreshold:F2})", op.EventThreshold);
+            plots.Add(plot2);
 
-            return (oscEvents, plots);
+            return (oscEvents, plots, hits);
         }
 
         public static void Execute(
             SpectrogramStandard sonogram,
-            int minHz,
-            int maxHz,
-            double dctDuration,
-            int minOscilFreq,
-            int maxOscilFreq,
-            double dctThreshold,
-            double scoreThreshold,
             double minDuration,
             double maxDuration,
-            out double[] scores,
+            int minHz,
+            int maxHz,
+            double? minOscillationFrequency,
+            double? maxOscillationFrequency,
+            double dctDuration,
+            double dctThreshold,
+            double scoreThreshold,
+            out double[] bandDecibels,
+            out double[] oscScores,
             out List<OscillationEvent> events,
             out double[,] hits,
             TimeSpan segmentStartOffset)
@@ -78,17 +82,18 @@ namespace AudioAnalysisTools
 
             Execute(
                 sonogram,
-                minHz,
-                maxHz,
-                dctDuration,
-                minOscilFreq,
-                maxOscilFreq,
-                dctThreshold,
-                scoreThreshold,
                 minDuration,
                 maxDuration,
+                minHz,
+                maxHz,
+                minOscillationFrequency,
+                maxOscillationFrequency,
+                dctDuration,
+                dctThreshold,
+                scoreThreshold,
                 scoreSmoothingWindow,
-                out scores,
+                out bandDecibels,
+                out oscScores,
                 out events,
                 out hits,
                 segmentStartOffset);
@@ -96,30 +101,34 @@ namespace AudioAnalysisTools
 
         public static void Execute(
             SpectrogramStandard sonogram,
-            int minHz,
-            int maxHz,
-            double dctDuration,
-            int minOscilFreq,
-            int maxOscilFreq,
-            double dctThreshold,
-            double scoreThreshold,
             double minDuration,
             double maxDuration,
+            int minHz,
+            int maxHz,
+            double? minOscilFrequency,
+            double? maxOscilFrequency,
+            double dctDuration,
+            double dctThreshold,
+            double scoreThreshold,
             int smoothingWindow,
-            out double[] scores,
+            out double[] bandDecibels,
+            out double[] oscScores,
             out List<OscillationEvent> events,
             out double[,] hits,
             TimeSpan segmentStartOffset)
         {
-            // smooth the frames to make oscillations more regular.
+            int minBin = (int)(minHz / sonogram.FBinWidth);
+            int maxBin = (int)(maxHz / sonogram.FBinWidth);
+            bandDecibels = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, sonogram.Data.GetLength(0) - 1, maxBin);
+
+            // smooth the time frames to make oscillations more regular.
             sonogram.Data = MatrixTools.SmoothRows(sonogram.Data, 5);
 
             //DETECT OSCILLATIONS
-            hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold);
+            hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFrequency.Value, maxOscilFrequency.Value, dctThreshold);
             if (hits == null)
             {
-                LoggedConsole.WriteLine("###### WARNING: DCT length too short to detect the maxOscilFreq");
-                scores = null;
+                oscScores = null;
                 events = null;
                 return;
             }
@@ -127,18 +136,20 @@ namespace AudioAnalysisTools
             hits = RemoveIsolatedOscillations(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
-            scores = GetOscillationScores(hits, minHz, maxHz, sonogram.FBinWidth);
+            oscScores = GetOscillationScores(hits, minHz, maxHz, sonogram.FBinWidth);
 
             // smooth the scores - window=11 has been the DEFAULT. Now letting user set this.
-            scores = DataTools.filterMovingAverage(scores, smoothingWindow);
+            oscScores = DataTools.filterMovingAverage(oscScores, smoothingWindow);
             events = ConvertOscillationScores2Events(
                 sonogram,
-                scores,
-                minHz,
-                maxHz,
-                scoreThreshold,
                 minDuration,
                 maxDuration,
+                minHz,
+                maxHz,
+                minOscilFrequency,
+                maxOscilFrequency,
+                oscScores,
+                scoreThreshold,
                 segmentStartOffset);
         }
 
@@ -159,7 +170,7 @@ namespace AudioAnalysisTools
         /// <param name="minOscilFreq">minimum oscillation freq.</param>
         /// <param name="maxOscilFreq">maximum oscillation freq.</param>
         /// <param name="dctThreshold">threshold - do not accept a DCT coefficient if its value is less than this threshold.</param>
-        public static double[,] DetectOscillations(SpectrogramStandard sonogram, int minHz, int maxHz, double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold)
+        public static double[,] DetectOscillations(SpectrogramStandard sonogram, int minHz, int maxHz, double dctDuration, double minOscilFreq, double maxOscilFreq, double dctThreshold)
         {
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
@@ -168,13 +179,14 @@ namespace AudioAnalysisTools
             int minIndex = (int)(minOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
             int maxIndex = (int)(maxOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
 
-            int midOscilFreq = minOscilFreq + ((maxOscilFreq - minOscilFreq) / 2);
+            double midOscilFreq = minOscilFreq + ((maxOscilFreq - minOscilFreq) / 2);
 
             //safety check
-            if (maxIndex > dctLength)
-            {
-                return null;
-            }
+            //if (maxIndex > dctLength)
+            //{
+            //    LoggedConsole.WriteLine("###### WARNING: The DCT length is too short to detect the maxOscillationFrequency");
+            //    return null;
+            //}
 
             int rows = sonogram.Data.GetLength(0);
             int cols = sonogram.Data.GetLength(1);
@@ -209,10 +221,10 @@ namespace AudioAnalysisTools
                         }
                     }
 
-                    r += 5; //skip rows
+                    r += 5; //skip rows i.e. do every sixth time frame.
                 }
 
-                c++; //do alternate columns
+                c++; //do alternate columns i.e. every second frequency bin.
             }
 
             return hits;
@@ -290,22 +302,22 @@ namespace AudioAnalysisTools
             int binCount = maxBin - minBin + 1;
 
             //set hit range slightly < half the bins. Half because only scan every second bin.
-            double hitRange = binCount * 0.5 * 0.8;
+            double hitRange = binCount * 0.4;
             var scores = new double[rows];
             for (int r = 0; r < rows; r++)
             {
                 //traverse columns in required band
-                int score = 0;
+                int hitCount = 0;
                 for (int c = minBin; c <= maxBin; c++)
                 {
                     if (hits[r, c] > 0)
                     {
-                        score++;
+                        hitCount++;
                     }
                 }
 
                 //Normalize the Matrix Values the hit score in [0,1]
-                scores[r] = score / hitRange;
+                scores[r] = hitCount / hitRange;
                 if (scores[r] > 1.0)
                 {
                     scores[r] = 1.0;
@@ -318,32 +330,40 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Converts the Oscillation Detector score array to a list of Oscillation Events.
         /// </summary>
-        /// <param name="scores">the array of OD scores.</param>
-        /// <param name="minHz">lower freq bound of the acoustic event.</param>
-        /// <param name="maxHz">upper freq bound of the acoustic event.</param>
-        /// <param name="scoreThreshold">threshold.</param>
         /// <param name="minDurationThreshold">min threshold.</param>
         /// <param name="maxDurationThreshold">max threshold.</param>
+        /// <param name="minHz">lower freq bound of the acoustic event.</param>
+        /// <param name="maxHz">upper freq bound of the acoustic event.</param>
+        /// <param name="minOscilFrequency">the minimum oscillations per second.</param>
+        /// <param name="maxOscilFrequency">the maximum oscillations per second.</param>
+        /// <param name="oscilScores">the array of OD scores.</param>
+        /// <param name="scoreThreshold">threshold.</param>
         /// <param name="segmentStartOffset">time offset.</param>
         public static List<OscillationEvent> ConvertOscillationScores2Events(
             SpectrogramStandard spectrogram,
-            double[] scores,
-            int minHz,
-            int maxHz,
-            double scoreThreshold,
             double minDurationThreshold,
             double maxDurationThreshold,
+            int minHz,
+            int maxHz,
+            double? minOscilFrequency,
+            double? maxOscilFrequency,
+            double[] oscilScores,
+            double scoreThreshold,
             TimeSpan segmentStartOffset)
         {
             // The name of source file
             string fileName = spectrogram.Configuration.SourceFName;
             double framesPerSec = spectrogram.FramesPerSecond;
             double freqBinWidth = spectrogram.FBinWidth;
-            int count = scores.Length;
+            int count = oscilScores.Length;
 
             // get the bin bounds of the frequency band of interest.
             int minBin = (int)(minHz / freqBinWidth);
             int maxBin = (int)(maxHz / freqBinWidth);
+
+            // get the oeriodicity bounds for the frequency band of interest.
+            double? minPeriodicity = 1 / maxOscilFrequency;
+            double? maxPeriodicity = 1 / minOscilFrequency;
 
             var events = new List<OscillationEvent>();
             bool isHit = false;
@@ -353,26 +373,20 @@ namespace AudioAnalysisTools
             //pass over all frames
             for (int i = 0; i < count; i++)
             {
-                if (isHit == false && scores[i] >= scoreThreshold)
+                if (isHit == false && oscilScores[i] >= scoreThreshold)
                 {
                     //start of an event
                     isHit = true;
                     startFrame = i;
                 }
                 else //check for the end of an event
-                    if (isHit && (scores[i] < scoreThreshold || i == count - 1))
+                    if (isHit && (oscilScores[i] < scoreThreshold || i == count - 1))
                 {
                     isHit = false;
                     double duration = (i - startFrame + 1) * frameOffset;
-                    if (duration < minDurationThreshold)
+                    if (duration < minDurationThreshold || duration > maxDurationThreshold)
                     {
-                        //skip events with duration shorter than threshold
-                        continue;
-                    }
-
-                    if (duration > maxDurationThreshold)
-                    {
-                        //skip events with duration longer than threshold
+                        //skip events with duration outside the required bounds
                         continue;
                     }
 
@@ -383,11 +397,19 @@ namespace AudioAnalysisTools
                     double trueEndTime = trueEndFrame * frameOffset;
                     int trueFrameLength = trueEndFrame - trueStartFrame + 1;
 
+                    // Determine if the periodicity is within the required bounds.
+                    var periodicity = framePeriodicity * frameOffset;
+                    if (periodicity < minPeriodicity || periodicity > maxPeriodicity)
+                    {
+                        //skip events with periodicity outside the required bounds
+                        continue;
+                    }
+
                     //obtain average score.
                     double sum = 0.0;
                     for (int n = trueStartFrame; n <= trueEndFrame; n++)
                     {
-                        sum += scores[n];
+                        sum += oscilScores[n];
                     }
 
                     double score = sum / trueFrameLength;

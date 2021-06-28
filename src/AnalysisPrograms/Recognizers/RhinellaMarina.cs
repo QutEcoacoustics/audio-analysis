@@ -134,20 +134,18 @@ namespace AnalysisPrograms.Recognizers
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
             // ######################################################################
-            // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            double minDurationOfAdvertCall = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
-
+            // ii: DO THE ANALYSIS AND RECOVER SCORES
             Oscillations2012.Execute(
                 (SpectrogramStandard)sonogram,
+                minDuration,
+                maxDuration,
                 minHz,
                 maxHz,
-                dctDuration,
                 minOscilFreq,
                 maxOscilFreq,
+                dctDuration,
                 dctThreshold,
                 eventThreshold,
-                minDurationOfAdvertCall,
-                maxDuration,
                 out var bandDecibels,
                 out var scores,
                 out var oscillationEvents,
@@ -163,7 +161,7 @@ namespace AnalysisPrograms.Recognizers
             foreach (AcousticEvent ae in events)
             {
                 //if (ae.Duration < minDurationOfReleaseCall) { continue; }
-                if (ae.EventDurationSeconds < minDurationOfAdvertCall)
+                if (ae.EventDurationSeconds < minDuration)
                 {
                     continue;
                 }
