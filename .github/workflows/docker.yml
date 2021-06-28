@@ -34,6 +34,6 @@ jobs:
         run: |
           $version = gh release view --json tagName,targetCommitish | ConvertFrom-Json
           $version | Write-Output
-          ./build/build_and_push -version $version.tagName -commit $version.targetCommitish
+          ./build/build_docker.ps1 -version $version.tagName -commit $version.targetCommitish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
