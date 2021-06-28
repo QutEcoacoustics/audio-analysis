@@ -246,10 +246,12 @@ namespace TowseyLibrary
         {
             var image = this.DrawPlot(height);
             int length = image.Width;
+            var pen = new Pen(Color.White, 1);
 
             var font = Drawing.Tahoma9;
             image.Mutate(g =>
             {
+                g.DrawLine(pen, 0, 0, length - 1, 0);
                 g.DrawTextSafe(this.title, font, Color.Red, new PointF(8, 0));
 
                 if (this.data.Length > 500)
