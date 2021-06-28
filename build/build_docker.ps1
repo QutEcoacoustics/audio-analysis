@@ -31,7 +31,7 @@ docker build `
     . `
     --build-arg GIT_COMMIT=$commit `
     --build-arg AP_VERSION=$version `
-    --build-arg CREATION_DATE=((Get-Date ).ToString("O"))
+    --build-arg CREATION_DATE=((Get-Date ).ToString("O")) `
     --secret id=GITHUB_AUTH_TOKEN,env=GITHUB_AUTH_TOKEN
 
 log "Pushing container" "Pushing"
