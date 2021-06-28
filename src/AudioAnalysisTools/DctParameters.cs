@@ -28,20 +28,6 @@ namespace AnalysisPrograms.Recognizers.Base
         public double DctThreshold { get; set; } = 0.5;
 
         /// <summary>
-        /// Gets or sets the minimum OSCILLATIONS PER SECOND
-        /// Ignore oscillation rates below the min amplitude above the max threshold.
-        /// </summary>
-        /// <value>The value in oscillations per second.</value>
-        public int MinOscillationFrequency { get; set; }
-
-        /// <summary>
-        /// Gets or sets the maximum OSCILLATIONS PER SECOND
-        /// Ignore oscillation rates below the min &amp; above the max threshold.
-        /// </summary>
-        /// <value>The value in oscillations per second.</value>
-        public int MaxOscillationFrequency { get; set; }
-
-        /// <summary>
         /// Gets or sets the Event threshold - use this to determine FP / FN trade-off for events.
         /// </summary>
         /// <value>A number between <c>0.0</c> and <c>1.0</c>.</value>

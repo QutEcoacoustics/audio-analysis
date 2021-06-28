@@ -12,5 +12,18 @@ namespace AnalysisPrograms.Recognizers.Base
     [YamlTypeTag(typeof(OscillationParameters))]
     public class OscillationParameters : DctParameters
     {
+        /// <summary>
+        /// Gets or sets the minimum OSCILLATIONS PER SECOND
+        /// Ignore oscillation rates below the min threshold.
+        /// </summary>
+        /// <value>The value in oscillations per second.</value>
+        public double? MinOscillationFrequency { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum OSCILLATIONS PER SECOND
+        /// Ignore oscillation rates above the max threshold.
+        /// </summary>
+        /// <value>The value in oscillations per second.</value>
+        public double? MaxOscillationFrequency { get; set; }
     }
 }
