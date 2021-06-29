@@ -366,28 +366,32 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
+        /// This method refactored and working on 29 June 2021
         /// It is assumed that the spectrogram image is grey scale.
-        /// NOTE: The score matrix must consist of reals in [0.0, 1.0].
-        /// NOTE: The image and the score matrix must have the same number of rows and columns.
-        /// In case of a spectrogram, it is assumed that the rows are frequency bins and the columns are individual spectra.
+        /// NOTE: The hits matrix is first normalised in [0.0, 1.0].
+        /// NOTE: The image and the hits matrix must have the same number of rows and columns.
+        /// It is assumed that the matrix rows are frequency bins and the columns are individual spectra.
         /// </summary>
         /// <param name="bmp">the spectrogram image.</param>
         /// <param name="hits">the matrix of scores or hits.</param>
         public static Image<Rgb24> OverlayScoresAsRedTransparency(Image<Rgb24> bmp, double[,] hits)
         {
             Image<Rgb24> newBmp = (Image<Rgb24>)bmp.Clone();
-            int rows = hits.GetLength(0);
-            int cols = hits.GetLength(1);
+            int rowCount = hits.GetLength(0);
+            int colCount = hits.GetLength(1);
 
-            if (rows != bmp.Height || cols != bmp.Width)
+            if (rowCount != bmp.Width || colCount != bmp.Height)
             {
                 LoggedConsole.WriteErrorLine("ERROR: Image and hits matrix do not have the same dimensions.");
                 return bmp;
             }
 
-            for (int r = 0; r < rows; r++)
+            // normalise the hit matrix
+            hits = DataTools.normalise(hits);
+
+            for (int r = 0; r < rowCount; r++)
             {
-                for (int c = 0; c < cols; c++)
+                for (int c = 0; c < colCount; c++)
                 {
                     if (hits[r, c] <= 0.0)
                     {
@@ -400,8 +404,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     }
 
                     var pixel = bmp[r, c];
-                    byte value = (byte)Math.Floor(hits[r, c] * 255);
-                    newBmp[r, c] = Color.FromRgb(value, pixel.G, pixel.B);
+                    byte value = (byte)Math.Floor(hits[r, c] * 255 / 2);
+                    newBmp[r, bmp.Height - c - 1] = Color.FromRgb(pixel.R, value, value);
                 }
             }
 
