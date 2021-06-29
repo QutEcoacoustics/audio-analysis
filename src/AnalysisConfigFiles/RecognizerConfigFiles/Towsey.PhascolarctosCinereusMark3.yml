@@ -21,6 +21,7 @@ Profiles:
     KoalaOsc: !OscillationParameters
         <<: *common_parameters
 
+        Algorithm: Standard
         ComponentName: Oscillation 
         FrameSize: 512
         FrameStep: 256
