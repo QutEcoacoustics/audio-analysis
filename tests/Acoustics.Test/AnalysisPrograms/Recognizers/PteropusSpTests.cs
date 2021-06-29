@@ -8,8 +8,11 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
     using System.Collections.Generic;
     using System.IO;
     using Acoustics.Test.TestHelpers;
+    using global::AnalysisPrograms.Recognizers;
+    using global::AnalysisPrograms.Recognizers.Base;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
+    using global::AudioAnalysisTools.Events;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
@@ -17,7 +20,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
     using SixLabors.ImageSharp;
 
     [TestClass]
-    public class PteropusSpTests
+    public class PteropusSpTests : OutputDirectoryTest
     {
         private DirectoryInfo outputDirectory;
         private AudioRecording audioRecording;
@@ -57,12 +60,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             //string abbreviatedSpeciesName = "Pteropus";
             int minHz = 200;
             int maxHz = 2000;
-            double minDurationSeconds = 1.0;
+            double minDurationSeconds = 0.8;
             double maxDurationSeconds = 10.0;
             double dctDuration = 0.8;
             double dctThreshold = 0.5;
             double minOscilFreq = 4.0;
-            double maxOscilFreq = 6.0;
+            double maxOscilFreq = 6.2;
             double eventThreshold = 0.6;
             TimeSpan segmentStartOffset = TimeSpan.Zero;
 
@@ -84,33 +87,58 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 out var hits,
                 segmentStartOffset);
 
+            // set up results so can draw spectrogram
+            // first convert Oscill events to EventCommon
+            var eventList = new List<EventCommon>();
+            foreach (var ev in acousticEvents)
+            {
+                eventList.Add(ev);
+            }
+
+            var plot = new Plot("Wing beats", oscScores, 0.5);
+            var plots = new List<Plot>
+            {
+                plot,
+            };
+
+            var results = new RecognizerResults()
+            {
+                NewEvents = eventList,
+                ScoreTrack = null,
+                Plots = plots,
+                Sonogram = this.sonogram,
+            };
+
+            this.SaveTestOutput(
+                outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, "PteropusSp"));
+
             Assert.AreEqual(this.sonogram.FrameCount, bandDecibels.Length);
             Assert.AreEqual(this.sonogram.FrameCount, oscScores.Length);
             Assert.AreEqual(4, acousticEvents.Count);
 
-            Assert.AreEqual(29.9, acousticEvents[0].EventStartSeconds, 0.1);
+            Assert.AreEqual(29.7, acousticEvents[0].EventStartSeconds, 0.1);
             Assert.AreEqual(32.0, acousticEvents[0].EventEndSeconds, 0.1);
             Assert.AreEqual(200, acousticEvents[0].LowFrequencyHertz);
             Assert.AreEqual(2000, acousticEvents[0].HighFrequencyHertz);
-            Assert.AreEqual(0.2, acousticEvents[0].Periodicity, 0.1);
+            Assert.AreEqual(0.2, acousticEvents[0].Periodicity, 0.02);
 
-            Assert.AreEqual(41.2, acousticEvents[1].EventStartSeconds, 0.1);
-            Assert.AreEqual(42.0, acousticEvents[1].EventEndSeconds, 0.1);
+            Assert.AreEqual(40.9, acousticEvents[1].EventStartSeconds, 0.1);
+            Assert.AreEqual(42.4, acousticEvents[1].EventEndSeconds, 0.1);
             Assert.AreEqual(200, acousticEvents[1].LowFrequencyHertz);
             Assert.AreEqual(2000, acousticEvents[1].HighFrequencyHertz);
-            Assert.AreEqual(0.2, acousticEvents[0].Periodicity, 0.1);
+            Assert.AreEqual(0.2, acousticEvents[0].Periodicity, 0.02);
 
             Assert.AreEqual(48.6, acousticEvents[2].EventStartSeconds, 0.1);
             Assert.AreEqual(51.0, acousticEvents[2].EventEndSeconds, 0.1);
             Assert.AreEqual(200, acousticEvents[2].LowFrequencyHertz);
             Assert.AreEqual(2000, acousticEvents[2].HighFrequencyHertz);
-            Assert.AreEqual(0.2, acousticEvents[0].Periodicity, 0.1);
+            Assert.AreEqual(0.2, acousticEvents[0].Periodicity, 0.02);
 
-            Assert.AreEqual(54.4, acousticEvents[3].EventStartSeconds, 0.1);
-            Assert.AreEqual(55.1, acousticEvents[3].EventEndSeconds, 0.1);
+            Assert.AreEqual(54.2, acousticEvents[3].EventStartSeconds, 0.1);
+            Assert.AreEqual(55.3, acousticEvents[3].EventEndSeconds, 0.1);
             Assert.AreEqual(200, acousticEvents[3].LowFrequencyHertz);
             Assert.AreEqual(2000, acousticEvents[3].HighFrequencyHertz);
-            Assert.AreEqual(0.2, acousticEvents[0].Periodicity, 0.1);
+            Assert.AreEqual(0.2, acousticEvents[0].Periodicity, 0.02);
 
             //Assert.AreEqual(0.6062, stats.SpectralEnergyDistribution, 1E-4);
         }
