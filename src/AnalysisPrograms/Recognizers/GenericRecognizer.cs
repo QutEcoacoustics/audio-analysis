@@ -406,16 +406,15 @@ namespace AnalysisPrograms.Recognizers
             }
             else if (profileConfig is OscillationParameters op)
             {
-                List<Plot> decibelPlots;
-                double[,] hits;
-                (spectralEvents, decibelPlots, hits) = Oscillations2012.GetComponentsWithOscillations(
+                List<Plot> oscPlots;
+                (spectralEvents, oscPlots) = OscillationParameters.GetOscillationEvents(
                     spectrogram,
                     op,
                     decibelThreshold,
                     segmentStartOffset,
                     profileName);
 
-                plots.AddRange(decibelPlots);
+                plots.AddRange(oscPlots);
             }
             else
             {

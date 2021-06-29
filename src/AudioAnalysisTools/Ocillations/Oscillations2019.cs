@@ -6,6 +6,7 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -19,54 +20,47 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class Oscillations2019
     {
-        public static void Execute(
+        public static (List<EventCommon> OscEvents, List<Plot> Plots) GetComponentsWithOscillations(
             SpectrogramStandard sonogram,
-            int minHz,
-            int maxHz,
-            double decibelThreshold,
-            double dctDuration,
-            double minOscFreq,
-            double maxOscFreq,
-            double dctThreshold,
-            double scoreThreshold,
-            double minDuration,
-            double maxDuration,
-            int smoothingWindow,
-            out double[] dctScores,
-            out List<OscillationEvent> events,
-            TimeSpan segmentStartOffset)
+            OscillationParameters op,
+            double? decibelThreshold,
+            TimeSpan segmentStartOffset,
+            string profileName)
         {
+            double minDuration = op.MinDuration.Value;
+            double maxDuration = op.MaxDuration.Value;
+            int minHz = op.MinHertz.Value;
+            int maxHz = op.MaxHertz.Value;
+            double minOscFreq = op.MinOscillationFrequency.Value;
+            double maxOscFreq = op.MaxOscillationFrequency.Value;
+            double dctDuration = op.DctDuration;
+            double dctThreshold = op.DctThreshold;
+            double scoreThreshold = op.EventThreshold;
+            int smoothingWindow = 5;
+
             // smooth the frames to make oscillations more regular.
             sonogram.Data = MatrixTools.SmoothRows(sonogram.Data, 5);
 
             // extract array of decibel values, frame averaged over required frequency band
             var decibelArray = SNR.CalculateFreqBandAvIntensity(sonogram.Data, minHz, maxHz, sonogram.NyquistFrequency);
 
-            // if first value is negative dB, this means noise removal was not done.
-            // Do noise removal now
-            //if (decibelArray[0] < 0.0)
-            //{
-            //    NoiseRemovalModal.CalculateNoiseUsingLamelsAlgorithm(decibelArray, out double _, out double _, out double noiseMode, out double _);
-            //    decibelArray = SNR.SubtractAndTruncate2Zero(decibelArray, noiseMode);
-            //}
-
             //DETECT OSCILLATIONS
             var framesPerSecond = sonogram.FramesPerSecond;
             DetectOscillations(
                 decibelArray,
                 framesPerSecond,
-                decibelThreshold,
+                decibelThreshold.Value,
                 dctDuration,
                 minOscFreq,
                 maxOscFreq,
                 dctThreshold,
-                out dctScores,
+                out var dctScores,
                 out var oscFreq);
 
             // smooth the scores - window=11 has been the DEFAULT. Now letting user set this.
             dctScores = DataTools.filterMovingAverage(dctScores, smoothingWindow);
 
-            events = Oscillations2012.ConvertOscillationScores2Events(
+            var oscillationEvents = OscillationEvent.ConvertOscillationScores2Events(
                 sonogram,
                 minDuration,
                 maxDuration,
@@ -77,6 +71,12 @@ namespace AudioAnalysisTools
                 dctScores,
                 scoreThreshold,
                 segmentStartOffset);
+
+            var oscEvents = new List<EventCommon>();
+            oscEvents.AddRange(oscillationEvents);
+            var plots = new List<Plot>();
+
+            return (oscEvents, plots);
         }
 
         /// <summary>

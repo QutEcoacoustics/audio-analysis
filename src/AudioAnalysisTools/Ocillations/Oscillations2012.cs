@@ -11,6 +11,7 @@ namespace AudioAnalysisTools
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.StandardSpectrograms;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
 
     /// <summary>
@@ -23,7 +24,7 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class Oscillations2012
     {
-        public static (List<EventCommon> SpectralEvents, List<Plot> DecibelPlots, double[,] Hits) GetComponentsWithOscillations(
+        public static (List<EventCommon> SpectralEvents, List<Plot> DecibelPlots) GetComponentsWithOscillations(
             SpectrogramStandard spectrogram,
             OscillationParameters op,
             double? decibelThreshold,
@@ -47,7 +48,7 @@ namespace AudioAnalysisTools
                 out var bandDecibels,
                 out var oscScores,
                 out var oscillationEvents,
-                out var hits,
+                out var hits, // keep this for debuggin purposes. See below.
                 segmentStartOffset);
 
             oscEvents.AddRange(oscillationEvents);
@@ -58,7 +59,12 @@ namespace AudioAnalysisTools
             var plot2 = Plot.PreparePlot(oscScores, $"{profileName} (Oscillation Event Score:{op.EventThreshold:F2})", op.EventThreshold);
             plots.Add(plot2);
 
-            return (oscEvents, plots, hits);
+            // save a debug image
+            //var image3 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, oscEvents, plots, hits, profileName + " Oscillations");
+            //var path = "C:\\temp\\oscillationsImage.png";
+            //image3.Save(path);
+
+            return (oscEvents, plots);
         }
 
         public static void Execute(
@@ -140,7 +146,7 @@ namespace AudioAnalysisTools
 
             // smooth the scores - window=11 has been the DEFAULT. Now letting user set this.
             oscScores = DataTools.filterMovingAverage(oscScores, smoothingWindow);
-            events = ConvertOscillationScores2Events(
+            events = OscillationEvent.ConvertOscillationScores2Events(
                 sonogram,
                 minDuration,
                 maxDuration,
@@ -325,117 +331,6 @@ namespace AudioAnalysisTools
             }
 
             return scores;
-        }
-
-        /// <summary>
-        /// Converts the Oscillation Detector score array to a list of Oscillation Events.
-        /// </summary>
-        /// <param name="minDurationThreshold">min threshold.</param>
-        /// <param name="maxDurationThreshold">max threshold.</param>
-        /// <param name="minHz">lower freq bound of the acoustic event.</param>
-        /// <param name="maxHz">upper freq bound of the acoustic event.</param>
-        /// <param name="minOscilFrequency">the minimum oscillations per second.</param>
-        /// <param name="maxOscilFrequency">the maximum oscillations per second.</param>
-        /// <param name="oscilScores">the array of OD scores.</param>
-        /// <param name="scoreThreshold">threshold.</param>
-        /// <param name="segmentStartOffset">time offset.</param>
-        public static List<OscillationEvent> ConvertOscillationScores2Events(
-            SpectrogramStandard spectrogram,
-            double minDurationThreshold,
-            double maxDurationThreshold,
-            int minHz,
-            int maxHz,
-            double? minOscilFrequency,
-            double? maxOscilFrequency,
-            double[] oscilScores,
-            double scoreThreshold,
-            TimeSpan segmentStartOffset)
-        {
-            // The name of source file
-            string fileName = spectrogram.Configuration.SourceFName;
-            double framesPerSec = spectrogram.FramesPerSecond;
-            double freqBinWidth = spectrogram.FBinWidth;
-            int count = oscilScores.Length;
-
-            // get the bin bounds of the frequency band of interest.
-            int minBin = (int)(minHz / freqBinWidth);
-            int maxBin = (int)(maxHz / freqBinWidth);
-
-            // get the oeriodicity bounds for the frequency band of interest.
-            double? minPeriodicity = 1 / maxOscilFrequency;
-            double? maxPeriodicity = 1 / minOscilFrequency;
-
-            var events = new List<OscillationEvent>();
-            bool isHit = false;
-            double frameOffset = 1 / framesPerSec;
-            int startFrame = 0;
-
-            //pass over all frames
-            for (int i = 0; i < count; i++)
-            {
-                if (isHit == false && oscilScores[i] >= scoreThreshold)
-                {
-                    //start of an event
-                    isHit = true;
-                    startFrame = i;
-                }
-                else //check for the end of an event
-                    if (isHit && (oscilScores[i] < scoreThreshold || i == count - 1))
-                {
-                    isHit = false;
-                    double duration = (i - startFrame + 1) * frameOffset;
-                    if (duration < minDurationThreshold || duration > maxDurationThreshold)
-                    {
-                        //skip events with duration outside the required bounds
-                        continue;
-                    }
-
-                    // This is end of an event, so initialise it
-                    // First trim the event because oscillation events spill over the edges of the true event due to use of the DCT.
-                    (int trueStartFrame, int trueEndFrame, double framePeriodicity) = OscillationEvent.TrimEvent(spectrogram, startFrame, minBin, i, maxBin);
-                    double trueStartTime = trueStartFrame * frameOffset;
-                    double trueEndTime = trueEndFrame * frameOffset;
-                    int trueFrameLength = trueEndFrame - trueStartFrame + 1;
-
-                    // Determine if the periodicity is within the required bounds.
-                    var periodicity = framePeriodicity * frameOffset;
-                    if (periodicity < minPeriodicity || periodicity > maxPeriodicity)
-                    {
-                        //skip events with periodicity outside the required bounds
-                        continue;
-                    }
-
-                    //obtain average score.
-                    double sum = 0.0;
-                    for (int n = trueStartFrame; n <= trueEndFrame; n++)
-                    {
-                        sum += oscilScores[n];
-                    }
-
-                    double score = sum / trueFrameLength;
-
-                    var ev = new OscillationEvent()
-                    {
-                        Name = "Oscillation",
-                        SegmentStartSeconds = segmentStartOffset.TotalSeconds,
-                        ResultStartSeconds = segmentStartOffset.TotalSeconds + trueStartTime,
-                        EventStartSeconds = segmentStartOffset.TotalSeconds + trueStartTime,
-                        EventEndSeconds = segmentStartOffset.TotalSeconds + trueEndTime,
-                        LowFrequencyHertz = minHz,
-                        HighFrequencyHertz = maxHz,
-                        Periodicity = framePeriodicity * frameOffset,
-                        Score = score,
-                        FileName = fileName,
-                    };
-
-                    //##########################################################################################
-                    //ev.Score2 = av / (i - startFrame + 1);
-                    //ev.Intensity = (int)ev.Score2; // store this info for later inclusion in csv file as Event Intensity
-                    events.Add(ev);
-                }
-            }
-
-            return events;
         }
 
         /// <summary>
