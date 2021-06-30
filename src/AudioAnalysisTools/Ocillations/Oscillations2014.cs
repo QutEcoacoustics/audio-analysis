@@ -916,7 +916,7 @@ namespace AudioAnalysisTools
         public static void GetOscillationUsingDct(double[] array, double framesPerSecond, double[,] cosines, out double oscilFreq, out double period, out double intenisty)
         {
             var modifiedArray = DataTools.SubtractMean(array);
-            var dctCoeff = MFCCStuff.DCT(modifiedArray, cosines);
+            var dctCoeff = MFCCStuff.CalculateCeptrum(modifiedArray, cosines);
 
             // convert to absolute values because not interested in negative values due to phase.
             for (int i = 0; i < dctCoeff.Length; i++)

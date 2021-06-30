@@ -193,7 +193,7 @@ namespace AnalysisPrograms.Recognizers.Frogs
             int dctLength = (int)Math.Round(framesPerSecond * dctDuration);
 
             // set up the cosine coefficients
-            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength);
+            double[,] cosines = DctMethods.Cosines(dctLength, dctLength);
 
             int upperBandMinBin = (int)Math.Round(lbConfig.UpperBandMinHz / freqBinWidth) + 1;
             int upperBandMaxBin = (int)Math.Round(lbConfig.UpperBandMaxHz / freqBinWidth) + 1;

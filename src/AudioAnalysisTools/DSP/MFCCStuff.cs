@@ -477,21 +477,13 @@ namespace AudioAnalysisTools.DSP
             int binCount = spectra.GetLength(1);  //number of filters in filter bank
 
             //set up the cosine coefficients. Need one extra to compensate for DC coeff.
-            double[,] cosines = Cosines(binCount, coeffCount + 1);
-
-            //following two lines write matrix of cos values for checking.
-            //string fPath = @"path\cosines.txt";
-            //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");
-
-            //following two lines write bmp image of cos values for checking.
-            //string fPath = @"path\cosines.bmp";
-            //ImageTools.DrawMatrix(cosines, fPath);
+            double[,] cosines = DctMethods.Cosines(binCount, coeffCount + 1);
 
             double[,] op = new double[frameCount, coeffCount];
             for (int i = 0; i < frameCount; i++)
             {
                 double[] spectrum = DataTools.GetRow(spectra, i); //transfer matrix row=i to vector
-                double[] cepstrum = DCT(spectrum, cosines);
+                double[] cepstrum = CalculateCeptrum(spectrum, cosines);
 
                 for (int j = 0; j < coeffCount; j++)
                 {
@@ -512,7 +504,7 @@ namespace AudioAnalysisTools.DSP
             for (int i = 0; i < frameCount; i++)
             {
                 double[] spectrum = DataTools.GetRow(spectra, i); //transfer matrix row=i to vector
-                double[] cepstrum = DCT(spectrum, cosines);
+                double[] cepstrum = CalculateCeptrum(spectrum, cosines);
 
                 for (int j = 0; j < coeffCount; j++)
                 {
@@ -523,35 +515,7 @@ namespace AudioAnalysisTools.DSP
             return op;
         }
 
-        /// <summary>
-        /// Returns a matrix of cosine basis functions.
-        /// These are prepared prior to performing a DCT, Discrete Cosine Transform.
-        /// The rows k = 0 to coeffCount are the basis functions.
-        /// The columns, m = 0 to M where M = signalLength or the length of the required DCT.
-        /// The value of m/M ranges from 0 to 1.0.
-        /// The value of Pi*m/M ranges from 0 to Pi radians.
-        /// The value of k*Pi*m/M ranges from 0 to k*Pi radians. WHen k=2, 2Pi radians corresponds to one rotation.
-        /// </summary>
-        /// <param name="signalLength">The length of the signal to be processed. e.g. the frequency bin count or filter bank count or ...</param>
-        /// <param name="coeffCount">The number of basis funcitons = the rquired number of DCT coefficients.</param>
-        public static double[,] Cosines(int signalLength, int coeffCount)
-        {
-            double[,] cosines = new double[coeffCount + 1, signalLength]; //get an extra coefficient because do not want DC coeff at [0].
-            for (int k = 0; k < coeffCount + 1; k++)
-            {
-                double kPiOnM = k * Math.PI / signalLength;
-
-                // for each spectral bin
-                for (int m = 0; m < signalLength; m++)
-                {
-                    cosines[k, m] = Math.Cos(kPiOnM * (m + 0.5)); //can also be Cos(kPiOnM * (m - 0.5)
-                }
-            }
-
-            return cosines;
-        }
-
-        public static double[] DCT(double[] spectrum, double[,] cosines)
+        public static double[] CalculateCeptrum(double[] spectrum, double[,] cosines)
         {
             int length = spectrum.Length;
             int coeffCount = cosines.GetLength(0);

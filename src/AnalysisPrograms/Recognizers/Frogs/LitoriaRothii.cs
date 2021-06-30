@@ -136,7 +136,7 @@ namespace AnalysisPrograms.Recognizers.Frogs
             int dctLength = (int)Math.Round(framesPerSecond * dctDuration);
 
             // set up the cosine coefficients
-            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength);
+            double[,] cosines = DctMethods.Cosines(dctLength, dctLength);
 
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);

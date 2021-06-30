@@ -272,7 +272,7 @@ namespace AudioAnalysisTools
             int cols = matrix.GetLength(1);
             double[,] hits = new double[rows, cols];
 
-            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
+            double[,] cosines = DctMethods.Cosines(dctLength, dctLength); //set up the cosine coefficients
 
             for (int r = 0; r < rows - dctLength; r++)
             {
@@ -293,7 +293,7 @@ namespace AudioAnalysisTools
 
                 //     DataTools.writeBarGraph(array);
 
-                double[] dct = MFCCStuff.DCT(array, cosines);
+                double[] dct = MFCCStuff.CalculateCeptrum(array, cosines);
                 for (int i = 0; i < dctLength; i++)
                 {
                     dct[i] = Math.Abs(dct[i]); //convert to absolute values

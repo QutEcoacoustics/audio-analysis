@@ -596,7 +596,7 @@ namespace AudioAnalysisTools
             //set up the matrix of cosine coefficients
             int coeffCount = 12; //only use first 12 coefficients.
             int binCount = target.GetLength(1);  //number of filters in filter bank
-            double[,] cosines = MFCCStuff.Cosines(binCount, coeffCount + 1); //set up the cosine coefficients
+            double[,] cosines = DctMethods.Cosines(binCount, coeffCount + 1); //set up the cosine coefficients
 
             //adjust target's dynamic range to that set by user
             target = SNR.SetDynamicRange(target, 3.0, dynamicRange); //set event's dynamic range

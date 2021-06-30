@@ -201,7 +201,7 @@ namespace AnalysisPrograms.Recognizers.Base
             var binCount = m.GetLength(1);
 
             //set up the cosine coefficients
-            double[,] cosines = MFCCStuff.Cosines(binCount, binCount);
+            double[,] cosines = DctMethods.Cosines(binCount, binCount);
 
             // set up time-frame arrays to store decibels, formant intensity and max index.
             var dBArray = new double[rowCount];
@@ -265,7 +265,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 // set the first four values in the returned DCT coefficients to 0.
                 // We require a minimum of three formants, that is, two harmonic intervals.
                 int lowerDctBound = 4;
-                var dctCoefficients = Oscillations2012.DoDct(normXr, cosines, lowerDctBound);
+                var dctCoefficients = DctMethods.DoDct(normXr, cosines, lowerDctBound);
                 int indexOfMaxValue = DataTools.GetMaxIndex(dctCoefficients);
                 intensity[t] = dctCoefficients[indexOfMaxValue];
                 maxIndexArray[t] = indexOfMaxValue;

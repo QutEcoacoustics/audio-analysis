@@ -136,7 +136,7 @@ namespace Acoustics.Test.AudioAnalysisTools.HarmonicAnalysis
         public void TestCosinesMatrixForDct()
         {
             // get an 8 x 8 matrix.
-            double[,] cosineBasisFunctions = MFCCStuff.Cosines(8, 8);
+            double[,] cosineBasisFunctions = DctMethods.Cosines(8, 8);
 
             //following line writes matrix of cos values for checking.
             var outputDir = new FileInfo(Path.Join(this.TestOutputDirectory.FullName, "Cosines.csv"));
