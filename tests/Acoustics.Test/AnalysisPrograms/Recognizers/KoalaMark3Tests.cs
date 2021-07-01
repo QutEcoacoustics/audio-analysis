@@ -13,6 +13,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
     using global::AudioAnalysisTools.Events.Types;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using static global::AnalysisPrograms.Recognizers.PhascolarctosCinereusMark3;
 
     // [Ignore("Currently failing but also this work has not yet been implemented")]
 
@@ -62,21 +63,22 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
-            Assert.AreEqual(12, events.Count);
+            Assert.AreEqual(9, events.Count);
             Assert.IsNull(scoreTrack);
             Assert.AreEqual(2, plots.Count);
-            //Assert.AreEqual(938, sonogram.FrameCount);
+            Assert.AreEqual(2299, sonogram.FrameCount);
 
             Assert.IsInstanceOfType(events[0], typeof(OscillationEvent));
 
-            var ev = (SpectralEvent)events[0];
+            var ev = (OscillationEvent)events[3];
 
-            Assert.AreEqual(5.12, ev.EventStartSeconds);
-            Assert.AreEqual(12.26, ev.EventEndSeconds);
+            Assert.AreEqual(10.67, ev.EventStartSeconds, 0.05);
+            Assert.AreEqual(12.26, ev.EventEndSeconds, 0.05);
             Assert.AreEqual(105, ev.LowFrequencyHertz);
             Assert.AreEqual(180, ev.HighFrequencyHertz);
-            Assert.AreEqual(21.7, ev.Score);
-            Assert.AreEqual(0.95, ev.ScoreNormalized);
+            Assert.AreEqual(21.7, ev.Score, 0.05);
+            Assert.AreEqual(0.95, ev.Periodicity, 0.05);
+            Assert.AreEqual(0.95, ev.OscillationRate, 0.05);
         }
     }
 }

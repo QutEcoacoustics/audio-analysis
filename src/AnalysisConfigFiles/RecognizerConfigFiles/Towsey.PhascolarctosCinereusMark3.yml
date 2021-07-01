@@ -2,6 +2,7 @@
 
 # Male Koala: Phascolarctos cinereus version 3.
 # Resample rate must be 2 X the desired Nyquist
+#ResampleRate: 20480
 ResampleRate: 22050
 # SegmentDuration: units=seconds;    
 SegmentDuration: 60
@@ -22,9 +23,10 @@ Profiles:
         <<: *common_parameters
 
         Algorithm: Standard
+        #Algorithm: Hits
         ComponentName: Oscillation 
-        FrameSize: 512
-        FrameStep: 256
+        FrameSize: 256
+        FrameStep: 100
         # min and max of the freq band to search
         MinHertz: 200          
         MaxHertz: 800
@@ -38,12 +40,12 @@ Profiles:
         # minimum acceptable amplitude of a DCT coefficient
         DctThreshold: 0.5
         # OSCILLATIONS PER SECOND: ignore oscillation rates below the min & above the max threshold
-        MinOscillationFrequency: 20
+        MinOscillationFrequency: 15
         MaxOscillationFrequency: 60
         # Event threshold - Determines FP / FN trade-off for events.
-        EventThreshold: 0.2
+        EventThreshold: 0.4
         DecibelThresholds:
-            - 6.0
+            - 3.0
 
 #################### POST-PROCESSING of EVENTS ###################
 
