@@ -24,7 +24,7 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class Oscillations2012
     {
-        public static (List<EventCommon> SpectralEvents, List<Plot> DecibelPlots) GetComponentsWithOscillations(
+        public static (List<EventCommon> SpectralEvents, List<Plot> DecibelPlots, double[,] Hits) GetComponentsWithOscillations(
             SpectrogramStandard spectrogram,
             OscillationParameters op,
             double? decibelThreshold,
@@ -32,7 +32,6 @@ namespace AudioAnalysisTools
             string profileName)
         {
             var oscEvents = new List<EventCommon>();
-            var plots = new List<Plot>();
 
             Oscillations2012.Execute(
                 spectrogram,
@@ -48,23 +47,19 @@ namespace AudioAnalysisTools
                 out var bandDecibels,
                 out var oscScores,
                 out var oscillationEvents,
-                out var hits, // keep this for debuggin purposes. See below.
+                out var hits, // return this for debugging purposes.
                 segmentStartOffset);
 
             oscEvents.AddRange(oscillationEvents);
 
-            // prepare plot of resultant Harmonics decibel array.
+            // prepare plot of resultant decibel and score arrays.
+            var plots = new List<Plot>();
             var plot1 = Plot.PreparePlot(bandDecibels, $"{profileName} (Oscillations:{decibelThreshold:F0}db)", decibelThreshold.Value);
             plots.Add(plot1);
             var plot2 = Plot.PreparePlot(oscScores, $"{profileName} (Oscillation Event Score:{op.EventThreshold:F2})", op.EventThreshold);
             plots.Add(plot2);
 
-            // save a debug image
-            //var image3 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, oscEvents, plots, hits, profileName + " Oscillations");
-            //var path = "C:\\temp\\oscillationsImage.png";
-            //image3.Save(path);
-
-            return (oscEvents, plots);
+            return (oscEvents, plots, hits);
         }
 
         public static void Execute(
@@ -77,7 +72,7 @@ namespace AudioAnalysisTools
             double? maxOscillationFrequency,
             double dctDuration,
             double dctThreshold,
-            double scoreThreshold,
+            double eventThreshold,
             out double[] bandDecibels,
             out double[] oscScores,
             out List<OscillationEvent> events,
@@ -96,7 +91,7 @@ namespace AudioAnalysisTools
                 maxOscillationFrequency,
                 dctDuration,
                 dctThreshold,
-                scoreThreshold,
+                eventThreshold,
                 scoreSmoothingWindow,
                 out bandDecibels,
                 out oscScores,
@@ -106,7 +101,7 @@ namespace AudioAnalysisTools
         }
 
         public static void Execute(
-            SpectrogramStandard sonogram,
+            SpectrogramStandard spectrogram,
             double minDuration,
             double maxDuration,
             int minHz,
@@ -115,23 +110,22 @@ namespace AudioAnalysisTools
             double? maxOscilFrequency,
             double dctDuration,
             double dctThreshold,
-            double scoreThreshold,
+            double eventThreshold,
             int smoothingWindow,
-            out double[] bandDecibels,
+            out double[] decibelArray,
             out double[] oscScores,
             out List<OscillationEvent> events,
             out double[,] hits,
             TimeSpan segmentStartOffset)
         {
-            int minBin = (int)(minHz / sonogram.FBinWidth);
-            int maxBin = (int)(maxHz / sonogram.FBinWidth);
-            bandDecibels = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, sonogram.Data.GetLength(0) - 1, maxBin);
+            // smooth the spectra in all time-frames.
+            spectrogram.Data = MatrixTools.SmoothRows(spectrogram.Data, 3);
 
-            // smooth the time frames to make oscillations more regular.
-            sonogram.Data = MatrixTools.SmoothRows(sonogram.Data, 5);
+            // extract array of decibel values, frame averaged over required frequency band
+            decibelArray = SNR.CalculateFreqBandAvIntensity(spectrogram.Data, minHz, maxHz, spectrogram.NyquistFrequency);
 
-            //DETECT OSCILLATIONS
-            hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFrequency.Value, maxOscilFrequency.Value, dctThreshold);
+            //DETECT OSCILLATIONS in the search band.
+            hits = DetectOscillations(spectrogram, minHz, maxHz, dctDuration, minOscilFrequency.Value, maxOscilFrequency.Value, dctThreshold);
             if (hits == null)
             {
                 oscScores = null;
@@ -142,12 +136,12 @@ namespace AudioAnalysisTools
             hits = RemoveIsolatedOscillations(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
-            oscScores = GetOscillationScores(hits, minHz, maxHz, sonogram.FBinWidth);
+            oscScores = GetOscillationScores(hits, minHz, maxHz, spectrogram.FBinWidth);
 
             // smooth the scores - window=11 has been the DEFAULT. Now letting user set this.
             oscScores = DataTools.filterMovingAverage(oscScores, smoothingWindow);
             events = OscillationEvent.ConvertOscillationScores2Events(
-                sonogram,
+                spectrogram,
                 minDuration,
                 maxDuration,
                 minHz,
@@ -155,7 +149,7 @@ namespace AudioAnalysisTools
                 minOscilFrequency,
                 maxOscilFrequency,
                 oscScores,
-                scoreThreshold,
+                eventThreshold,
                 segmentStartOffset);
         }
 
@@ -199,15 +193,27 @@ namespace AudioAnalysisTools
             double[,] hits = new double[rows, cols];
             double[,] matrix = sonogram.Data;
 
-            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
+            double[,] cosines = DctMethods.Cosines(dctLength, dctLength); //set up the cosine coefficients
 
             //traverse columns - skip DC column
             for (int c = minBin; c <= maxBin; c++)
             {
                 var dctArray = new double[dctLength];
 
-                for (int r = 0; r < rows - dctLength; r++)
+                for (int r = 1; r < rows - dctLength; r++)
                 {
+                    // only stop if current location is a peak
+                    if (matrix[r, c] < matrix[r - 1, c] || matrix[r, c] < matrix[r + 1, c])
+                    {
+                        continue;
+                    }
+
+                    // ... AND if current peak is above a decibel threhsold.
+                    if (matrix[r, c] < 3.0)
+                    {
+                        continue;
+                    }
+
                     // extract array and ready for DCT
                     for (int i = 0; i < dctLength; i++)
                     {
@@ -215,10 +221,10 @@ namespace AudioAnalysisTools
                     }
 
                     int lowerDctBound = minIndex / 4;
-                    var dctCoeff = DoDct(dctArray, cosines, lowerDctBound);
+                    var dctCoeff = DctMethods.DoDct(dctArray, cosines, lowerDctBound);
                     int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
 
-                    //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
+                    // mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
                     if (indexOfMaxValue >= minIndex && indexOfMaxValue <= maxIndex && dctCoeff[indexOfMaxValue] > dctThreshold)
                     {
                         for (int i = 0; i < dctLength; i++)
@@ -227,36 +233,15 @@ namespace AudioAnalysisTools
                         }
                     }
 
-                    r += 5; //skip rows i.e. do every sixth time frame.
+                    // skip rows i.e. do every sixth time frame.
+                    //r += 5;
                 }
 
-                c++; //do alternate columns i.e. every second frequency bin.
+                // do alternate columns i.e. every second frequency bin.
+                c++;
             }
 
             return hits;
-        }
-
-        public static double[] DoDct(double[] vector, double[,] cosines, int lowerDctBound)
-        {
-            //var dctArray = DataTools.Vector2Zscores(dctArray);
-            var dctArray = DataTools.SubtractMean(vector);
-            int dctLength = dctArray.Length;
-            double[] dctCoeff = MFCCStuff.DCT(dctArray, cosines);
-
-            // convert to absolute values because not interested in negative values due to phase.
-            for (int i = 0; i < dctLength; i++)
-            {
-                dctCoeff[i] = Math.Abs(dctCoeff[i]);
-            }
-
-            // remove lower coefficients from consideration because they dominate
-            for (int i = 0; i < lowerDctBound; i++)
-            {
-                dctCoeff[i] = 0.0;
-            }
-
-            dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
-            return dctCoeff;
         }
 
         /// <summary>

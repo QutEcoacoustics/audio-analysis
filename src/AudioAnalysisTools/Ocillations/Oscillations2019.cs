@@ -21,7 +21,7 @@ namespace AudioAnalysisTools
     public static class Oscillations2019
     {
         public static (List<EventCommon> OscEvents, List<Plot> Plots) GetComponentsWithOscillations(
-            SpectrogramStandard sonogram,
+            SpectrogramStandard spectrogram,
             OscillationParameters op,
             double? decibelThreshold,
             TimeSpan segmentStartOffset,
@@ -38,14 +38,14 @@ namespace AudioAnalysisTools
             double scoreThreshold = op.EventThreshold;
             int smoothingWindow = 5;
 
-            // smooth the frames to make oscillations more regular.
-            sonogram.Data = MatrixTools.SmoothRows(sonogram.Data, 5);
+            // smooth the spectra in all time-frames.
+            spectrogram.Data = MatrixTools.SmoothRows(spectrogram.Data, 3);
 
             // extract array of decibel values, frame averaged over required frequency band
-            var decibelArray = SNR.CalculateFreqBandAvIntensity(sonogram.Data, minHz, maxHz, sonogram.NyquistFrequency);
+            var decibelArray = SNR.CalculateFreqBandAvIntensity(spectrogram.Data, minHz, maxHz, spectrogram.NyquistFrequency);
 
-            //DETECT OSCILLATIONS
-            var framesPerSecond = sonogram.FramesPerSecond;
+            //DETECT OSCILLATIONS in the search band.
+            var framesPerSecond = spectrogram.FramesPerSecond;
             DetectOscillations(
                 decibelArray,
                 framesPerSecond,
@@ -61,7 +61,7 @@ namespace AudioAnalysisTools
             dctScores = DataTools.filterMovingAverage(dctScores, smoothingWindow);
 
             var oscillationEvents = OscillationEvent.ConvertOscillationScores2Events(
-                sonogram,
+                spectrogram,
                 minDuration,
                 maxDuration,
                 minHz,
@@ -74,7 +74,15 @@ namespace AudioAnalysisTools
 
             var oscEvents = new List<EventCommon>();
             oscEvents.AddRange(oscillationEvents);
+
+            // prepare plot of resultant decibel and score arrays.
             var plots = new List<Plot>();
+            var plot1 = Plot.PreparePlot(decibelArray, $"{profileName} (Oscillations:{decibelThreshold:F0}db)", decibelThreshold.Value);
+            plots.Add(plot1);
+            var plot2 = Plot.PreparePlot(dctScores, $"{profileName} (Oscillation Event Score:{op.EventThreshold:F1})", op.EventThreshold);
+            plots.Add(plot2);
+            var plot3 = Plot.PreparePlot(oscFreq, $"{profileName} (Oscillation Rate:{30:F1}/s)", 30);
+            plots.Add(plot3);
 
             return (oscEvents, plots);
         }
@@ -116,11 +124,7 @@ namespace AudioAnalysisTools
             oscFreq = new double[length];
 
             //set up the cosine coefficients
-            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength);
-
-            //following two lines write bmp image of cosine matrix values for checking.
-            //string bmpPath = @"C:\SensorNetworks\Output\cosines.png";
-            //ImageTools.DrawMatrix(cosines, bmpPath, true);
+            double[,] cosines = DctMethods.Cosines(dctLength, dctLength);
 
             for (int r = 1; r < length - dctLength; r++)
             {
@@ -130,7 +134,7 @@ namespace AudioAnalysisTools
                     continue;
                 }
 
-                // only stop if current location is a peak
+                // ... AND if current peak is above the decibel threhsold.
                 if (ipArray[r] < decibelThreshold)
                 {
                     continue;
@@ -140,7 +144,7 @@ namespace AudioAnalysisTools
                 var dctArray = DataTools.Subarray(ipArray, r, dctLength);
 
                 dctArray = DataTools.SubtractMean(dctArray);
-                double[] dctCoefficient = MFCCStuff.DCT(dctArray, cosines);
+                double[] dctCoefficient = MFCCStuff.CalculateCeptrum(dctArray, cosines);
 
                 // convert to absolute values because not interested in negative values due to phase.
                 for (int i = 0; i < dctLength; i++)
