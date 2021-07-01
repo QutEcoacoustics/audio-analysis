@@ -90,6 +90,9 @@ namespace AudioAnalysisTools
             double frameOffset = 1 / framesPerSec;
             int startFrame = 0;
 
+            // set up a debug list of strings to keep track of accept and reject reasons.
+            var debugList = new List<string>();
+
             //pass over all frames
             for (int i = 0; i < count; i++)
             {
@@ -107,6 +110,8 @@ namespace AudioAnalysisTools
                     if (duration < minDurationThreshold || duration > maxDurationThreshold)
                     {
                         //skip events with duration outside the required bounds
+                        var str = $"RejectEvent at {startFrame / framesPerSec:F2}s: duration={duration:F2}s - not between {minDurationThreshold:F2}s and {maxDurationThreshold:F2}s.";
+                        debugList.Add(str);
                         continue;
                     }
 
@@ -122,8 +127,13 @@ namespace AudioAnalysisTools
                     if (periodicity < minPeriodicity || periodicity > maxPeriodicity)
                     {
                         //skip events with periodicity outside the required bounds
+                        var str = $"RejectEvent at {startFrame / framesPerSec:F2}s: oscRate={1 / periodicity:F2}s - not between {1 / maxPeriodicity:F1}s and {1 / minPeriodicity:F1}s.";
+                        debugList.Add(str);
                         continue;
                     }
+
+                    var str2 = $"AcceptEvent at {startFrame / framesPerSec:F2}s: duration={duration:F2}s, oscRate={1 / periodicity:F2}s.";
+                    debugList.Add(str2);
 
                     //obtain average score.
                     double sum = 0.0;
@@ -154,6 +164,9 @@ namespace AudioAnalysisTools
                     events.Add(ev);
                 }
             }
+
+            //write list for debug purposes.
+            FileTools.WriteTextFile("C:\\temp\\oscillationEventsDebug.txt", debugList.ToArray());
 
             return events;
         }
