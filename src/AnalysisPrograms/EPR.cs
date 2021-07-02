@@ -19,9 +19,15 @@ namespace AnalysisPrograms
     using TowseyLibrary;
 
     /// <summary>
+    /// ######### 2021 NOTE:
+    /// This class was refactored in July 2021 to remove all dependencies on the Oscillations2010 class. The 2010 class was long out of date.
+    /// Instead, the Execute() method now calls the Oscillations2019 class which implements a similar but improved algorithm.
+    /// However some work remains to be done to remove the previous system of config dictionaries.
+    ///
+    /// ######## THE FOLLOWING NOTES DATE BACK TO 2010-2011.
     /// This program runs an alternative version of Event Pattern Recognition (EPR)
     /// It can be used to detect Ground Parrots.
-    /// It was developed by Michael Towsey in order to address difficulties in the original EPR algorithm - see more below.
+    /// It was developed by Michael Towsey in 20010 to address difficulties in the original EPR algorithm - see more below.
     /// COMMAND LINE ARGUMENTS:
     /// string recordingPath = args[0];   //the recording to be scanned
     /// string iniPath       = args[1];   //the initialisation file containing parameters for AED and EPR
@@ -113,10 +119,7 @@ namespace AnalysisPrograms
     ///  iv) Apply template to each valid start point.
     ///         a) extract AEs at dB threshold apporpriate to the valid AE
     ///         a) align centroid of valid AE with centroid of first template AE
-    ///         c) calculate the overlap score
-    ///
-    ///
-    ///
+    ///         c) calculate the overlap score.
     /// </summary>
     public class EPR
     {
@@ -179,98 +182,92 @@ namespace AnalysisPrograms
             //double frameOverlap      = FeltTemplates_Use.FeltFrameOverlap;   // default = 0.5
             double frameOverlap = double.Parse(dict["FRAME_OVERLAP"]);
 
-            //frequency band
+            //the search band band
             int minHz = int.Parse(dict["MIN_HZ"]);
             int maxHz = int.Parse(dict["MAX_HZ"]);
 
             // oscillation OD parameters
-            double dctDuration = double.Parse(dict[OscillationRecogniser.Key_DCT_DURATION]);   // 2.0; // seconds
-            double dctThreshold = double.Parse(dict[OscillationRecogniser.Key_DCT_THRESHOLD]);  // 0.5;
-            int minOscilFreq = int.Parse(dict[OscillationRecogniser.Key_MIN_OSCIL_FREQ]);  // 4;
-            int maxOscilFreq = int.Parse(dict[OscillationRecogniser.Key_MAX_OSCIL_FREQ]);  // 5;
-            bool normaliseDCT = false;
+            double dctDuration = double.Parse(dict["dctDuration"]);   // 2.0; // seconds
+            double dctThreshold = double.Parse(dict["dctThreshold"]);  // 0.5;
+            int minOscFreq = int.Parse(dict["minOscillationFrequency"]);  // 4;
+            int maxOscFreq = int.Parse(dict["maxOscillationFrequency"]);  // 5;
+            double decibelThreshold = double.Parse(dict["decibelThreshold"]);
 
-            // iii initialize the sonogram config class.
-            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.BaseName;
+            // iii initialize the spectrogram config with default values..
+            SonogramConfig sonoConfig = new SonogramConfig
+            {
+                SourceFName = recording.BaseName,
 
-            //sonoConfig.WindowSize = windowSize;
-            sonoConfig.WindowOverlap = frameOverlap;
+                //sonoConfig.WindowSize = windowSize;
+                WindowOverlap = frameOverlap,
+            };
 
-            // iv: generate the sonogram
-            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+            // iv: generate the spectrogram
+            var spectrogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
             Log.WriteLine(
                 "Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f2}%, Offset={3:f1}ms, Frames/s={4:f1}",
-                sonogram.Configuration.WindowSize, sonogram.FrameCount, sonogram.FrameDuration * 1000,
-                sonogram.FrameStep * 1000, sonogram.FramesPerSecond, frameOverlap);
-            int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
+                spectrogram.Configuration.WindowSize,
+                spectrogram.FrameCount,
+                spectrogram.FrameDuration * 1000,
+                spectrogram.FrameStep * 1000,
+                spectrogram.FramesPerSecond,
+                frameOverlap);
+
+            int binCount = (int)(maxHz / spectrogram.FBinWidth) - (int)(minHz / spectrogram.FBinWidth) + 1;
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
 
             // v: extract the subband energy array
-            Log.WriteLine("# Start extracting target event.");
-            double[] dBArray = SNR.DecibelsInSubband(sonogram.Data, minHz, maxHz, sonogram.FBinWidth);
-            for (int i = 0; i < sonogram.FrameCount; i++)
-            {
-                dBArray[i] /= binCount; // get average dB energy
-            }
+            // smooth the spectra in all time-frames.
+            spectrogram.Data = MatrixTools.SmoothRows(spectrogram.Data, 3);
 
-            double Q = 0.0;
-            double SD = 0.0;
-            throw new NotImplementedException("Mike changed the API here, I don't know how to fix it.");
-            dBArray = new[] { 0.0 }; // SNR.NoiseSubtractMode(dBArray, out Q, out SD);
-            double maxDB = 6.0;
-            double dBThreshold = 2 * SD / maxDB;  //set dB threshold to 2xSD above background noise
-            dBArray = SNR.NormaliseDecibelArray_ZeroOne(dBArray, maxDB);
-            dBArray = DataTools.filterMovingAverage(dBArray, 7);
+            // extract array of decibel values, frame averaged over required frequency band
+            var decibelArray = SNR.CalculateFreqBandAvIntensity(spectrogram.Data, minHz, maxHz, spectrogram.NyquistFrequency);
 
-            //Log.WriteLine("Q ={0}", Q);
-            //Log.WriteLine("SD={0}", SD);
-            //Log.WriteLine("Th={0}", dBThreshold); //normalised threshhold
+            // can noise reduce the decibel array here if it helps.
+            // but only if noise reduction not already done earlier.
 
             // #############################################################################################################################################
-            // vi: look for oscillation at required OR for ground parrots.
+            // vi: look for oscillation at required oscillation rate for ground parrots.
+            // The following call to the Oscillations2010 class is no longer available. Class deprecated on 2 July 2021.
+            // Instead use the below call to the Oscillations2019 class.
+            /*
             double[] odScores = Oscillations2010.DetectOscillationsInScoreArray(
                 dBArray,
                 dctDuration,
                 sonogram.FramesPerSecond,
                 dctThreshold,
                 normaliseDCT,
-                minOscilFreq,
-                maxOscilFreq);
+                minOscilRate,
+                maxOscilRate);
+            */
 
-            //odScores = SNR.NoiseSubtractMode(odScores, out Q, out SD);
-            double maxOD = 1.0;
-            odScores = SNR.NormaliseDecibelArray_ZeroOne(odScores, maxOD);
-            odScores = DataTools.filterMovingAverage(odScores, 5);
+            // vi: look for oscillation at required oscillation rate for ground parrots.
+            var framesPerSecond = spectrogram.FramesPerSecond;
+            Oscillations2019.DetectOscillations(
+                decibelArray,
+                framesPerSecond,
+                decibelThreshold,
+                dctDuration,
+                minOscFreq,
+                maxOscFreq,
+                dctThreshold,
+                out var dctScores,
+                out var oscFreq);
 
-            //odScores = DataTools.NormaliseMatrixValues(odScores); //NormaliseMatrixValues 0 - 1
-            //double odThreshold = (10 * SD) / maxOD;   //set od threshold to 2xSD above background noise
-            //double odThreshold = dctThreshold;
-            double odThreshold = 0.4;
-            Log.WriteLine("Max={0}", odScores.Max());
-
-            //Log.WriteLine("Q  ={0}", Q);
-            //Log.WriteLine("SD ={0}", SD);
-            Log.WriteLine("Th ={0}", dctThreshold); //normalised threshhold
+            double maxOctScore = 1.0;
+            dctScores = SNR.NormaliseDecibelArray_ZeroOne(dctScores, maxOctScore);
+            dctScores = DataTools.filterMovingAverage(dctScores, 5);
 
             // #############################################################################################################################################
             // vii: LOOK FOR GROUND PARROTS USING TEMPLATE
-            var template = GroundParrotRecogniser.ReadGroundParrotTemplateAsList(sonogram);
-            double[] gpScores = DetectEPR(template, sonogram, odScores, odThreshold);
+            var template = GroundParrotRecogniser.ReadGroundParrotTemplateAsList(spectrogram);
+            double[] gpScores = DetectEPR(template, spectrogram, dctScores, dctThreshold);
             gpScores = DataTools.normalise(gpScores); //NormaliseMatrixValues 0 - 1
 
             // #############################################################################################################################################
-
-            // iv: SAVE extracted event as matrix of dB intensity values
-            //FileTools.WriteMatrix2File(template, targetPath);                  // write template values to file PRIOR to noise removal.
-            //FileTools.WriteMatrix2File(templateMinusNoise, targetNoNoisePath); // write template values to file AFTER to noise removal.
-            //FileTools.WriteArray2File(noiseSubband, noisePath);
-
-            // v: SAVE image of extracted event in the original sonogram
+            // viii: SAVE image of extracted event in the original sonogram
             string sonogramImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingFileName) + ".png";
-
-            //DrawSonogram(sonogram, sonogramImagePath, dBArray, dBThreshold / maxDB, odScores, dctThreshold, gpScores, template);
         }
 
         public static double[] DetectEPR(List<AcousticEvent> template, BaseSonogram sonogram, double[] odScores, double odThreshold)
