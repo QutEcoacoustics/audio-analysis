@@ -8,6 +8,21 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v21.6.1.5 2021-07-04
+
+Version v21.6.1.5
+
+
+
+### Details
+
+[Compare v21.6.0.112...v21.6.1.5](https://github.com/QutBioacoustics/audio-analysis/compare/v21.6.0.112...v21.6.1.5)
+
+- 7f5cfff3 Anthony Truskinger - Fix bad line break in build docker script
+- f99e86e5 Anthony Truskinger - CI: docker publish fix script name
+- b45f7d7a Anthony Truskinger - Fix version in docker publish script
+- d41ffab0 Anthony Truskinger - CI: add automatic docker container builds
+- 644fa0d0 QUT Ecoacoustics - Update changelog for v21.6.0.112
 ## Ecoacoustics Audio Analysis Software v21.6.0.112 2021-06-25
 
 Version v21.6.0.112
@@ -1494,6 +1509,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 
