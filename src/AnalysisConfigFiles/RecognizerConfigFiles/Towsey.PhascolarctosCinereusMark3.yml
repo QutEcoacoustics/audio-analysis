@@ -23,7 +23,7 @@ Profiles:
         <<: *common_parameters
 
         Algorithm: Standard
-        #Algorithm: Hits
+        #Algorithm: MultiBin
         ComponentName: Oscillation 
         FrameSize: 256
         FrameStep: 100

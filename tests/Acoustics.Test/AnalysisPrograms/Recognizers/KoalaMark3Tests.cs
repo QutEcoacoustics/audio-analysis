@@ -63,22 +63,22 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
-            Assert.AreEqual(9, events.Count);
+            Assert.AreEqual(8, events.Count);
             Assert.IsNull(scoreTrack);
-            Assert.AreEqual(2, plots.Count);
-            Assert.AreEqual(2299, sonogram.FrameCount);
+            Assert.AreEqual(3, plots.Count);
+            Assert.AreEqual(5888, sonogram.FrameCount);
 
             Assert.IsInstanceOfType(events[0], typeof(OscillationEvent));
 
             var ev = (OscillationEvent)events[3];
 
-            Assert.AreEqual(10.67, ev.EventStartSeconds, 0.05);
-            Assert.AreEqual(12.26, ev.EventEndSeconds, 0.05);
-            Assert.AreEqual(105, ev.LowFrequencyHertz);
-            Assert.AreEqual(180, ev.HighFrequencyHertz);
-            Assert.AreEqual(21.7, ev.Score, 0.05);
-            Assert.AreEqual(0.95, ev.Periodicity, 0.05);
-            Assert.AreEqual(0.95, ev.OscillationRate, 0.05);
+            Assert.AreEqual(10.7, ev.EventStartSeconds, 0.05);
+            Assert.AreEqual(11.5, ev.EventEndSeconds, 0.05);
+            Assert.AreEqual(200, ev.LowFrequencyHertz);
+            Assert.AreEqual(800, ev.HighFrequencyHertz);
+            Assert.AreEqual(0.62, ev.Score, 0.05);
+            Assert.AreEqual(0.03, ev.Periodicity, 0.005);
+            Assert.AreEqual(31.7, ev.OscillationRate, 0.1);
         }
     }
 }
