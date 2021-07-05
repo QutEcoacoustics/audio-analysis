@@ -43,7 +43,7 @@ namespace AnalysisPrograms.Production.Arguments
         typeof(ContentDescription.BuildModel.Arguments),
         typeof(Audio2InputForConvCnn.Arguments),
         typeof(DifferenceSpectrogram.Arguments),
-        typeof(EPR.Arguments),
+        //typeof(EPR.Arguments),
         typeof(GroundParrotRecogniser.Arguments),
         typeof(LSKiwi3.Arguments),
         typeof(LSKiwiROC.Arguments),
