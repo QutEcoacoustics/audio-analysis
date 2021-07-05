@@ -176,8 +176,7 @@ namespace AnalysisPrograms
                 analysisType: AcousticIndices.TowseyAcoustic,
                 indexSpectrograms: null,
                 indexStatistics: indexDistributionsData,
-                segmentErrors: indexErrors,
-                imageChrome: false.ToImageChrome());
+                segmentErrors: indexErrors);
 
             Log.Success("Draw Long Duration Spectrograms complete!");
         }

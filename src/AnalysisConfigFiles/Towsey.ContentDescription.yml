@@ -58,5 +58,6 @@ LdSpectrogramConfig:
     XAxisTicIntervalSeconds: 3600
     FreqScale: "Linear"
     YAxisTicInterval: 1000
+    ImageChrome: true
 ...
 

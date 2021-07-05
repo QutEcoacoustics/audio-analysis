@@ -137,5 +137,11 @@ LdSpectrogramConfig:
     # Future options will be: Linear62Octaves31Nyquist11025, Linear125Octaves30Nyquist11025, Octaves24Nyquist32000
     FreqScale: "Linear"
     YAxisTicInterval: 1000
+
+    # "Chrome" is the term used to refer to all the decoration around the data.
+    # If `true`, titles, axes, and grids will be drawn on the FCS.
+    # If `false`, only the raw image will be output.
+    # Raw images are useful if you want to use FCS in another application.
+    ImageChrome: true
 ...
 

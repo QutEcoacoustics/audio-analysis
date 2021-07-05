@@ -32,4 +32,10 @@ XAxisTicIntervalSeconds: 3600
 #FreqScale: "Linear125Octaves7Tones28Nyquist32000"
 FreqScale: "Linear"
 YAxisTicInterval: 1000
+
+# "Chrome" is the term used to refer to all the decoration around the data.
+# If `true`, titles, axes, and grids will be drawn on the FCS.
+# If `false`, only the raw image will be output.
+# Raw images are useful if you want to use FCS in another application.
+ImageChrome: true
 ...
