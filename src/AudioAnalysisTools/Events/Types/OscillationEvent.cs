@@ -7,9 +7,11 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.StandardSpectrograms;
+    using log4net;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
@@ -21,6 +23,8 @@ namespace AudioAnalysisTools
         }
 
         // TODO: add extra metadata!!!
+
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
         /// Gets or sets the period in seconds between consecutive high points in an oscillation event.
@@ -166,7 +170,11 @@ namespace AudioAnalysisTools
             }
 
             //write list for debug purposes.
-            FileTools.WriteTextFile("C:\\temp\\oscillationEventsDebug.txt", debugList.ToArray());
+            //FileTools.WriteTextFile("C:\\temp\\oscillationEventsDebug.txt", debugList.ToArray());
+            foreach (var str in debugList)
+            {
+                Log.Debug(str);
+            }
 
             return events;
         }

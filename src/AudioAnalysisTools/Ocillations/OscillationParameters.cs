@@ -14,16 +14,28 @@ namespace AnalysisPrograms.Recognizers.Base
     using TowseyLibrary;
 
     /// <summary>
-    /// There are currently two algorithms implemented in AnalysisPrograms to detect temporal oscillations in a spectrogram, "Standard" and "Hits".
+    /// There are currently two algorithms implemented in AnalysisPrograms to detect temporal oscillations in a spectrogram, "Standard" and "MultiBin".
     /// At the heart of both is a Discrete Cosine Transform (DCT) which identifies an oscillation and determines its oscillation rate or the inverse, its periodicity.
-    /// Note that other algorithms could also be used to identify an oscillation, in particular a Discrete Fourier Transform, but currently this is not implemented.
-    /// The Standard DCT algorithm is implemented in the class Oscillations2019. The Hits algorithm is implemented in the class Oscillations2012.
-    /// Given a spectrogram, a search band and other constraints, these algorithms identify acoustic events containing temporal oscillations.
+    /// Note that other algorithms could also be used to identify an oscillation, in particular the Discrete Fourier Transform, but currently this is not implemented.
+    /// The Standard oscillation detection algorithm is implemented in the class Oscillations2019. The MultiBin algorithm is implemented in the class Oscillations2012.
+    /// Given a spectrogram, a search band and other parameters, these algorithms identify acoustic events containing temporal oscillations.
+    ///
+    /// ### WHEN TO USE WHICH ALGORITHM
+    /// Two algorithms are available because they are useful in different circumstances.
+    /// The STANDARD algorithm is useful for oscillation events whose component chirps/syllables appear to be vertical ridges in the spectrogram. An example is the inhalations of a koala bellow.
+    /// The decibel values in each time-frame (within the searchband) are averaged, so that the entire search band is collapsed to a single array of average decibel values.
+    /// This requires only a single pass of the DCT search along one array of averaged decibel values.
+    /// The MULTIBIN algorithm is useful for oscillation events whose component chirps/syllables slope upward or downward in the spectrogram, as happens with the kiwi call and some honeyeaters.
+    /// If the decibel values in each time-frame were averaged, the oscillations would become blurred.
+    /// Therefore this algorithm requires a DCT search along each frequency bin separately, hence the name "MultiBin".
+    /// Once all the bins have been scanned, the fraction of bins (in a frame) that are part of a detected oscillation becomes the oscillation score for that frame.
+    ///
+    /// ### PARAMETERS for oscillation detection
     /// Eight of the ten parameters required for these algorithms are the same - just two differences.
-    /// The identical parameters are as follows:
+    /// The eight identical parameters are:
     /// (1) MinDuration, (2) MaxDuration, (3) MinHertz, (4) MaxHertz. These constrain the size of the event within the spectrogram.
     /// MinHertz and MaxHertz idenfiy the search band. All discovered events will occupy this band.
-    /// (5) MinOscillationFrequency and (6) MaxOscillationFrequency set the minimum and maximum acceptable oscillation rate.
+    /// (5) MinOscillationFrequency and (6) MaxOscillationFrequency set the minimum and maximum acceptable oscillation rate for an event.
     /// Although these rates are defined as "oscillations per second" the calculations are done using periodicity. Periodicity = 1/OscillationRate.
     /// (7) DctDuration and (8) DctThreshold. These parameters determine how the DCT is implemented.
     /// DctDuration sets the time span (in seconds) of the DCT. Typically forreliable detection, you would want several oscillations to occur within the DCT duration.
@@ -46,7 +58,7 @@ namespace AnalysisPrograms.Recognizers.Base
     /// STEP 8: Search the array of DCT scores to find events that satisfy the constraints set by parameters (1) to (6). And ScoreThreshold.
     ///         events = OscillationEvent.ConvertOscillationScores2Events(spectrogram, minDuration, maxDuration, minHz, maxHz, minOscilFrequency,  maxOscilFrequency, oscScores, eventThreshold, segmentStartOffset);
     /// ###
-    /// ### THE HITS algorithm for detecting oscillations - This is implemented in the class Oscillations2012.
+    /// ### THE MultiBIN algorithm for detecting oscillations - This is implemented in the class Oscillations2012.
     /// STEP 1: smooth the spectrum in each timeframe. This is intended to make oscillations more regular. Currently a smoothing window of 3 is used by default.
     /// STEP 2: extract an array of decibel values, frame averaged over the search band.
     ///         decibelArray = SNR.CalculateFreqBandAvIntensity(sonogram.Data, minHz, maxHz, spectrogram.NyquistFrequency);
@@ -68,7 +80,7 @@ namespace AnalysisPrograms.Recognizers.Base
     public enum OscillationAlgorithm
     {
         Standard,
-        Hits,
+        MultiBin,
     }
 
     /// <summary>
@@ -112,7 +124,7 @@ namespace AnalysisPrograms.Recognizers.Base
             List<Plot> plots;
             double[,] hits = null;
 
-            if (algorithm == OscillationAlgorithm.Hits)
+            if (algorithm == OscillationAlgorithm.MultiBin)
             {
                 (events, plots, hits) = Oscillations2012.GetComponentsWithOscillations(
                     spectrogram,
