@@ -7,12 +7,14 @@ namespace AnalysisPrograms.Recognizers.Base
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using Acoustics.Shared;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
+    using log4net;
     using TowseyLibrary;
 
     /// <summary>
@@ -22,6 +24,8 @@ namespace AnalysisPrograms.Recognizers.Base
     [YamlTypeTag(typeof(HarmonicParameters))]
     public class HarmonicParameters : CommonParameters
     {
+        private static readonly ILog Log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         /// <summary>
         /// Gets or sets the dctThreshold.
         /// </summary>
@@ -52,20 +56,20 @@ namespace AnalysisPrograms.Recognizers.Base
             TimeSpan segmentStartOffset,
             string profileName)
         {
-            // a window to smooth the frequency bins
-
+            var dctThreshold = hp.DctThreshold.Value;
             var spectralEvents = new List<EventCommon>();
             var plots = new List<Plot>();
 
             double[] decibelMaxArray;
             double[] harmonicIntensityScores;
+
             (spectralEvents, decibelMaxArray, harmonicIntensityScores) = GetHarmonicEvents(
                                 spectrogram,
                                 hp.MinHertz.Value,
                                 hp.MaxHertz.Value,
                                 hp.SmoothingWindow,
                                 decibelThreshold.Value,
-                                hp.DctThreshold.Value,
+                                dctThreshold,
                                 hp.MinDuration.Value,
                                 hp.MaxDuration.Value,
                                 hp.MinFormantGap.Value,
@@ -73,8 +77,10 @@ namespace AnalysisPrograms.Recognizers.Base
                                 segmentStartOffset);
 
             // prepare plot of resultant Harmonics decibel array.
-            var plot = Plot.PreparePlot(decibelMaxArray, $"{profileName} (Harmonics:{decibelThreshold:F0}db)", decibelThreshold.Value);
-            plots.Add(plot);
+            var plot1 = Plot.PreparePlot(decibelMaxArray, $"{profileName} (Harmonics:{decibelThreshold:F0}db)", decibelThreshold.Value);
+            plots.Add(plot1);
+            var plot2 = Plot.PreparePlot(harmonicIntensityScores, $"{profileName} (HarmonicScores:{dctThreshold:F0})", dctThreshold);
+            plots.Add(plot2);
 
             return (spectralEvents, plots);
         }
@@ -317,6 +323,9 @@ namespace AnalysisPrograms.Recognizers.Base
 
             var events = new List<EventCommon>();
 
+            int rejectionCount = 0;
+            double rejectedDuration = 0.0;
+
             // pass over all time frames
             for (int i = 0; i < frameCount; i++)
             {
@@ -336,7 +345,12 @@ namespace AnalysisPrograms.Recognizers.Base
 
                     if (duration < minDuration || duration > maxDuration)
                     {
-                        //skip events with duration shorter than threshold
+                        //skip events with invalid duration
+                        //var message = $"Harmonic event rejected - {duration} duration not in {minDuration}..{maxDuration}";
+                        //Log.Info(message);
+
+                        rejectionCount++;
+                        rejectedDuration += duration;
                         continue;
                     }
 
@@ -379,6 +393,9 @@ namespace AnalysisPrograms.Recognizers.Base
                     events.Add(ev);
                 }
             }
+
+            var message = $"Harmonic events REJECTED = {rejectionCount}; having av duration = {(rejectedDuration / rejectionCount):F3} seconds. Accepted durations in {minDuration}..{maxDuration}";
+            Log.Info(message);
 
             return events;
         }
