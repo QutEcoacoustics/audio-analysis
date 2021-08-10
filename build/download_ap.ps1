@@ -447,7 +447,7 @@ $actions =  [ordered]@{
         } )
         "Check" =  ("AP executable should have execute permission", {
             if($IsWindows) { return $null }
-            $(/bin/test -x $ap_path ; 0 -eq $LASTEXITCODE)
+            $(/usr/bin/test -x $ap_path ; 0 -eq $LASTEXITCODE)
         } )
         "Uninstall" = $null
     }
