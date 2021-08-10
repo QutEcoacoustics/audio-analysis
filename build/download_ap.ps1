@@ -267,7 +267,8 @@ function New-InstallDirectory {
         if($Force -or $cmdlet.ShouldContinue("Deleting existing folder ``$Destination``?", $message)) {
             # hardcoding because this script can be executed anonymously - in that case it doesn't have a name we can use
             $script_name = "download_ap.ps1"
-            Get-ChildItem -Path "$Destination" -Exclude "$script_name","Logs" | Remove-Item -Recurse -ErrorAction Stop
+            # AT 2021: added -Force to cater for hidden files on linux (prefixed with a '.')
+            Get-ChildItem -Path "$Destination" -Exclude "$script_name","Logs" | Remove-Item -Recurse -Force -ErrorAction Stop
             Start-Sleep 1
         }
         else {
