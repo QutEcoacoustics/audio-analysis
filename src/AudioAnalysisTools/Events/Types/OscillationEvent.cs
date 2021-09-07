@@ -131,12 +131,12 @@ namespace AudioAnalysisTools
                     if (periodicity < minPeriodicity || periodicity > maxPeriodicity)
                     {
                         //skip events with periodicity outside the required bounds
-                        var str = $"RejectEvent at {startFrame / framesPerSec:F2}s: oscRate={1 / periodicity:F2}s - not between {1 / maxPeriodicity:F1}s and {1 / minPeriodicity:F1}s.";
+                        var str = $"RejectEvent at {startFrame / framesPerSec:F2}s: oscRate={1 / periodicity:F2}s - not between {1 / maxPeriodicity:F1}s and {1 / minPeriodicity:F1}osc/s.";
                         debugList.Add(str);
                         continue;
                     }
 
-                    var str2 = $"AcceptEvent at {startFrame / framesPerSec:F2}s: duration={duration:F2}s, oscRate={1 / periodicity:F2}s.";
+                    var str2 = $"AcceptEvent at {startFrame / framesPerSec:F2}s: duration={duration:F2}s, oscRate={1 / periodicity:F2}osc/s.";
                     debugList.Add(str2);
 
                     //obtain average score.
