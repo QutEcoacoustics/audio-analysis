@@ -144,73 +144,13 @@ namespace AnalysisPrograms.Recognizers
             Log.Info(message);
 
             // ############################### PRE-PROCESSING ###############################
-            // may at some future date do pre-processing
+            // if required at some future date, do pre-processing here
+
             // ############################### PROCESSING: DETECTION OF GENERIC EVENTS ###############################
             var results = RunProfiles(audioRecording, configuration, segmentStartOffset);
 
             // ############################### POST-PROCESSING OF GENERIC EVENTS ###############################
-
-            var postprocessingConfig = configuration.PostProcessing;
-
-            if (postprocessingConfig is not null)
-            {
-                var postEvents = new List<EventCommon>();
-
-                if (Log.Choice(postprocessingConfig.PostProcessInDecibelGroups ?? true, "Post-processing in decibel groups?"))
-                {
-                    foreach (var group in results.NewEvents.GroupBy(x => x.DecibelDetectionThreshold))
-                    {
-                        var decibelThreshold = group.Key;
-                        var events = group.ToList();
-
-                        Log.Debug($"TOTAL EVENTS detected by profiles at {decibelThreshold:F0} dB threshold = {events.Count}");
-
-                        var ppEvents = PostProcessingOfSpectralEvents(
-                            events,
-                            postprocessingConfig,
-                            results.Sonogram,
-                            segmentStartOffset);
-
-                        postEvents.AddRange(ppEvents);
-                    }
-                }
-                else
-                {
-                    postEvents = PostProcessingOfSpectralEvents(
-                        results.NewEvents,
-                        postprocessingConfig,
-                        results.Sonogram,
-                        segmentStartOffset);
-                }
-
-                // Running profiles with multiple dB thresholds can produce enclosed/nested events.
-                // Remove all but the outermost events.
-                if (configuration.PostProcessing.RemoveEnclosedEvents)
-                {
-                    Log.Debug($"\nREMOVE EVENTS ENCLOSED BY OTHER EVENTS.");
-                    Log.Debug($"Event count BEFORE removing enclosed events = {postEvents.Count}.");
-                    results.NewEvents = CompositeEvent.RemoveEnclosedEvents(postEvents);
-                    Log.Debug($"Event count AFTER  removing enclosed events = {postEvents.Count}.");
-                }
-                else
-                {
-                    Log.Debug($"\nENCLOSED EVENTS WERE NOT REMOVED - {postEvents.Count} events returned.");
-                    results.NewEvents = postEvents;
-                }
-
-                // Write out the events to log.
-                if (postEvents.Count > 0)
-                {
-                    int counter = 0;
-                    foreach (var ev in postEvents)
-                    {
-                        counter++;
-                        var spEvent = (SpectralEvent)ev;
-                        Log.Debug($"  Event[{counter}]: Start={spEvent.EventStartSeconds:f1}; End={spEvent.EventEndSeconds:f1}; Duration={spEvent.EventDurationSeconds:f2}; Bandwidth={spEvent.BandWidthHertz} Hz");
-                    }
-                }
-            }
-
+            results = PostProcessAcousticEvents(configuration, results, segmentStartOffset);
             return results;
         }
 
@@ -444,6 +384,72 @@ namespace AnalysisPrograms.Recognizers
             allResults.Plots.AddRange(plots);
             allResults.Sonogram = spectrogram;
             return allResults;
+        }
+
+        public static RecognizerResults PostProcessAcousticEvents(
+            GenericRecognizerConfig configuration,
+            RecognizerResults results,
+            TimeSpan segmentStartOffset)
+        {
+            var postprocessingConfig = configuration.PostProcessing;
+
+            var postEvents = new List<EventCommon>();
+
+            if (Log.Choice(postprocessingConfig.PostProcessInDecibelGroups ?? true, "Post-processing in decibel groups?"))
+            {
+                foreach (var group in results.NewEvents.GroupBy(x => x.DecibelDetectionThreshold))
+                {
+                    var decibelThreshold = group.Key;
+                    var events = group.ToList();
+
+                    Log.Debug($"TOTAL EVENTS detected by profiles at {decibelThreshold:F0} dB threshold = {events.Count}");
+
+                    var ppEvents = PostProcessingOfSpectralEvents(
+                        events,
+                        postprocessingConfig,
+                        results.Sonogram,
+                        segmentStartOffset);
+
+                    postEvents.AddRange(ppEvents);
+                }
+            }
+            else
+            {
+                postEvents = PostProcessingOfSpectralEvents(
+                    results.NewEvents,
+                    postprocessingConfig,
+                    results.Sonogram,
+                    segmentStartOffset);
+            }
+
+            // Running profiles with multiple dB thresholds can produce enclosed/nested events.
+            // Remove all but the outermost events.
+            if (configuration.PostProcessing.RemoveEnclosedEvents)
+            {
+                Log.Debug($"\nREMOVE EVENTS ENCLOSED BY OTHER EVENTS.");
+                Log.Debug($"Event count BEFORE removing enclosed events = {postEvents.Count}.");
+                results.NewEvents = CompositeEvent.RemoveEnclosedEvents(postEvents);
+                Log.Debug($"Event count AFTER  removing enclosed events = {postEvents.Count}.");
+            }
+            else
+            {
+                Log.Debug($"\nENCLOSED EVENTS WERE NOT REMOVED - {postEvents.Count} events returned.");
+                results.NewEvents = postEvents;
+            }
+
+            // Write out the events to log.
+            if (postEvents.Count > 0)
+            {
+                int counter = 0;
+                foreach (var ev in postEvents)
+                {
+                    counter++;
+                    var spEvent = (SpectralEvent)ev;
+                    Log.Debug($"  Event[{counter}]: Start={spEvent.EventStartSeconds:f1}; End={spEvent.EventEndSeconds:f1}; Duration={spEvent.EventDurationSeconds:f2}; Bandwidth={spEvent.BandWidthHertz} Hz");
+                }
+            }
+
+            return results;
         }
 
         /*
