@@ -584,7 +584,7 @@ namespace TowseyLibrary
                 for (int j = 0; j < cols; j++)
                 {
                     //convert decibels to power
-                    double power = Math.Exp(m[i, j] / 10 * Math.Log(10));
+                    double power = Math.Exp(m[i, j] / 10);
                     retM[i, j] = power;
                 }
             }
