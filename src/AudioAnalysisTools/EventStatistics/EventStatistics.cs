@@ -96,7 +96,7 @@ namespace AudioAnalysisTools.EventStatistics
         /// <summary>
         /// Gets or sets a measure of the distribution of energy over the time frames of the event.
         /// TemporalEnergyDistribution = 1 - Ht, where Ht is the temporal entropy calculated as for acoustic indices.
-        /// Minimum value = 0.0, when energy is unifrom over all time frames.
+        /// Minimum value = 0.0, when energy is uniform over all time frames.
         /// Maximum value = 1.0, when all the acoustic energy is concentrated in a single time frame.
         /// </summary>
         public double TemporalEnergyDistribution { get; set; }
@@ -104,7 +104,7 @@ namespace AudioAnalysisTools.EventStatistics
         /// <summary>
         /// Gets or sets a measure of the distribution of energy over the frequency bins of the event.
         /// SpectralEnergyDistribution = 1 - Hf, where Hf is the spectral entropy calculated as for acoustic indices.
-        /// Minimum value = 0.0, when energy is unifrom over all frequency bins.
+        /// Minimum value = 0.0, when energy is uniform over all frequency bins.
         /// Maximum value = 1.0, when all the acoustic energy is concentrated in a single frequency bin.
         /// </summary>
         public double SpectralEnergyDistribution { get; set; }
@@ -113,6 +113,8 @@ namespace AudioAnalysisTools.EventStatistics
         /// Gets or sets the event's signal-to-noise ratio in decibels.
         /// </summary>
         public double SnrDecibels { get; set; }
+
+        public int SpectralPeakCount { get; set; }
 
         public bool Error { get; set; } = false;
 

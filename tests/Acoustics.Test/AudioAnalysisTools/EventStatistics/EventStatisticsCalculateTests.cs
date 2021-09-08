@@ -59,8 +59,12 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             LoggedConsole.WriteLine($"Stats: DominantFrequency= {stats.DominantFrequency}");
 
             Assert.AreEqual(0.0, stats.TemporalEnergyDistribution, 1E-4);
-            Assert.AreEqual(0.61647, stats.SpectralEnergyDistribution, 1E-4);
-            Assert.AreEqual(6011, stats.SpectralCentroid);
+
+            //Assert.AreEqual(0.61647, stats.SpectralEnergyDistribution, 1E-4); ######################### PREVIOUS TEST RESULT
+            Assert.AreEqual(0.5163051699370136, stats.SpectralEnergyDistribution, 1E-4);
+
+            //Assert.AreEqual(6011, stats.SpectralCentroid); ######################### PREVIOUS TEST RESULT
+            Assert.AreEqual(5939, stats.SpectralCentroid);
             Assert.AreEqual(3998, stats.DominantFrequency);
 
             Assert.AreEqual(1500, stats.LowFrequencyHertz);
