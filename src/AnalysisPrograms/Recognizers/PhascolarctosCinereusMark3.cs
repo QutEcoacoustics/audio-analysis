@@ -5,16 +5,23 @@
 namespace AnalysisPrograms.Recognizers
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Runtime.CompilerServices;
+    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisPrograms.Recognizers.Base;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events;
+    using AudioAnalysisTools.EventStatistics;
     using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
+    using TowseyLibrary;
     using static AnalysisPrograms.Recognizers.GenericRecognizer;
 
     /// <summary>
@@ -72,7 +79,7 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class PhascolarctosCinereusMark3 : RecognizerBase
     {
-        private static readonly ILog BoobookLog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public override string Author => "Towsey";
 
@@ -123,9 +130,12 @@ namespace AnalysisPrograms.Recognizers
         {
             //class KoalaConfig3 is defined at bottom of this file.
             var genericConfig = (KoalaConfig3)configuration;
-            var recognizer = new GenericRecognizer();
 
-            RecognizerResults combinedResults = recognizer.Recognize(
+            // Instead of calling the GenericRecgonizer, call recognizer for Koala..
+            // THis is so that the output from the Profiles can be filtered BEFORE passing to Post-processing step.
+            //var recognizer = new GenericRecognizer();
+
+            RecognizerResults combinedResults = RecognizeKoalaBellows(
                 audioRecording,
                 genericConfig,
                 segmentStartOffset,
@@ -143,6 +153,122 @@ namespace AnalysisPrograms.Recognizers
 
             //throw new NotImplementedException();
             return combinedResults;
+        }
+
+        public static RecognizerResults RecognizeKoalaBellows(
+            AudioRecording audioRecording,
+            Config genericConfig,
+            TimeSpan segmentStartOffset,
+            Lazy<IndexCalculateResult[]> getSpectralIndexes,
+            DirectoryInfo outputDirectory,
+            int? imageWidth)
+        {
+            var configuration = (GenericRecognizerConfig)genericConfig;
+
+            if (configuration.Profiles?.Count < 1)
+            {
+                throw new ConfigFileException("The Koala recognizer needs at least one profile set. Zero were found.");
+            }
+
+            int count = configuration.Profiles.Count;
+            var message = $"Found {count} analysis profile(s): " + configuration.Profiles.Keys.Join(", ");
+            Log.Info(message);
+
+            var results = RunProfiles(audioRecording, configuration, segmentStartOffset);
+
+            // ############################### ADDITIONAL FILTERING OF OUTPUT EVENTS FROM PROFILES ###############################
+            results = FilterProfileEvents(results, segmentStartOffset);
+
+            // ############################### POST-PROCESSING OF GENERIC EVENTS ###############################
+
+            var postprocessingConfig = configuration.PostProcessing;
+            if (postprocessingConfig is not null)
+            {
+                results = PostProcessAcousticEvents(configuration, results, segmentStartOffset);
+            }
+
+            //############################# COMMENT OUT THE FOLLOWING LINES IF WANT TO VIEW THE ORIGINAL SPECTROGRAM
+            // Here we replace the original koala spectrogram with a shorter one that is easier to interpret because it is shorter, because less frame overlap.
+            int windowSize = 512;
+            int windowStep = 256;
+            results = RescaleResultsSpectrogram(results, windowSize, windowStep, audioRecording);
+
+            return results;
+        }
+
+        private static RecognizerResults FilterProfileEvents(RecognizerResults results, TimeSpan segmentOffset)
+        {
+            var events = results.NewEvents;
+            var spectrogram = results.Sonogram;
+            int count = 0;
+
+            // create new list of events
+            var newList = new List<EventCommon>();
+
+            foreach (var ev in events)
+            {
+                count++;
+                var spectralEvent = ev as SpectralEvent;
+                var start = TimeSpan.FromSeconds(spectralEvent.EventStartSeconds);
+                var end = TimeSpan.FromSeconds(spectralEvent.EventEndSeconds);
+                var lowFreq = spectralEvent.LowFrequencyHertz;
+                var topFreq = spectralEvent.HighFrequencyHertz;
+
+                var stats = EventStatisticsCalculate.CalculateEventStatstics(
+                        spectrogram,
+                        (start, end).AsInterval(),
+                        (lowFreq, topFreq).AsInterval(),
+                        segmentOffset);
+
+                // now filter event on its stats.
+                // s1 and s2 are measures of energy concentration. i.e. 1-entropy.
+                var s1 = stats.SpectralPeakCount;
+                var s2 = stats.SpectralEnergyDistribution;
+                var s3 = stats.SpectralCentroid;
+                var s4 = stats.DominantFrequency;
+
+                // var message = $" EVENT{count} starting {start.TotalSeconds:F1}sec: PeakCount {s1}; SpectEnergyDistr {s2:F4}; SpectralCentroid {s3}; DominantFreq {s4}";
+
+                if (s3 < 700)
+                {
+                    newList.Add(ev);
+                    var message = $" EVENT{count} starting {start.TotalSeconds:F1}sec ACCEPTED: PeakCount {s1}; SpectralCentroid {s3} < 700; DominantFreq {s4} < 700";
+                    Log.Info(message);
+                }
+                else
+                {
+                    var message = $" EVENT{count} starting {start.TotalSeconds:F1}sec REJECTED: PeakCount {s1};  SpectralCentroid {s3} >= 700; DominantFreq {s4} > 700";
+                    Log.Info(message);
+                }
+            }
+
+            // return filtered list of events in results.
+            results.NewEvents = newList;
+            return results;
+        }
+
+        private static RecognizerResults RescaleResultsSpectrogram(RecognizerResults results, int windowSize, int windowStep, AudioRecording audioRecording)
+        {
+            var newConfig = new SonogramConfig()
+            {
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = (windowSize - windowStep) / (double)windowSize,
+                WindowFunction = "HANNING",
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.0,
+            };
+
+            var newSpectrogram = new SpectrogramStandard(newConfig, audioRecording.WavReader);
+            results.Sonogram = newSpectrogram;
+
+            // also need to resize the plots
+            foreach (var plot in results.Plots)
+            {
+                plot.ScaleDataArray(newSpectrogram.FrameCount);
+            }
+
+            return results;
         }
 
         public class KoalaConfig3 : GenericRecognizerConfig, INamedProfiles<object>
