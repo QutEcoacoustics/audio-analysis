@@ -165,10 +165,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
             if (nyquist <= 16000)
             {
                 hertzInterval = 1000;
-            } else
+            }
+
             if (nyquist <= 8000)
             {
                 hertzInterval = 500;
+            }
+
+            if (nyquist <= 3000)
+            {
+                hertzInterval = 250;
             }
 
             // now add gridlines
