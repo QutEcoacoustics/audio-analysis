@@ -22,7 +22,6 @@ namespace AudioAnalysisTools.Events.Types
         /// </summary>
         /// <param name="newEvents">A list of events before post-processing.</param>
         /// <param name="postprocessingConfig">The config file to be used for post-processing.</param>
-        /// <param name="decibelThreshold">Decibel threshold used to detect the passed events.</param>
         /// <param name="spectrogram">A spectrogram of the events.</param>
         /// <param name="segmentStartOffset">Time  in seconds since beginning of the recording.</param>
         /// <returns>A list of events after post-processing.</returns>
@@ -39,7 +38,8 @@ namespace AudioAnalysisTools.Events.Types
             // Step 4: Remove events whose bandwidth is too small or large.
             // Step 5: Remove events that have excessive noise in their side-bands.
 
-            Log.DebugFormat($"\nBEFORE post-processing, event count: {0}.", newEvents.Count);
+            //Log.DebugFormat($"START post-processing Spectral Events, event count: {0}.", newEvents.Count);
+            Log.DebugFormat($"START post-processing {newEvents.Count} Spectral Events.");
 
             // 1: Combine overlapping events.
             // This will be necessary where many small events have been found - possibly because the dB threshold is set low.
@@ -71,21 +71,28 @@ namespace AudioAnalysisTools.Events.Types
                 {
                     // filter on number of syllables and their periodicity.
                     var maxComponentCount = sequenceConfig.SyllableMaxCount;
-                    var periodAv = sequenceConfig.ExpectedPeriod;
-                    var periodSd = sequenceConfig.PeriodStandardDeviation;
-                    var minPeriod = periodAv - (SigmaThreshold * periodSd);
-                    var maxPeriod = periodAv + (SigmaThreshold * periodSd);
-                    Log.Debug($"FILTER ON SYLLABLE SEQUENCE");
-                    Log.Debug($" Expected Syllable Sequence: max={maxComponentCount},  Period: av={periodAv}s, sd={periodSd:F3} min={minPeriod:F3}s, max={maxPeriod:F3}s");
-                    if (minPeriod <= 0.0)
+                    if (maxComponentCount < 2)
                     {
-                        Log.Error(
-                            $"Expected period={periodAv};sd={periodSd:F3} => min={minPeriod:F3}s;max={maxPeriod:F3}",
-                            new Exception("FATAL ERROR: This combination of values is invalid => negative minimum value."));
+                        Log.Error($"{maxComponentCount} is an invalid number of components for a sequence. Must be >2. Abort filtering of sequences.");
                     }
+                    else
+                    {
+                        var periodAv = sequenceConfig.ExpectedPeriod;
+                        var periodSd = sequenceConfig.PeriodStandardDeviation;
+                        var minPeriod = periodAv - (SigmaThreshold * periodSd);
+                        var maxPeriod = periodAv + (SigmaThreshold * periodSd);
+                        Log.Debug($"FILTER SYLLABLE SEQUENCES");
+                        Log.Debug($" Expected Syllable Sequence: Max syllables={maxComponentCount},  Period: av={periodAv}s, sd={periodSd:F3} min={minPeriod:F3}s, max={maxPeriod:F3}s");
+                        if (minPeriod <= 0.0)
+                        {
+                            Log.Error(
+                                $"Expected period={periodAv};sd={periodSd:F3} => min={minPeriod:F3}s;max={maxPeriod:F3}",
+                                new Exception("FATAL ERROR: This combination of values is invalid => negative minimum value."));
+                        }
 
-                    newEvents = EventFilters.FilterEventsOnSyllableCountAndPeriodicity(newEvents, maxComponentCount, periodAv, periodSd);
-                    Log.Debug($" Event count after filtering on periodicity = {newEvents.Count}");
+                        newEvents = EventFilters.FilterEventsOnSyllableCountAndPeriodicity(newEvents, maxComponentCount, periodAv, periodSd);
+                        Log.Debug($" Event count after filtering on periodicity = {newEvents.Count}");
+                    }
                 }
             }
 

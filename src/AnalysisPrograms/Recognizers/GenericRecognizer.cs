@@ -391,6 +391,8 @@ namespace AnalysisPrograms.Recognizers
             RecognizerResults results,
             TimeSpan segmentStartOffset)
         {
+            var eventCount = results.NewEvents.Count;
+            Log.Debug($"Start Postprocessing {eventCount} Acoustic Events.");
             var postprocessingConfig = configuration.PostProcessing;
 
             var postEvents = new List<EventCommon>();
@@ -415,7 +417,9 @@ namespace AnalysisPrograms.Recognizers
             }
             else
             {
-                postEvents = PostProcessingOfSpectralEvents(
+                Log.Debug($" Postprocessing all {eventCount} events in one group.");
+
+                postEvents = EventPostProcessing.PostProcessingOfSpectralEvents(
                     results.NewEvents,
                     postprocessingConfig,
                     results.Sonogram,

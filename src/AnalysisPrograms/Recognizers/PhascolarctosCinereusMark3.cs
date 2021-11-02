@@ -60,7 +60,7 @@ namespace AnalysisPrograms.Recognizers
     ///  reliance on oscillation detection alone produces a range of false-positive detections.
     ///
     /// OBJECTIVES FOR THIS RECOGNIZER MARK 3:
-    /// The expectation is that detection of additional bellow components (additional to oscillations) will help to reduce false-positives.However this is unlikely to reduce false-negatives.
+    /// The expectation is that detection of additional bellow components (additional to oscillations) will help to reduce false-positives. However this is unlikely to reduce false-negatives.
     ///
     /// REFERENCE: See following paper for more detail and links to other publications:
     /// "Estimating the Active Space of Male Koala Bellows: Propagation of Cues to Size and Identity in a Eucalyptus Forest"
@@ -184,7 +184,7 @@ namespace AnalysisPrograms.Recognizers
             var postprocessingConfig = configuration.PostProcessing;
             if (postprocessingConfig is not null)
             {
-                results = PostProcessAcousticEvents(configuration, results, segmentStartOffset);
+                results = GenericRecognizer.PostProcessAcousticEvents(configuration, results, segmentStartOffset);
             }
 
             //############################# COMMENT OUT THE FOLLOWING LINES IF WANT TO VIEW THE ORIGINAL SPECTROGRAM
@@ -201,6 +201,9 @@ namespace AnalysisPrograms.Recognizers
             var events = results.NewEvents;
             var spectrogram = results.Sonogram;
             int count = 0;
+
+            Log.Info($"Begin filtering {events.Count} profile events");
+            LoggedConsole.WriteLine($"    Spectrogram = {spectrogram.Data.GetLength(0)} frames X {spectrogram.Data.GetLength(1)} bins.");
 
             // create new list of events
             var newList = new List<EventCommon>();
@@ -224,25 +227,29 @@ namespace AnalysisPrograms.Recognizers
                 // s1 and s2 are measures of energy concentration. i.e. 1-entropy.
                 var s1 = stats.SpectralPeakCount;
                 var s2 = stats.SpectralEnergyDistribution;
-                var s3 = stats.SpectralCentroid;
+                var specCentroid = stats.SpectralCentroid;
                 var s4 = stats.DominantFrequency;
 
-                // var message = $" EVENT{count} starting {start.TotalSeconds:F1}sec: PeakCount {s1}; SpectEnergyDistr {s2:F4}; SpectralCentroid {s3}; DominantFreq {s4}";
+                var message1 = $" EVENT{count} starting {start.TotalSeconds:F1}sec: PeakCount {s1}; SpectEnergyDistr {s2:F4}; SpectralCentroid {specCentroid}; DominantFreq {s4}";
+                Log.Info(message1);
 
-                if (s3 < 700)
+                // FIlter on spectral centroid
+                if (specCentroid <= 700)
                 {
                     newList.Add(ev);
-                    var message = $" EVENT{count} starting {start.TotalSeconds:F1}sec ACCEPTED: PeakCount {s1}; SpectralCentroid {s3} < 700; DominantFreq {s4} < 700";
+                    var message = $"        Event{count} ACCEPTED: because SpectralCentroid <= 700";
                     Log.Info(message);
                 }
                 else
                 {
-                    var message = $" EVENT{count} starting {start.TotalSeconds:F1}sec REJECTED: PeakCount {s1};  SpectralCentroid {s3} >= 700; DominantFreq {s4} > 700";
+                    var message = $"        Event{count} REJECTED: because SpectralCentroid > 700";
                     Log.Info(message);
                 }
             }
 
             // return filtered list of events in results.
+            Log.Info($"Return {newList.Count} profile events");
+
             results.NewEvents = newList;
             return results;
         }

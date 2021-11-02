@@ -239,6 +239,8 @@ namespace AudioAnalysisTools.EventStatistics
             }
 
             // extract the required acoustic event and calculate the stats.
+            //LoggedConsole.WriteLine($"Extract frames {startFrame} to {endFrame} ---- Extract bins {bottomBin} to {topBin}");
+
             var eventMatrix = MatrixTools.Submatrix(decibelSpectrogram.Data, startFrame, bottomBin, endFrame, topBin);
             CalculateEventStatistics(eventMatrix, hertzBinWidth, spectralTarget, stats);
             return stats;
@@ -246,7 +248,10 @@ namespace AudioAnalysisTools.EventStatistics
 
         public static void CalculateEventStatistics(double[,] eventMatrix, double hertzBinWidth, Interval<double> spectralTarget, EventStatistics stats)
         {
-            // Get the SNR of the event. This is just the max value in the matrix because noise reduced
+            // ########## DEBUG ONLY
+            //LoggedConsole.WriteLine($"Matrix = {eventMatrix.GetLength(0)} frames X {eventMatrix.GetLength(1)} bins");
+
+            // Get the SNR of the event. This is same as the max value in the matrix because spectrogram is noise reduced
             MatrixTools.MinMax(eventMatrix, out _, out double max);
             stats.SnrDecibels = max;
 
@@ -257,7 +262,7 @@ namespace AudioAnalysisTools.EventStatistics
             var rowAverages = MatrixTools.GetRowAverages(eventMatrix);
 
             // ########## DEBUG ONLY - write array for debugging purposes.
-            LoggedConsole.WriteLine(DataTools.WriteArrayAsCsvLine(columnAverages, "0.00"));
+            //LoggedConsole.WriteLine("Freq Bin AVerages: " + DataTools.WriteArrayAsCsvLine(columnAverages, "0.00"));
 
             // calculate the mean and temporal standard deviation in decibels
             NormalDist.AverageAndSD(rowAverages, out double mean, out double stddev);
