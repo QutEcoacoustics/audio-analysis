@@ -145,9 +145,9 @@ namespace AnalysisPrograms.Recognizers.Base
             }
 
             // save a debug image of the spectrogram which includes the HITS overlay.
-            var image3 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, events, plots, hits, profileName + " Oscillations");
-            var path = "C:\\temp\\oscillationsImage.png";
-            image3.Save(path);
+            //var image3 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, events, plots, hits, profileName + " Oscillations");
+            //var path = "C:\\temp\\oscillationsImage.png";
+            //image3.Save(path);
 
             return (events, plots);
         }
