@@ -27,8 +27,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         /// <summary>
         /// The canonical recording used for this recognizer is #############################.
         /// </summary>
-        //private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "koala.wav");
-        private static readonly FileInfo TestAsset = new FileInfo("C:\\Ecoacoustics\\WavFiles\\KoalaMale\\Jackaroo_20080715-103940.wav");
+        private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "HoneymoonBay_StBees_20080905-001000.wav");
         private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles", "Towsey.PhascolarctosCinereusMark3.yml");
         private static readonly PhascolarctosCinereusMark3 Recognizer = new PhascolarctosCinereusMark3();
 
@@ -63,22 +62,30 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
-            Assert.AreEqual(8, events.Count);
+            Assert.AreEqual(3, events.Count);
             Assert.IsNull(scoreTrack);
             Assert.AreEqual(3, plots.Count);
-            Assert.AreEqual(5888, sonogram.FrameCount);
+            //Assert.AreEqual(5888, sonogram.FrameCount);
+            Assert.AreEqual(12025, sonogram.FrameCount);
 
-            Assert.IsInstanceOfType(events[0], typeof(OscillationEvent));
+            Assert.IsInstanceOfType(events[0], typeof(CompositeEvent));
 
-            var ev = (OscillationEvent)events[3];
-
-            Assert.AreEqual(10.7, ev.EventStartSeconds, 0.05);
-            Assert.AreEqual(11.5, ev.EventEndSeconds, 0.05);
-            Assert.AreEqual(200, ev.LowFrequencyHertz);
+            var ev = (CompositeEvent)events[1];
+            Assert.AreEqual(73.9, ev.EventStartSeconds, 0.05);
+            Assert.AreEqual(98.1, ev.EventEndSeconds, 0.05);
+            Assert.AreEqual(170, ev.LowFrequencyHertz);
             Assert.AreEqual(800, ev.HighFrequencyHertz);
-            Assert.AreEqual(0.62, ev.Score, 0.05);
-            Assert.AreEqual(0.03, ev.Periodicity, 0.005);
-            Assert.AreEqual(31.7, ev.OscillationRate, 0.1);
+
+            Assert.AreEqual(14, ev.ComponentEvents.Count);
+            var componentEv = ev.ComponentEvents[6];
+            Assert.IsInstanceOfType(componentEv, typeof(OscillationEvent));
+
+            Assert.AreEqual(0.71, componentEv.Score, 0.05);
+
+            var oscEv = (OscillationEvent)componentEv;
+            Assert.AreEqual(1.3, oscEv.EventDurationSeconds, 0.05);
+            Assert.AreEqual(0.0248, oscEv.Periodicity, 0.005);
+            Assert.AreEqual(40.24, oscEv.OscillationRate, 0.1);
         }
     }
 }

@@ -2,7 +2,6 @@
 
 # Male Koala: Phascolarctos cinereus version 3.
 # Resample rate must be 2 X the desired Nyquist
-#ResampleRate: 20480
 ResampleRate: 22050
 # SegmentDuration: units=seconds;    
 SegmentDuration: 60
@@ -26,9 +25,9 @@ Profiles:
         #Algorithm: MultiBin
         ComponentName: Oscillation 
         FrameSize: 256
-        FrameStep: 100
+        FrameStep: 110
         # min and max of the freq band to search
-        MinHertz: 200          
+        MinHertz: 170          
         MaxHertz: 800
         # Min and max durations for the length of a true event (seconds).
         MinDuration: 0.2
@@ -62,17 +61,19 @@ PostProcessing:
     CombineOverlappingEvents: false
 
     # 2: Combine possible syllable sequences
-#    SyllableSequence:
-#        SyllableStartDifference: 1.2
-#        SyllableHertzGap: 2400
-        # FilterSyllableSequence: true
+    SyllableSequence:
+        SyllableStartDifference: 3.5
+        SyllableHertzGap: 200
+        #FilterSyllableSequence: false
         # SyllableMaxCount: 3
         # ExpectedPeriod: 0.1
 
-# #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
-#    Duration:
-#        ExpectedDuration: 2.5
-#        DurationStandardDeviation: 0.6
+    # 3: Remove events whose duration lies outside 3 SDs of an expected value.
+    #    Koala calls can last for 90 seconds or more.
+    #    The following has the effect of removing events shorter than 3 seconds & longer than 93 sec.
+    Duration:
+        ExpectedDuration: 48.0
+        DurationStandardDeviation: 15.0
 
 #     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
 #  #   Bandwidth:
@@ -80,6 +81,7 @@ PostProcessing:
 #         BandwidthStandardDeviation: 40
 
 #     # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
+#          THis will not work for koala calls.
 #     SidebandActivity:
 #         LowerHertzBuffer: 150
 #         UpperHertzBuffer: 400
