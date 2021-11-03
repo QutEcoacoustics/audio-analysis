@@ -59,6 +59,9 @@ namespace AnalysisPrograms.Recognizers
     /// Consequently the oscillatory snoring is the most reliable part of the call for recognition purposes. However, experience with Koala Recognizer 1 indicates that
     ///  reliance on oscillation detection alone produces a range of false-positive detections.
     ///
+    /// CALL DURATION
+    /// Koala calls can last for 90 seconds or more. But they can stutter and die after a few seconds.
+    ///
     /// OBJECTIVES FOR THIS RECOGNIZER MARK 3:
     /// The expectation is that detection of additional bellow components (additional to oscillations) will help to reduce false-positives. However this is unlikely to reduce false-negatives.
     ///
@@ -73,9 +76,19 @@ namespace AnalysisPrograms.Recognizers
     ///    Frequency step = 10Hz.
     /// The spectrogram images in the above paper suggest Charlton's spectrogram Nyquist = 4kHz.
     ///
-    /// Guided by the above parameters used by Charlton, this Koala recognizer down-samples recordings to 10240 Hz which yields a Nyquist of 5120 Hz.
-    /// We use a window size of 512 samples giving a frame duration = 0.05s and a frequency bin width = 20 Hz.
-    /// We initially use a frame step of 256 samples.Charlton's frame overlap of >90% is computationally intensive and probably not necessary for our purposes.
+    /// RESULTS
+    /// 1: Guided by the above parameters used by Charlton, I first tried down-sampling the recordings to 10240 Hz which yields a Nyquist of 5120 Hz.
+    /// However this, in combination with a frame size of 512, did not work well.
+    /// The problem is that detecting oscillations of up to 60 cycles per second requires a higher sample rate to get a combination of high temporal and high frequency resolution.
+    /// Therefore I used a sample rate = 22050 and a window size of 256 samples giving a frame duration = 11.6 milliseconds and a frequency bin width = 86.1 Hz.
+    /// For event detection using Profiles, I use a frame step of 110 samples, which yields 200 frames per second.
+    /// However note that for the final output spectrograms for visualisation purposes, I use windowSize = 512; and windowStep = 220; See line 202.
+    ///
+    /// 2: FOr the second stage of recognition, I tried to filter the events found in stage 1 by calling EventStatisticsCalculate.CalculateEventStatstics().
+    /// I was expecting to find some statistic which would help to weed out false-positives.
+    /// But I did not have much success. Not sure why, so I have subsequently commented out the call to this method. See line 191.
+    ///
+    /// 3: For the final stage, i used only two post-processing steps: i) combine proximal events and ii) remove events with duration lt 3 seconds.
     /// </summary>
     internal class PhascolarctosCinereusMark3 : RecognizerBase
     {
@@ -149,9 +162,6 @@ namespace AnalysisPrograms.Recognizers
                 return combinedResults;
             }
 
-            // ################### DO POST-POST-PROCESSING of EVENTS HERE ###################
-
-            //throw new NotImplementedException();
             return combinedResults;
         }
 
@@ -177,7 +187,8 @@ namespace AnalysisPrograms.Recognizers
             var results = RunProfiles(audioRecording, configuration, segmentStartOffset);
 
             // ############################### ADDITIONAL FILTERING OF OUTPUT EVENTS FROM PROFILES ###############################
-            results = FilterProfileEvents(results, segmentStartOffset);
+            // commented this because could get my initial ideas to work!
+            //results = FilterProfileEvents(results, segmentStartOffset);
 
             // ############################### POST-PROCESSING OF GENERIC EVENTS ###############################
 
@@ -190,7 +201,7 @@ namespace AnalysisPrograms.Recognizers
             //############################# COMMENT OUT THE FOLLOWING LINES IF WANT TO VIEW THE ORIGINAL SPECTROGRAM
             // Here we replace the original koala spectrogram with a shorter one that is easier to interpret because it is shorter, because less frame overlap.
             int windowSize = 512;
-            int windowStep = 256;
+            int windowStep = 220;
             results = RescaleResultsSpectrogram(results, windowSize, windowStep, audioRecording);
 
             return results;
