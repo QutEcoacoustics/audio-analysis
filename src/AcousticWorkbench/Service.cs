@@ -5,11 +5,13 @@
 namespace AcousticWorkbench
 {
     using System;
+    using System.Collections.Generic;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
     using System.Threading.Tasks;
+    using AcousticWorkbench.Models;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
 
@@ -26,11 +28,13 @@ namespace AcousticWorkbench
         /// </remarks>
         public static readonly TimeSpan ClientTimeout = TimeSpan.FromSeconds(120 + (Environment.ProcessorCount * 10));
 
+        public static readonly NamingStrategy NamingStrategy = new SnakeCaseNamingStrategy();
+
         private const string ApplicationJson = "application/json";
 
         private readonly DefaultContractResolver defaultContractResolver = new DefaultContractResolver()
         {
-            NamingStrategy = new SnakeCaseNamingStrategy(),
+            NamingStrategy = NamingStrategy,
         };
 
         private readonly JsonSerializerSettings jsonSerializerSettings;
@@ -47,13 +51,18 @@ namespace AcousticWorkbench
 
         protected Service(IApi api)
         {
-            this.HttpClient = new HttpClient();
-
-            this.HttpClient.Timeout = ClientTimeout;
+            this.HttpClient = new HttpClient
+            {
+                Timeout = ClientTimeout,
+            };
             this.HttpClient.DefaultRequestHeaders.Accept.Add(MediaTypeWithQualityHeaderValue.Parse(ApplicationJson));
             this.HttpClient.BaseAddress = api.Base();
 
-            this.jsonSerializerSettings = new JsonSerializerSettings { ContractResolver = this.defaultContractResolver };
+            this.jsonSerializerSettings = new JsonSerializerSettings
+            {
+                ContractResolver = this.defaultContractResolver,
+                NullValueHandling = NullValueHandling.Ignore,
+            };
         }
 
         protected Service(IAuthenticatedApi authenticatedApi)
@@ -88,19 +97,24 @@ namespace AcousticWorkbench
             return new StringContent(serializedString, Encoding.UTF8, ApplicationJson);
         }
 
-        protected AcousticWorkbenchResponse<T> Deserialize<T>(string json)
+        protected AcousticWorkbenchSingleResponse<T> DeserializeSingle<T>(string json)
         {
-            return JsonConvert.DeserializeObject<AcousticWorkbenchResponse<T>>(json, this.jsonSerializerSettings);
+            return JsonConvert.DeserializeObject<AcousticWorkbenchSingleResponse<T>>(json, this.jsonSerializerSettings);
+        }
+
+        protected AcousticWorkbenchListResponse<T> DeserializeList<T>(string json)
+        {
+            return JsonConvert.DeserializeObject<AcousticWorkbenchListResponse<T>>(json, this.jsonSerializerSettings);
         }
 
         protected async Task<T> ProcessApiResult<T>(HttpResponseMessage response, string requestBody = "")
         {
             var json = await response.Content.ReadAsStringAsync();
 
-            AcousticWorkbenchResponse<T> result = null;
+            AcousticWorkbenchSingleResponse<T> result = null;
             try
             {
-                result = this.Deserialize<T>(json);
+                result = this.DeserializeSingle<T>(json);
             }
             catch (JsonReaderException)
             {
@@ -122,15 +136,58 @@ namespace AcousticWorkbench
                 throw new InvalidOperationException("Service has a null data blob that was not caught by error handling");
             }
 
+            // tag the models with Meta if possible
+            if (result.Data is IModelWithMeta model)
+            {
+                model.Meta = result.Meta;
+            }
+
+            return result.Data;
+        }
+
+        protected async Task<IReadOnlyCollection<T>> ProcessApiResults<T>(HttpResponseMessage response, string requestBody = "")
+        {
+            var json = await response.Content.ReadAsStringAsync();
+
+            AcousticWorkbenchListResponse<T> result = null;
+            try
+            {
+                result = this.DeserializeList<T>(json);
+            }
+            catch (JsonReaderException)
+            {
+                // throw if it was meant to work... if not then we're already in an error case... best effort to get to
+                // error handling block below.
+                if (response.IsSuccessStatusCode)
+                {
+                    throw;
+                }
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpResponseException(response, result?.Meta, requestBody);
+            }
+
+            if (result == null)
+            {
+                throw new InvalidOperationException("Service has a null data blob that was not caught by error handling");
+            }
+
+            // tag the models with Meta if possible
+            foreach (var item in result.Data)
+            {
+                if (item is IModelWithMeta model)
+                {
+                    model.Meta = result.Meta;
+                }
+            }
+
             return result.Data;
         }
 
         public class HttpResponseException : Exception
         {
-            public HttpResponseMessage Response { get; }
-
-            public Meta ResponseMeta { get; }
-
             public HttpResponseException(HttpResponseMessage response, Meta responseMeta, string requestBody = "")
             {
                 this.Response = response;
@@ -141,6 +198,10 @@ namespace AcousticWorkbench
                                $"Body: {requestBody}\n" +
                                $"API meta: {responseMeta}";
             }
+
+            public HttpResponseMessage Response { get; }
+
+            public Meta ResponseMeta { get; }
 
             public override string Message { get; }
         }

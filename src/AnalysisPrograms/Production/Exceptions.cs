@@ -10,6 +10,7 @@ namespace AnalysisPrograms.Production
     using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Reflection;
+    using System.Security.Authentication;
     using System.Text;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
@@ -34,6 +35,10 @@ namespace AnalysisPrograms.Production
 
         public static int NoData => 10;
 
+        public static int Error => 1;
+
+        public static int AuthenticationError => 99;
+
         internal static Dictionary<Type, ExceptionStyle> ErrorLevels => levels ?? (levels = CreateExceptionMap());
 
         public static string FormatReflectionTypeLoadException(Exception exception, bool verbose = false)
@@ -55,8 +60,7 @@ namespace AnalysisPrograms.Production
                     continue;
                 }
 
-                string fusionLog = null;
-
+                string fusionLog;
                 switch (inner)
                 {
                     case FileNotFoundException fnfex:
@@ -98,6 +102,10 @@ Please report this problem as a bug");
                     new ExceptionStyle() { ErrorCode = 4 }
                 },
                 {
+                    typeof(UnrecognizedCommandParsingException),
+                    new ExceptionStyle() { ErrorCode = 4 }
+                },
+                {
                     typeof(DirectoryNotFoundException),
 
                     // disabled print usage because these exceptions happen at all levels of the stack
@@ -108,6 +116,10 @@ Please report this problem as a bug");
 
                     // disabled print usage because these exceptions happen at all levels of the stack
                     new ExceptionStyle { ErrorCode = 52, PrintUsage = false }
+                },
+                {
+                    typeof(AuthenticationException),
+                    new ExceptionStyle { ErrorCode = AuthenticationError, PrintUsage = false }
                 },
                 {
                     typeof(InvalidDurationException),
@@ -257,6 +269,8 @@ Please report this problem as a bug");
     public class AnalysisOptionDevilException : Exception
     {
     }
+
+
 
     public class NoDeveloperMethodException : Exception
     {

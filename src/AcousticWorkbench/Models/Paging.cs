@@ -1,12 +1,17 @@
-// <copyright file="AcousticWorkbenchResponse{T}.cs" company="QutEcoacoustics">
+// <copyright file="Paging.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AcousticWorkbench
 {
-
-    public abstract class AcousticWorkbenchResponse<T>
+    public class Paging
     {
-        public Meta Meta { get; set; }
+        public int Page { get; set; }
+
+        public int Items { get; set; }
+
+        public int Total { get; set; }
+
+        public int MaxPage { get; set; }
     }
 }

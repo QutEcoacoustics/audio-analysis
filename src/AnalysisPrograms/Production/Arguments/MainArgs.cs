@@ -4,15 +4,16 @@
 
 namespace AnalysisPrograms.Production.Arguments
 {
-    using System.Threading.Tasks;
     using Acoustics.Shared;
     using AnalysisPrograms.AnalyseLongRecordings;
+    using AnalysisPrograms.Download;
     using AnalysisPrograms.Draw.RibbonPlots;
     using AnalysisPrograms.Draw.Zooming;
     using AnalysisPrograms.EventStatistics;
     using AnalysisPrograms.Recognizers.Base;
     using AnalysisPrograms.SpectrogramGenerator;
     using McMaster.Extensions.CommandLineUtils;
+    using System.Threading.Tasks;
 
     [Command(
         Meta.Name,
@@ -24,6 +25,7 @@ namespace AnalysisPrograms.Production.Arguments
     [Subcommand(
         typeof(HelpArgs),
         typeof(ListArgs),
+        typeof(DownloadCommand),
         typeof(AnalysesAvailable),
         typeof(CheckEnvironment.Arguments),
         typeof(AnalyseLongRecording.Arguments),

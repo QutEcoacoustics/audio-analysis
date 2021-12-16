@@ -4,6 +4,7 @@
 
 namespace AnalysisPrograms.Production
 {
+    using System.Collections.Generic;
     using McMaster.Extensions.CommandLineUtils;
 
     public static class CommandLineApplicationExtensions
@@ -17,6 +18,21 @@ namespace AnalysisPrograms.Production
             }
 
             return root;
+        }
+
+        public static IEnumerable<CommandLineApplication> AllCommandsRecursive(this CommandLineApplication app)
+        {
+            yield return app;
+
+            foreach (var command in app.Commands)
+            {
+                // it'd be nicer if we could just return the enumerable here, but we can't
+                // so iterate on the result manually
+                foreach (var result in command.AllCommandsRecursive())
+                {
+                    yield return result;
+                }
+            }
         }
     }
 }
