@@ -71,6 +71,9 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConfigFiles", "src\AnalysisConfigFiles\ConfigFiles.shproj", "{17DF521A-7CC1-48D9-BE0D-32F6FA13BB8A}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\AnalysisConfigFiles\ConfigFiles.projitems*{17df521a-7cc1-48d9-be0d-32f6fa13bb8a}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
