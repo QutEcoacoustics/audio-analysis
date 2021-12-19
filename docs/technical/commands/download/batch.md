@@ -66,7 +66,7 @@ Options:
 The options `--repo` and `--auth-token` are required.
 
 You can only choose one of `--project-ids`, `--region-ids`, or `--site-ids` per command.
-But for each you specify the option multiple times. For example, to search multiple sites, you can do this:
+But for each you can specify the option multiple times. For example, to search multiple sites, you can do this:
 
 ```
 ... -p 123 -p 456 -p 789 ...
