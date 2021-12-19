@@ -25,7 +25,7 @@ Downloads audio from a repository
 
 
 Commands:
-  batch         Download a multiple files from a remote repository
+  batch         Downloads multiple files from a remote repository
   file          Download a single file from a remote repository
   repositories  Lists available repositories which we can download from
   search        Preview which files would be downloaded by the batch command
