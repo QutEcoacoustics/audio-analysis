@@ -33,7 +33,7 @@ You'll need to log in using an authentication token. You can get one by logging 
 ## Options
 
 ```shell
-Download a single file from a remote repository
+Downloads one or more files from a remote repository
 
 Usage: AnalysisPrograms.exe download batch [options] <Ids>
 
