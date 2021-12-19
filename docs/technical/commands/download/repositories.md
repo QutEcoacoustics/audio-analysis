@@ -20,4 +20,4 @@ $ AnalysisPrograms.exe download repositories
 
 ## Options
 
-This command has not options.
+This command has no options.
