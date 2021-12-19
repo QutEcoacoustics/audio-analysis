@@ -56,7 +56,7 @@ Options:
 - `-repo|--repository <REPOSITORY>`: Which repository to use to download audio from. Either `A2O` or `Ecosounds`
 - `-a|--auth-token <AUTH_TOKEN>`: Your personal access token for the repository.
 
-The options `--repo` and `--auth-token` are required.
+The options `--repository` and `--auth-token` are required.
 
 You can only choose one of `--project-ids`, `--region-ids`, or `--site-ids` per command.
 But for each you specify the option multiple times. For example, to search multiple sites, you can do this:
