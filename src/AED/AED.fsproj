@@ -10,7 +10,7 @@
         <PackageReference Include="MathNet.Numerics.FSharp" Version="4.12.0" />
         <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta13.5.3" />
         <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3-alpha.0.35" />
-        <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11.4" />
+        <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14.6" />
     </ItemGroup>
   <ItemGroup>
       <Compile Include="Util.fs" />
