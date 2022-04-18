@@ -28,7 +28,7 @@
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.0.0" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta13.5.3" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3-alpha.0.35" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11.4" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14.8" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.261">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
