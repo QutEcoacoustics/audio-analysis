@@ -10,4 +10,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj" />
+  </ItemGroup>
 </Project>

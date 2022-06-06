@@ -23,6 +23,7 @@ namespace Acoustics.Test.Tools
     public class SoxUtilityTests : OutputDirectoryTest
     {
         [TestMethod]
+        [Ignore("We can no longer reliably genreate short 8.3 filenames")]
         public void WeHackAroundUnicodePathProblemsInWindowsSox()
         {
             if (!AppConfigHelper.IsWindows)

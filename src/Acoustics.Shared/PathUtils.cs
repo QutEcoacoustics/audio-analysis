@@ -10,9 +10,14 @@ namespace Acoustics.Shared
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Text;
+    using System.Text.RegularExpressions;
 
     public static class PathUtils
     {
+        public static readonly Regex SafeFilenameRegex = new Regex(
+            "[^-_A-Za-z0-9.]+",
+            RegexOptions.Compiled);
+
         private const int MaxPath = byte.MaxValue;
 
         private static readonly HashSet<char> UnsafeChars = new HashSet<char>(Path.GetInvalidPathChars());
@@ -37,6 +42,11 @@ namespace Acoustics.Shared
             }
 
             return false;
+        }
+
+        public static string MakeSafeFilename(string input)
+        {
+            return SafeFilenameRegex.Replace(input, string.Empty);
         }
 
         /// <summary>

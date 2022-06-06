@@ -218,8 +218,8 @@ Difference are:
 
             for (int y = bounds.Top; y < bounds.Height; y++)
             {
-                var expectedSpan = expected.GetPixelRowSpan(y - offset.Y);
-                var actualSpan = actual.GetPixelRowSpan(y);
+                var expectedSpan = expected.DangerousGetPixelRowMemory(y - offset.Y).Span;
+                var actualSpan = actual.DangerousGetPixelRowMemory(y).Span;
                 Rgba32 a = default, b = default;
 
                 for (int x = bounds.Left; x < bounds.Width; x++)

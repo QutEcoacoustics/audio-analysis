@@ -16,7 +16,7 @@ namespace AcousticWorkbench
         {
             Default = new Api()
             {
-                Host = "www.ecosounds.org",
+                Host = "api.ecosounds.org",
                 Protocol = "https",
                 Version = DefaultVersion,
             };

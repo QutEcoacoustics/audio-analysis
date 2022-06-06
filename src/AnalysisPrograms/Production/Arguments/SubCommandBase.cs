@@ -4,6 +4,7 @@
 
 namespace AnalysisPrograms.Production.Arguments
 {
+    using System;
     using System.ComponentModel.DataAnnotations;
     using System.Threading.Tasks;
     using McMaster.Extensions.CommandLineUtils;
@@ -15,7 +16,7 @@ namespace AnalysisPrograms.Production.Arguments
         /// Gets or sets the Parent command.
         /// This is set by CommandLineUtils automatically.
         /// </summary>
-        public MainArgs Parent { get; set; }
+        public object Parent { get; set; }
 
         /// <summary>
         /// This method is called when we run the command.
@@ -23,7 +24,19 @@ namespace AnalysisPrograms.Production.Arguments
         /// </summary>
         public Task<int> OnExecuteAsync(CommandLineApplication app)
         {
-            MainEntry.BeforeExecute(this.Parent, app);
+            var parent = this.Parent;
+            while (parent as MainArgs is null)
+            {
+                if (this.Parent is SubCommandBase subCommand)
+                {
+                    parent = subCommand.Parent;
+                    continue;
+                }
+
+                throw new InvalidOperationException("Cannot find main args");
+            }
+
+            MainEntry.BeforeExecute((MainArgs)parent, app);
 
             return this.Execute(app);
         }

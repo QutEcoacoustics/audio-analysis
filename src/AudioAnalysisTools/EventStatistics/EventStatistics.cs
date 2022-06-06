@@ -36,22 +36,6 @@ namespace AudioAnalysisTools.EventStatistics
 
         public long? AudioRecordingId { get; set; }
 
-        public string ListenUrl
-        {
-            get
-            {
-                if (this.AudioRecordingId.HasValue)
-                {
-                    return Api.Default.GetListenUri(
-                            this.AudioRecordingId.Value,
-                            Math.Floor(this.ResultStartSeconds))
-                        .ToString();
-                }
-
-                return string.Empty;
-            }
-        }
-
         public DateTimeOffset? AudioRecordingRecordedDate { get; set; }
 
         // Note: EventStartSeconds is in base class

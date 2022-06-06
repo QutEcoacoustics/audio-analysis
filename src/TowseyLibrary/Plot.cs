@@ -254,7 +254,7 @@ namespace TowseyLibrary
 
                 if (this.data.Length > 500)
                 {
-                    var size = TextMeasurer.Measure(this.title, new RendererOptions(font));
+                    var size = TextMeasurer.Measure(this.title, new TextOptions(font));
                     g.DrawTextSafe(this.title, font, Color.Red, new PointF(length - size.Width - 2, 0));
                 }
 

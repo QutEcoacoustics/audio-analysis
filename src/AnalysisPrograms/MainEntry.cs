@@ -13,7 +13,9 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
     using Acoustics.Shared.Logging;
     using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Spectre.Console;
     using log4net;
+    using Spectre.Console;
     using static System.Environment;
 
     /// <summary>
@@ -34,6 +36,9 @@ namespace AnalysisPrograms
                 colorConsole: !ApPlainLogging,
                 VerbosityToLevel(ApDefaultLogVerbosity ?? LogVerbosity.Info),
                 quietConsole: false);
+
+            // ensure spectre console fancy-ness is logged
+            AnsiConsole.Console = new LoggedAnsiConsole();
 
             Copyright();
 

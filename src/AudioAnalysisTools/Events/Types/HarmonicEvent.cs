@@ -4,7 +4,6 @@
 
 namespace AudioAnalysisTools
 {
-    using System;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
     using SixLabors.ImageSharp.Processing;
@@ -16,7 +15,7 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <value>
         /// The calculated interval between formant peaks, in hertz.
-        /// </value
+        /// </value>
         public double HarmonicInterval { get; set; }
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)

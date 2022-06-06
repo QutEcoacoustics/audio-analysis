@@ -22,7 +22,6 @@ namespace AnalysisPrograms
     using AnalysisPrograms.Production;
     using AnalysisPrograms.Production.Arguments;
     using AnalysisPrograms.Production.Parsers;
-
     using log4net;
     using log4net.Core;
     using McMaster.Extensions.CommandLineUtils;
@@ -69,6 +68,7 @@ namespace AnalysisPrograms
         {
             All,
             Single,
+            Node,
             ListAvailable,
             NoAction,
         }
@@ -324,8 +324,9 @@ previously found that the AP install is corrupt. Try installing AP again.
                 }
                 else
                 {
-                    command = root.Commands.FirstOrDefault(x =>
-                        x.Name.Equals(commandName, StringComparison.InvariantCultureIgnoreCase));
+                    command = root
+                        .AllCommandsRecursive()
+                        .FirstOrDefault(x => x.Name.Equals(commandName, StringComparison.InvariantCultureIgnoreCase));
 
                     // sometimes this is called from AppDomainUnhandledException, in which case throwing another exception
                     // just gets squashed!
@@ -340,16 +341,30 @@ previously found that the AP install is corrupt. Try installing AP again.
 
                 command.ShowHelp(false);
             }
+            else if (usageStyle == Usages.Node)
+            {
+                var node = root
+                        .AllCommandsRecursive()
+                        .FirstOrDefault(x => x.Name.Equals(commandName, StringComparison.InvariantCultureIgnoreCase));
+
+                var commands = node.Commands;
+
+                using var sb = new StringWriter();
+
+                ((CustomHelpTextGenerator)node.HelpTextGenerator).GenerateHeaderOnly(node, sb);
+                ((CustomHelpTextGenerator)CommandLineApplication.HelpTextGenerator).FormatCommands(sb, commands);
+
+                LoggedConsole.WriteLine(sb.ToString());
+            }
             else if (usageStyle == Usages.ListAvailable)
             {
                 var commands = root.Commands;
 
-                using (var sb = new StringWriter())
-                {
-                    ((CustomHelpTextGenerator)CommandLineApplication.HelpTextGenerator).FormatCommands(sb, commands);
+                using var sb = new StringWriter();
 
-                    LoggedConsole.WriteLine(sb.ToString());
-                }
+                ((CustomHelpTextGenerator)CommandLineApplication.HelpTextGenerator).FormatCommands(sb, commands);
+
+                LoggedConsole.WriteLine(sb.ToString());
             }
             else if (usageStyle == Usages.NoAction)
             {

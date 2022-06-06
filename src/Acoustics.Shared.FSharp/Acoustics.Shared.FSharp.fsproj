@@ -9,7 +9,7 @@
         <PackageReference Include="Accord" Version="3.8.2-alpha" />
         <PackageReference Include="Accord.Math" Version="3.8.2-alpha" />
         <PackageReference Include="Accord.Statistics" Version="3.8.2-alpha" />
-        <PackageReference Include="FSharp.Core" Version="5.0.0" />
+        <PackageReference Include="FSharp.Core" Version="6.0.1" />
     </ItemGroup>
     <ItemGroup>
         <Compile Include="AssemblyInfo.fs" />

@@ -7,13 +7,12 @@
 
 namespace AnalysisPrograms.Production
 {
+    using McMaster.Extensions.CommandLineUtils;
+    using McMaster.Extensions.CommandLineUtils.HelpText;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-
-    using McMaster.Extensions.CommandLineUtils;
-    using McMaster.Extensions.CommandLineUtils.HelpText;
 
     /// <summary>
     /// A default implementation of help text generation.
@@ -22,6 +21,7 @@ namespace AnalysisPrograms.Production
     {
         public CustomHelpTextGenerator()
         {
+            this.SortCommandsByName = false;
         }
 
         public Dictionary<string, string> EnvironmentOptions { get; set; } = null;
@@ -60,6 +60,13 @@ namespace AnalysisPrograms.Production
             // separate our header from the rest of the content
             output.WriteLine();
             base.GenerateHeader(application, output);
+        }
+
+        public void GenerateHeaderOnly(
+            CommandLineApplication application,
+            TextWriter output)
+        {
+            this.GenerateHeader(application, output);
         }
 
         private string FormatEnvironmentVariables()

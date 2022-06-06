@@ -79,8 +79,8 @@ namespace Acoustics.Shared.ImageSharp
             {
                 for (int y = rows.Min; y < rows.Max; y++)
                 {
-                    Span<TPixelBg> background = this.sourceFrame.GetPixelRowSpan(y).Slice(0, this.width);
-                    Span<TPixelFg> foreground = this.targetImage.GetPixelRowSpan(y).Slice(0, this.width);
+                    Span<TPixelBg> background = this.sourceFrame.DangerousGetPixelRowMemory(y).Slice(0, this.width).Span;
+                    Span<TPixelFg> foreground = this.targetImage.DangerousGetPixelRowMemory(y).Slice(0, this.width).Span;
                     this.blender.Blend(
                         this.configuration,
                         background,

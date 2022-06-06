@@ -2,10 +2,17 @@
     "cSpell.words": [
         "Analysing",
         "Ecoacoustics",
+        "Ecosounds",
         "executables",
         "parallelise",
         "recognisers",
         "recognizers",
         "visualise"
-    ]
+    ],
+    "markdownlint.config": {
+        "MD028": false,
+        "MD025": {
+            "front_matter_title": ""
+        }
+    }
 }

@@ -56,7 +56,7 @@ namespace AcousticWorkbench
         private async Task<IAuthenticatedApi> ProcessResult(HttpResponseMessage response)
         {
             var json = await response.Content.ReadAsStringAsync();
-            var result = this.Deserialize<LoginResponse>(json);
+            var result = this.DeserializeSingle<LoginResponse>(json);
 
             if (!response.IsSuccessStatusCode)
             {

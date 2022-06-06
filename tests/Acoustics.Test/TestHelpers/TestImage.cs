@@ -117,8 +117,8 @@ namespace Acoustics.Test.TestHelpers
                     // finally repeat each buffer onto image rows
                     for (int r = 0; r < repeats; r++)
                     {
-                        var rowData = this.image.GetPixelRowSpan(row);
-                        buffer.CopyTo(rowData);
+                        var rowData = this.image.DangerousGetPixelRowMemory(row);
+                        buffer.CopyTo(rowData.Span);
                         row++;
                     }
                 }

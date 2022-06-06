@@ -11,7 +11,5 @@ namespace AcousticWorkbench
         string Version { get; }
 
         string Protocol { get; }
-
-        //string Uri { get; }
     }
 }

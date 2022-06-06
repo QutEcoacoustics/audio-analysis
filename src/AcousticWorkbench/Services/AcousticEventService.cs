@@ -22,21 +22,12 @@ namespace AcousticWorkbench
             var uri = this.AuthenticatedApi.GetAudioEventFilterUri();
 
             var body = this.SerializeContent(
-                new
-                {
-                    filter = new
-                    {
-                        id = new
-                        {
-                            eq = audioEventId,
-                        },
-                    },
-                },
+                QueryFilter.Empty.FilterById(audioEventId),
                 out var stringBody);
 
             var response = await this.HttpClient.PostAsync(uri, body);
 
-            var audioEvents = await this.ProcessApiResult<AudioEvent[]>(response, stringBody);
+            var audioEvents = await this.ProcessApiResults<AudioEvent>(response, stringBody);
 
             return audioEvents.Single();
         }
