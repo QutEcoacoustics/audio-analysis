@@ -57,7 +57,7 @@ namespace Acoustics.Test.Shared.Drawing
         public void DrawProcessors_NoOverlap()
         {
             // no overlap does NOT throw for text
-            var textSize = TextMeasurer.MeasureBounds(TestText, new RendererOptions(TestFont));
+            var textSize = TextMeasurer.MeasureBounds(TestText, new TextOptions(TestFont));
             Assert.IsTrue(textSize.Width < 50 && textSize.Height < 50);
             this.testImage.Mutate(Parallel, x => x.DrawText(TestText, TestFont, TestBrush, NoOverlap));
             this.testImage.Mutate(Parallel, x => x.DrawText(TestText, TestFont, TestBrush, NoOverlapPositive));
@@ -78,7 +78,7 @@ namespace Acoustics.Test.Shared.Drawing
         public void DrawProcessors_CompleteOverlap()
         {
             // complete overlap does NOT throw for text
-            var textSize = TextMeasurer.MeasureBounds(TestText, new RendererOptions(TestFont));
+            var textSize = TextMeasurer.MeasureBounds(TestText, new TextOptions(TestFont));
             Assert.IsTrue(textSize.Width < 50 && textSize.Height < 50);
             this.testImage.Mutate(Parallel, x => x.DrawText(TestText, TestFont, TestBrush, CompleteOverlap));
 
@@ -94,7 +94,7 @@ namespace Acoustics.Test.Shared.Drawing
         public void DrawProcessors_PartialOverlap()
         {
             // partial overlap does NOT throw for text
-            var textSize = TextMeasurer.MeasureBounds(TestText, new RendererOptions(TestFont));
+            var textSize = TextMeasurer.MeasureBounds(TestText, new TextOptions(TestFont));
             Assert.IsTrue(textSize.Width < 50 && textSize.Height < 50);
             this.testImage.Mutate(Parallel, x => x.DrawText(TestText, TestFont, TestBrush, PartialOverlap));
             this.testImage.Mutate(Parallel, x => x.DrawText(TestText, TestFont, TestBrush, PartialOverlapPositive));
@@ -113,7 +113,7 @@ namespace Acoustics.Test.Shared.Drawing
         public void DrawProcessors_NoOverlap_NoParallel()
         {
             // no overlap does NOT throw for text
-            var textSize = TextMeasurer.MeasureBounds(TestText, new RendererOptions(TestFont));
+            var textSize = TextMeasurer.MeasureBounds(TestText, new TextOptions(TestFont));
             Assert.IsTrue(textSize.Width < 50 && textSize.Height < 50);
             this.testImage.Mutate(NoParallel, x => x.DrawText(TestText, TestFont, TestBrush, NoOverlap));
             this.testImage.Mutate(NoParallel, x => x.DrawText(TestText, TestFont, TestBrush, NoOverlapPositive));
@@ -134,7 +134,7 @@ namespace Acoustics.Test.Shared.Drawing
         public void DrawProcessors_CompleteOverlap_NoParallel()
         {
             // complete overlap does NOT throw for text
-            var textSize = TextMeasurer.MeasureBounds(TestText, new RendererOptions(TestFont));
+            var textSize = TextMeasurer.MeasureBounds(TestText, new TextOptions(TestFont));
             Assert.IsTrue(textSize.Width < 50 && textSize.Height < 50);
             this.testImage.Mutate(NoParallel, x => x.DrawText(TestText, TestFont, TestBrush, CompleteOverlap));
 
@@ -150,7 +150,7 @@ namespace Acoustics.Test.Shared.Drawing
         public void DrawProcessors_PartialOverlap_NoParallel()
         {
             // partial overlap does NOT throw for text
-            var textSize = TextMeasurer.MeasureBounds(TestText, new RendererOptions(TestFont));
+            var textSize = TextMeasurer.MeasureBounds(TestText, new TextOptions(TestFont));
             Assert.IsTrue(textSize.Width < 50 && textSize.Height < 50);
             this.testImage.Mutate(NoParallel, x => x.DrawText(TestText, TestFont, TestBrush, PartialOverlap));
             this.testImage.Mutate(NoParallel, x => x.DrawText(TestText, TestFont, TestBrush, PartialOverlapPositive));

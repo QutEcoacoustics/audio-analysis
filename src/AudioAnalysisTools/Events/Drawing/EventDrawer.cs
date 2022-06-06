@@ -65,7 +65,7 @@ namespace AudioAnalysisTools.Events.Drawing
                 return;
             }
 
-            var bounds = TextMeasurer.MeasureBounds(text, new RendererOptions(Roboto6));
+            var bounds = TextMeasurer.MeasureBounds(text, new TextOptions(Roboto6));
             var topLeft = options.Converters.GetPoint(@event);
 
             topLeft.Offset(0, -bounds.Height);

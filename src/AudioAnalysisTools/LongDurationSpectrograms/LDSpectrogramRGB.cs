@@ -891,7 +891,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 int x = 2;
                 g.DrawTextSafe(title, stringFont, Color.White, new PointF(x, 3));
 
-                var stringSize = TextMeasurer.Measure(title, new RendererOptions(stringFont));
+                var stringSize = TextMeasurer.Measure(title, new TextOptions(stringFont));
                 x += (int)stringSize.Width + 300;
 
                 var text = $"SCALE:(time x kHz)        {Meta.OrganizationTag}";

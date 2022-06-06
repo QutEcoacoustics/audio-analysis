@@ -52,7 +52,7 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestDrawingTextMissingArialFallsbackToRoboto()
         {
             // only some platforms don't have Arial
-            if (SystemFonts.TryFind(Drawing.Arial, out var _))
+            if (SystemFonts.TryGet(Drawing.Arial, out var _))
             {
                 Assert.Inconclusive("Can't test font fallback when Arial is available");
                 return;
@@ -69,7 +69,7 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestDrawingTextMissingTahomaFallsbackToRoboto()
         {
             // only some platforms don't have Tahoma
-            if (SystemFonts.TryFind(Drawing.Tahoma, out var _))
+            if (SystemFonts.TryGet(Drawing.Tahoma, out var _))
             {
                 Assert.Inconclusive("Can't test font fallback when Arial is available");
                 return;

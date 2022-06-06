@@ -79,7 +79,12 @@ namespace AudioAnalysisTools
                 .Cast<IPath>()
                 .ToArray();
 
-            var shapeOptions = new ShapeGraphicsOptions(options.FillOptions, new ShapeOptions());
+            var shapeOptions = new DrawingOptions()
+            {
+               GraphicsOptions = options.FillOptions,
+               ShapeOptions = new ShapeOptions(),
+            };
+
             foreach (var rect in rects)
             {
                 graphics.Fill(

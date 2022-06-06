@@ -43,26 +43,26 @@ namespace Acoustics.Shared.ImageSharp
         /// <summary>
         /// A predefined set of graphics options that have anti-aliasing disabled.
         /// </summary>
-        public static readonly ShapeGraphicsOptions NoAntiAlias = new ShapeGraphicsOptions()
+        public static readonly GraphicsOptions NoAntiAliasGraphics = new GraphicsOptions()
         {
-            GraphicsOptions = new GraphicsOptions()
-            {
-                Antialias = false,
-                //BlendPercentage = 1,
-                //ColorBlendingMode = PixelColorBlendingMode.Normal,
-                //AntialiasSubpixelDepth = 0,
-
-            },
-            ShapeOptions = new ShapeOptions()
-            {
-                //IntersectionRule = SixLabors.ImageSharp.Drawing.IntersectionRule.Nonzero,
-            },
+            Antialias = false,
+            //BlendPercentage = 1,
+            //ColorBlendingMode = PixelColorBlendingMode.Normal,
+            //AntialiasSubpixelDepth = 0,
         };
 
         /// <summary>
-        /// A predefined set of options for rendering text. Currently is equivalent to the default.
+        /// A predefined set of graphics options that have anti-aliasing disabled.
         /// </summary>
-        public static readonly TextGraphicsOptions TextOptions = new TextGraphicsOptions()
+        public static readonly DrawingOptions NoAntiAlias = new DrawingOptions()
+        {
+            GraphicsOptions = NoAntiAliasGraphics,
+        };
+
+        /// <summary>
+        /// A predefined set of drawing options for rendering text. Currently is equivalent to the default.
+        /// </summary>
+        public static readonly DrawingOptions TextOptions = new DrawingOptions()
         {
             // noop currently
         };
@@ -81,7 +81,7 @@ namespace Acoustics.Shared.ImageSharp
                 var fonts = Directory.EnumerateFiles(fontDirectory, "*.ttf");
                 foreach (var font in fonts)
                 {
-                    collection.Install(font);
+                    collection.Add(font);
                 }
 
                 return collection;
@@ -139,9 +139,9 @@ namespace Acoustics.Shared.ImageSharp
             if (fontFamily == Roboto)
             {
                 // shortcut case
-                return BundledFonts.CreateFont(fontFamily, size, style);
+                return BundledFonts.Get(fontFamily).CreateFont(size, style);
             }
-            else if (SystemFonts.TryFind(fontFamily, out var family))
+            else if (SystemFonts.TryGet(fontFamily, out var family))
             {
                 // default case
                 return family.CreateFont(size, style);
@@ -149,7 +149,7 @@ namespace Acoustics.Shared.ImageSharp
             else
             {
                 // fallback case
-                return BundledFonts.CreateFont(Roboto, size, style);
+                return BundledFonts.Get(Roboto).CreateFont(size, style);
             }
         }
 
@@ -167,9 +167,9 @@ namespace Acoustics.Shared.ImageSharp
         /// <summary>
         /// Measures the placement of each character in a rendered string of text.
         /// </summary>
-        public static GlyphMetric[] MeasureCharacters(string text, Font font, PointF location)
+        public static GlyphBounds[] MeasureCharacters(string text, Font font)
         {
-            var rendererOptions = new RendererOptions(font, location);
+            var rendererOptions = new TextOptions(font);
 
             TextMeasurer.TryMeasureCharacterBounds(text, rendererOptions, out var characterBounds);
             //font.Instance.

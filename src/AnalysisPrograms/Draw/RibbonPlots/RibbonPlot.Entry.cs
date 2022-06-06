@@ -186,7 +186,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
 
             // get width of text
             var scaledFont = Drawing.GetFont(Drawing.Roboto, ribbonHeight * 0.8f);
-            int labelWidth = (int)Math.Ceiling(TextMeasurer.Measure(someRibbon.Key.ToString(AppConfigHelper.RenderedDateFormatShort), new RendererOptions(scaledFont)).Width);
+            int labelWidth = (int)Math.Ceiling(TextMeasurer.Measure(someRibbon.Key.ToString(AppConfigHelper.RenderedDateFormatShort), new TextOptions(scaledFont)).Width);
 
             var finalHeight = Padding + ((Padding + ribbonHeight) * stats.Buckets);
             var ribbonLeft = HorizontalPadding + labelWidth + HorizontalPadding;
@@ -214,14 +214,12 @@ namespace AnalysisPrograms.Draw.RibbonPlots
             });
 
             var bucketDate = stats.Start;
-            var textGraphics = new TextGraphicsOptions()
+            var textGraphics = new TextOptions(scaledFont)
             {
-                TextOptions = new TextOptions()
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    VerticalAlignment = VerticalAlignment.Center,
-                },
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Center,
             };
+
             var textColor = Color.Black;
             var voidColor = Color.Gray;
             for (var b = 0; b < stats.Buckets; b++)
@@ -241,7 +239,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
                     var y = Padding + ((Padding + ribbonHeight) * b);
 
                     // draw label
-                    context.DrawTextSafe(dateLabel, scaledFont, textColor, new Point(HorizontalPadding, y + (ribbonHeight / 2)), textGraphics);
+                    context.DrawTextSafe(dateLabel, scaledFont, textColor, new Point(HorizontalPadding, y + (ribbonHeight / 2)), textOptions: textGraphics);
 
                     // draw void
                     var @void = new RectangularPolygon(ribbonLeft, y, estimatedWidth, ribbonHeight);

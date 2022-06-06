@@ -31,7 +31,7 @@ namespace Acoustics.Test.Shared.Drawing
             var rectangle = new RectangleF(10.0f, 10.0f, 79, 79);
             var pen = new Pen(Color.Red, 1f);
 
-            var options = new ShapeGraphicsOptions()
+            var options = new DrawingOptions()
             {
                 GraphicsOptions = new GraphicsOptions()
                 {

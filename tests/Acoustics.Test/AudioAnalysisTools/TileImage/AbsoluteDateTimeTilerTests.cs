@@ -103,7 +103,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                     new PointF(900, 256), new Point(1080, 0), new Point(1260, 256),
                 };
                 graphics.DrawLines(
-                    new ShapeGraphicsOptions(),
+                    new DrawingOptions(),
                     Brushes.Solid(Color.Red),
                     1,
                     points);

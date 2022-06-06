@@ -254,7 +254,7 @@ namespace SixLabors.ImageSharp
         public static void FillWithBlend(this IImageProcessingContext context, IBrush brush, params IPath[] paths)
         {
             const float Opaque = 1f;
-            var options = new ShapeGraphicsOptions();
+            var options = new DrawingOptions();
 
             if (brush is SolidBrush s)
             {
@@ -277,7 +277,7 @@ namespace SixLabors.ImageSharp
             }
             else
             {
-                context.Fill(options.GraphicsOptions, brush);
+                context.Fill(options, brush);
             }
         }
 
@@ -356,7 +356,7 @@ namespace SixLabors.ImageSharp
 
         public static SizeF MeasureString(this IImageProcessingContext _, string text, Font font)
         {
-            return TextMeasurer.MeasureBounds(text, new RendererOptions(font)).ToSizeF();
+            return TextMeasurer.MeasureBounds(text, new TextOptions(font)).ToSizeF();
         }
 
         public static Size ToSize(this SizeF size)
@@ -397,28 +397,31 @@ namespace SixLabors.ImageSharp
         /// <param name="color"></param>
         /// <param name="location"></param>
         /// <param name="textOptions"></param>
-        public static void DrawTextSafe(this IImageProcessingContext context, string text, Font font, Color color, PointF location, TextGraphicsOptions textOptions = null)
+        public static void DrawTextSafe(this IImageProcessingContext context, string text, Font font, Color color, PointF location, DrawingOptions drawingOptions = null, TextOptions textOptions = null)
         {
             if (text.IsNullOrEmpty())
             {
                 return;
             }
 
-            textOptions ??= ApDrawing.TextOptions;
+            drawingOptions ??= ApDrawing.TextOptions;
+            textOptions ??= new TextOptions(font);
+            textOptions.Origin = location;
 
             // check to see if text overlaps with image
             var destArea = new RectangleF(PointF.Empty, context.GetCurrentSize());
-            var rendererOptions = new RendererOptions(font, location);
-            var textArea = TextMeasurer.MeasureBounds(text, rendererOptions);
+
+            var textArea = TextMeasurer.MeasureBounds(text, textOptions);
+            textArea.Offset(location);
             if (destArea.IntersectsWith(textArea.AsRect()))
             {
-                context.DrawText(textOptions, text, font, color, location);
+                context.DrawText(drawingOptions, textOptions, text, Brushes.Solid(color), null);
             }
         }
 
         public static void DrawVerticalText(this IImageProcessingContext context, string text, Font font, Color color, Point location)
         {
-            var (width, height) = TextMeasurer.Measure(text, new RendererOptions(font)).ToSizeF();
+            var (width, height) = TextMeasurer.Measure(text, new TextOptions(font)).ToSizeF();
             var image = new Image<Rgba32>(Configuration.Default, (int)(width + 1), (int)(height + 1), Color.Transparent);
 
             image.Mutate(x => x

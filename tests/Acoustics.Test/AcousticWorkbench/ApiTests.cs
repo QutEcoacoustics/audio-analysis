@@ -36,7 +36,7 @@ namespace Acoustics.Test.AcousticWorkbench
         {
             var api = Api.Default;
 
-            Assert.AreEqual("www.ecosounds.org", api.Host);
+            Assert.AreEqual("api.ecosounds.org", api.Host);
             Assert.AreEqual("https", api.Protocol);
             Assert.AreEqual("v1", api.Version);
         }
@@ -46,7 +46,7 @@ namespace Acoustics.Test.AcousticWorkbench
         {
             var api = Api.Default;
 
-            Assert.AreEqual("{Protocol=\"https\", Host=\"www.ecosounds.org\", Version=\"v1\"}", api.ToString());
+            Assert.AreEqual("{Protocol=\"https\", Host=\"api.ecosounds.org\", Version=\"v1\"}", api.ToString());
         }
 
         [DataTestMethod]

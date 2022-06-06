@@ -33,7 +33,7 @@ namespace Acoustics.Test.Shared.Drawing
 
             // first make sure the text rectangle actually overlaps
             var destArea = new RectangleF(PointF.Empty, this.ActualImage.Size());
-            var textArea = TextMeasurer.MeasureBounds(text, new RendererOptions(Drawing.Roboto10, new Point(-10, 3)));
+            var textArea = TextMeasurer.MeasureBounds(text, new TextOptions(Drawing.Roboto10) { Origin = new Point(-10, 3) });
             Assert.IsTrue(destArea.IntersectsWith(textArea.AsRect()));
 
             // THIS SHOULD IDEALLY NOT THROW
@@ -53,7 +53,7 @@ namespace Acoustics.Test.Shared.Drawing
         {
             var text = "i1i1i1i1i1i1i1i1i1";
 
-            var textArea = TextMeasurer.MeasureBounds(text, new RendererOptions(Drawing.Roboto10, new Point(-70, 3)));
+            var textArea = TextMeasurer.MeasureBounds(text, new TextOptions(Drawing.Roboto10) { Origin = new Point(-70, 3) });
 
             this.ActualImage.Mutate(x => { x.DrawTextSafe(text, Drawing.Roboto10, Color.White, new PointF(-70, 3)); });
 
@@ -67,14 +67,14 @@ namespace Acoustics.Test.Shared.Drawing
         [TestMethod]
         public void AnotherCaseThatCausedAFailure()
         {
-            if (!SystemFonts.TryFind(Drawing.Arial, out _))
+            if (!SystemFonts.TryGet(Drawing.Arial, out _))
             {
                 Assert.Inconclusive("Skipping test because the Font Arial is not available");
             }
 
             var text = "2/08/2018";
 
-            var textArea = TextMeasurer.MeasureBounds(text, new RendererOptions(Drawing.Arial10, new Point(-13, 3)));
+            var textArea = TextMeasurer.MeasureBounds(text, new TextOptions(Drawing.Arial10) { Origin = new Point(-13, 3) });
 
             this.ActualImage.Mutate(x => { x.DrawTextSafe(text, Drawing.Arial10, Color.White, new PointF(-13, 3)); });
 
