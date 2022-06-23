@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
       <RootNamespace>Acoustics.AED</RootNamespace>
       <AssemblyName>Acoustics.AED</AssemblyName>
@@ -6,7 +6,7 @@
       <Deterministic>true</Deterministic>
   </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="FSharp.Core" Version="6.0.1" />
+        <PackageReference Include="FSharp.Core" Version="6.0.5" />
         <PackageReference Include="MathNet.Numerics.FSharp" Version="4.12.0" />
         <PackageReference Include="SixLabors.ImageSharp" Version="2.1.2" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14" />
