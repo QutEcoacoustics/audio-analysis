@@ -172,6 +172,7 @@ $alias_path = PickForOS "${Destination}${dir_seperator}AP.exe" "${home}/.local/b
 $binary_name = PickForOS "AnalysisPrograms.exe"  "AnalysisPrograms"  "AnalysisPrograms"
 $ap_path = "$Destination$dir_seperator$binary_name"
 $version_regex = '\d{2}\.\d{1,2}\.\d{1,2}\.\d{1,2}'
+$zsh_exists = $(which zsh;  $LASTEXITCODE -eq 0)
 
 if ($Version) {
 
@@ -227,6 +228,9 @@ function Get-AssetUrl($prerelease ) {
             { $_ -eq "X64" -and $IsWindows } { "win-x64_v" }
             #AP_osx-x64_v20.11.2.0.tar.xz
             { $_ -eq "X64" -and $IsMacOS } { "osx-x64_v" }
+            #AP_osx-x64_v20.11.2.0.tar.xz ARM mac supports virtualization
+            { $_ -eq "Arm64" -and $IsMacOS } { "osx-x64_v" }
+            
             default { $null }
         }
 
@@ -448,6 +452,9 @@ $actions =  [ordered]@{
         } )
         "Check" =  ("AP executable should have execute permission", {
             if($IsWindows) { return $null }
+            if (Test-Path "/bin/test") {
+                return $(/bin/test -x $ap_path ; 0 -eq $LASTEXITCODE)
+            }  
             $(/usr/bin/test -x $ap_path ; 0 -eq $LASTEXITCODE)
         } )
         "Uninstall" = $null
@@ -499,6 +506,10 @@ $actions =  [ordered]@{
             if ($IsWindows) {
                 $new_path = [System.Environment]::GetEnvironmentVariable("Path","User") + $to_add
                 [System.Environment]::SetEnvironmentVariable("Path", $new_path, "User")
+            } if ($zsh_exists -eq $true){
+                # if zsh is installed, add path to both .zshrc and .profile
+                "PATH=`$PATH$to_add`n" | Out-File "$HOME/.zshrc" -Encoding utf8NoBOM -Append
+                "PATH=`$PATH$to_add`n" | Out-File "$HOME/.profile" -Encoding utf8NoBOM -Append
             } else {
                 # bash syntax
                 "PATH=`$PATH$to_add`n" | Out-File "$HOME/.profile" -Encoding utf8NoBOM -Append
@@ -677,7 +688,6 @@ function Write-Metadata() {
         }
     }
 }
-
 
 switch -wildcard ($PsCmdlet.ParameterSetName) {
     "Install-*" {
