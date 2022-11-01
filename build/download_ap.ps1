@@ -453,7 +453,7 @@ $actions =  [ordered]@{
         "Check" =  ("AP executable should have execute permission", {
             if($IsWindows) { return $null }
             if (Test-Path "/bin/test") {
-            return $(/bin/test -x $ap_path ; 0 -eq $LASTEXITCODE)
+                return $(/bin/test -x $ap_path ; 0 -eq $LASTEXITCODE)
             }  
             $(/usr/bin/test -x $ap_path ; 0 -eq $LASTEXITCODE)
         } )
