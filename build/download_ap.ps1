@@ -172,7 +172,7 @@ $alias_path = PickForOS "${Destination}${dir_seperator}AP.exe" "${home}/.local/b
 $binary_name = PickForOS "AnalysisPrograms.exe"  "AnalysisPrograms"  "AnalysisPrograms"
 $ap_path = "$Destination$dir_seperator$binary_name"
 $version_regex = '\d{2}\.\d{1,2}\.\d{1,2}\.\d{1,2}'
-$zsh_exists = $(which zsh;  $LASTEXITCODE -eq 0)
+$zsh_exists = if($IsWindows) { $false } else { $(which zsh;  $LASTEXITCODE -eq 0) }
 
 if ($Version) {
 
