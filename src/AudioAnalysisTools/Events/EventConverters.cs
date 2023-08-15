@@ -28,7 +28,7 @@ namespace AudioAnalysisTools.Events.Types
         public static AcousticEvent ConvertSpectralEventToAcousticEvent(this SpectralEvent se)
         {
             var segmentStartOffset = TimeSpan.FromSeconds(se.SegmentStartSeconds);
-            double startTime = se.EventStartSeconds;
+            double startTime = se.EventStartSeconds - segmentStartOffset.TotalSeconds;
             double duration = se.EventDurationSeconds;
             double minHz = se.HighFrequencyHertz;
             double maxHz = se.HighFrequencyHertz;
