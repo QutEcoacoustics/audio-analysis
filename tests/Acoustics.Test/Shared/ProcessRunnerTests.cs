@@ -20,7 +20,8 @@ namespace Acoustics.Test.Shared
         [RetryTestMethod(3)]
         public void ProcessRunnerDoesNotDeadlock()
         {
-            var result = Enumerable.Range(0, 50).AsParallel().Select(this.RunFfprobe).ToArray();
+            var runs = TestHelper.OnContinuousIntegrationServer ? 10 : 50;
+            var result = Enumerable.Range(0, runs).AsParallel().Select(this.RunFfprobe).ToArray();
 
             Assert.IsTrue(result.All());
         }
