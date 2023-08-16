@@ -8,6 +8,34 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v23.8.0.19 2023-08-16
+
+Version v23.8.0.19
+
+
+
+### Details
+
+[Compare v21.7.0.4...v23.8.0.19](https://github.com/QutBioacoustics/audio-analysis/compare/v21.7.0.4...v23.8.0.19)
+
+- 429a98f9 QUT Ecoacoustics - Make test less taxing on CI runners
+- 008ee3dc Anthony Truskinger - Fixes bug in event converter
+- e5756e14 Anthony Truskinger - Update download_ap.ps1
+- 97cda92c Andrew S - ([#550](https://github.com/QutEcoacoustics/audio-analysis/issues/550)) Updates to download_ap.ps1 (#550)
+- e8e71c2d Anthony Truskinger - Bump F# Version
+- b89c7a27 Anthony Truskinger - Fix tests
+- 007a0fba Anthony Truskinger - Update docs/technical/commands/download/search.md
+- 8e67d160 Anthony Truskinger - Update docs/technical/commands/download/repositories.md
+- e7edcc10 Anthony Truskinger - Update docs/technical/commands/download/batch.md
+- f119e3db Anthony Truskinger - Update docs/technical/commands/download/batch.md
+- 2564a80d Anthony Truskinger - Update docs/technical/commands/download.md
+- 414344df Anthony Truskinger - Updates packages
+- 3ac7d6f1 Anthony Truskinger - ([#525](https://github.com/QutEcoacoustics/audio-analysis/issues/525)) Adds original audio download feature
+- 85ac7985 Anthony Truskinger - Upgrade to .NET 6
+- b10d0543 Anthony Truskinger - Patch download_ap.ps1
+- 4604e4ea Anthony Truskinger - Patch download_ap.ps1
+- 9a50c8d8 Anthony Truskinger - Patch download_ap.ps1
+- 45150178 QUT Ecoacoustics - Update changelog for v21.7.0.4
 ## Ecoacoustics Audio Analysis Software v21.7.0.4 2021-07-11
 
 Version v21.7.0.4
@@ -1526,6 +1554,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 
