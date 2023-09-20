@@ -1,5 +1,4 @@
 ---
-
 # Yellow Bellied Glider = Truskinger.PetaurusAustralis.yml
 # Resample rate must be 2 X the desired Nyquist
 #ResampleRate: 22050
@@ -15,7 +14,6 @@ CommonParameters: &common_parameters
     WindowFunction: HANNING
     NoiseReductionType: Modal
     BgNoiseThreshold: 0.0
-
 
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recognizer and must have the current name.
@@ -68,13 +66,13 @@ Profiles:
 
 PostProcessing:
     PostProcessInDecibelGroups: false
-# # The following generic post-processing steps are determined by config settings.
-# # Step 1: Combine overlapping events - events derived from all profiles.
-# # Step 2: Combine possible syllable sequences and filter on excess syllable count.
-# # Step 3: Remove events whose bandwidth is too small or large.
-# # Step 4: Remove events that have excessive noise in their side-bands.
+    # # The following generic post-processing steps are determined by config settings.
+    # # Step 1: Combine overlapping events - events derived from all profiles.
+    # # Step 2: Combine possible syllable sequences and filter on excess syllable count.
+    # # Step 3: Remove events whose bandwidth is too small or large.
+    # # Step 4: Remove events that have excessive noise in their side-bands.
 
-#     # 1: Combine overlapping events
+    #     # 1: Combine overlapping events
     CombineOverlappingEvents: false
 
     # 2: Combine possible syllable sequences
@@ -85,32 +83,28 @@ PostProcessing:
         # SyllableMaxCount: 3
         # ExpectedPeriod: 0.1
 
-# #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
+    # #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
     Duration:
         ExpectedDuration: 2.5
         DurationStandardDeviation: 0.6
 
-#     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
-#  #   Bandwidth:
-#         ExpectedBandwidth: 280
-#         BandwidthStandardDeviation: 40
+    #     # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
+    #  #   Bandwidth:
+    #         ExpectedBandwidth: 280
+    #         BandwidthStandardDeviation: 40
 
-#     # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
-#     SidebandActivity:
-#         LowerHertzBuffer: 150
-#         UpperHertzBuffer: 400
-#         MaxAverageSidebandDecibels: 3.0
+    #     # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
+    #     SidebandActivity:
+    #         LowerHertzBuffer: 150
+    #         UpperHertzBuffer: 400
+    #         MaxAverageSidebandDecibels: 3.0
     RemoveEnclosedEvents: false
 
 # Options to save results files
 # Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-SaveSonogramImages: Always
+SaveSonogramImages: false
 
 # Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-
-
-
-...

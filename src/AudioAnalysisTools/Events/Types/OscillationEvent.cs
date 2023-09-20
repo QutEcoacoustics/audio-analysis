@@ -44,7 +44,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Extracts an event from a spectrogram given its bounds.
         /// Then trims the event because oscillation events do not typically start where the DCT places them.
-        /// It a;sp returns the periodicity of the oscillation event.
+        /// It also returns the periodicity of the oscillation event.
         /// </summary>
         public static (int EventStart, int EventEnd, double FramePeriod) TrimEvent(SpectrogramStandard spectrogram, int startFrame, int minBin, int endFrame, int maxBin)
         {
@@ -93,8 +93,12 @@ namespace AudioAnalysisTools
             }
 
             // calculate the length of a whole number of complete periods.
-            int framePeriods = peakOnsets[peakOnsets.Count - 1] - peakOnsets[0];
-            double framePeriod = framePeriods / (double)(stepCount - 1);
+            double framePeriod = 0;
+            if (stepCount > 0)
+            {
+                int framePeriods = peakOnsets[peakOnsets.Count - 1] - peakOnsets[0];
+                framePeriod = framePeriods / (double)(stepCount - 1);
+            }
 
             return (trueStartFrame, trueEndFrame, framePeriod);
         }

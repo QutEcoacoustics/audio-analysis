@@ -1,5 +1,4 @@
 ---
-
 # Masked Owl = Truskinger.TytoNovaehollandiae.yml
 # Resample rate must be 2 X the desired Nyquist
 #ResampleRate: 22050
@@ -14,51 +13,48 @@ SpeciesName: Tyto novaehollandiae
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recognizer and must have the current name.
 Profiles:
-    MaskedOwlCall: !BlobParameters
-        SpeciesName: Tyto novaehollandiae
-        FrameSize: 256
-        FrameStep: 128
-        WindowFunction: HANNING
+  MaskedOwlCall: !BlobParameters
+    SpeciesName: Tyto novaehollandiae
+    FrameSize: 256
+    FrameStep: 128
+    WindowFunction: HAMMING
 
-        # min and max of the freq band to search
-        MinHertz: 1050
-        MaxHertz: 2900
-        MinDuration: 1.5
-        MaxDuration: 3.0
-        BottomHertzBuffer: 300
-        TopHertzBuffer: 300
-        # Scan the frequency band at these thresholds
-        DecibelThresholds:
-            - 1.0
-            - 9.0
-            - 12.0
-    MaskedOwlCallAed: !AedParameters
-        IntensityThreshold: 3
-        SmallAreaThreshold: 1000
-        BandpassMinimum: 1200
-        BandpassMaximum: 2800
-
+    # min and max of the freq band to search
+    MinHertz: 1050
+    MaxHertz: 3500
+    MinDuration: 0.1
+    MaxDuration: 3.0
+    BottomHertzBuffer: 300
+    TopHertzBuffer: 300
+    # Scan the frequency band at these thresholds
+    DecibelThresholds:
+      - 2.0
+  # MaskedOwlCallAed: !AedParameters
+  #     IntensityThreshold: 3
+  #     SmallAreaThreshold: 1000
+  #     BandpassMinimum: 1200
+  #     BandpassMaximum: 2800
 
 #################### POST-PROCESSING of EVENTS ###################
 
 PostProcessing:
-# # The following generic post-processing steps are determined by config settings.
-# # Step 1: Combine overlapping events - events derived from all profiles.
-# # Step 2: Combine possible syllable sequences and filter on excess syllable count.
-# # Step 3: Remove events whose bandwidth is too small or large.
-# # Step 4: Remove events that have excessive noise in their side-bands.
+  # # The following generic post-processing steps are determined by config settings.
+  # # Step 1: Combine overlapping events - events derived from all profiles.
+  # # Step 2: Combine possible syllable sequences and filter on excess syllable count.
+  # # Step 3: Remove events whose bandwidth is too small or large.
+  # # Step 4: Remove events that have excessive noise in their side-bands.
 
-#     # 1: Combine overlapping events
-#     CombineOverlappingEvents: true
+  #     # 1: Combine overlapping events
+  #     CombineOverlappingEvents: true
 
-#     # 2: Combine possible syllable sequences
-    SyllableSequence:
-        CombinePossibleSyllableSequence: true
-        SyllableStartDifference: 2
-        SyllableHertzGap: 300
-        FilterSyllableSequence: true
-        SyllableMaxCount: 2
-        ExpectedPeriod: 2
+  #     # 2: Combine possible syllable sequences
+  SyllableSequence:
+    CombinePossibleSyllableSequence: true
+    SyllableStartDifference: 2
+    SyllableHertzGap: 300
+    FilterSyllableSequence: true
+    SyllableMaxCount: 3
+    ExpectedPeriod: 1.2
 
 #     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
 #     #Duration:
@@ -79,12 +75,8 @@ PostProcessing:
 # Options to save results files
 # Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-SaveSonogramImages: WhenEventsDetected
+SaveSonogramImages: false
 
 # Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-
-
-
-...

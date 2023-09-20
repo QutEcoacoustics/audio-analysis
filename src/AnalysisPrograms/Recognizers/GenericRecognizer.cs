@@ -145,6 +145,7 @@ namespace AnalysisPrograms.Recognizers
 
             // ############################### PRE-PROCESSING ###############################
             // may at some future date do pre-processing
+
             // ############################### PROCESSING: DETECTION OF GENERIC EVENTS ###############################
             var results = RunProfiles(audioRecording, configuration, segmentStartOffset);
 

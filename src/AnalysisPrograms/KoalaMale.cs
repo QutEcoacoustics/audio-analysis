@@ -297,11 +297,6 @@ namespace AnalysisPrograms
                 analysisResults.EventsFile = segmentSettings.SegmentEventsFile;
             }
 
-            if (analysisSettings.AnalysisDataSaveBehavior)
-            {
-                // noop
-            }
-
             if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 string imagePath = segmentSettings.SegmentImageFile.FullName;

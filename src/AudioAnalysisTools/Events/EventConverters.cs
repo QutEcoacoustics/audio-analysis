@@ -22,6 +22,7 @@ namespace AudioAnalysisTools.Events.Types
                 Name = ae.Name,
                 //SegmentStartSeconds = ae.SegmentStartSeconds,
                 SegmentDurationSeconds = ae.SegmentDurationSeconds,
+                Score = ae.Score,
             };
         }
 
@@ -36,6 +37,7 @@ namespace AudioAnalysisTools.Events.Types
             {
                 Name = se.Name,
                 SegmentDurationSeconds = se.SegmentDurationSeconds,
+                Score = se.Score,
             };
 
             return ae;
