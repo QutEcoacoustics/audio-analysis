@@ -8,6 +8,18 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v23.9.0.2 2023-09-20
+
+Version v23.9.0.2
+
+
+
+### Details
+
+[Compare v23.8.0.19...v23.9.0.2](https://github.com/QutBioacoustics/audio-analysis/compare/v23.8.0.19...v23.9.0.2)
+
+- 112bab00 QUT Ecoacoustics - Improved some recognizers, ensured scores are emitted in results
+- e406350f QUT Ecoacoustics - Update changelog for v23.8.0.19
 ## Ecoacoustics Audio Analysis Software v23.8.0.19 2023-08-16
 
 Version v23.8.0.19
@@ -1554,6 +1566,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 
