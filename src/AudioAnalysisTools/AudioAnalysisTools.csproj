@@ -20,7 +20,7 @@
     <PackageReference Include="Accord" Version="3.8.2-alpha" />
     <PackageReference Include="Accord.MachineLearning" Version="3.8.2-alpha" />
     <PackageReference Include="Accord.Math" Version="3.8.2-alpha" />
-    <PackageReference Include="Equ" Version="2.2.0" />
+    <PackageReference Include="Equ" Version="2.3.0" />
     <PackageReference Include="FastMember" Version="1.5.0" />
     <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.2" />
